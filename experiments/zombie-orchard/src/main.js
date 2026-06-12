@@ -1,1 +1,1 @@
-console.log("Zombie Orchard experiment");
+import "./bootstrap.js";
