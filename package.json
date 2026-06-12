@@ -1,0 +1,11 @@
+{
+  "name": "@luminarylabs/nexusrealtime-experiments",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "description": "NexusRealtime browser experiments composed from kits.",
+  "scripts": {
+    "check": "node tests/content-smoke.mjs"
+  },
+  "license": "MIT"
+}
