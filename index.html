@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="NexusRealtime Experiments demo site." />
+  <title>NexusRealtime Experiments</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #061018;
+      --panel: rgba(12, 25, 38, 0.76);
+      --text: #eaf6ff;
+      --muted: #9db5c7;
+      --line: rgba(125, 206, 255, 0.22);
+      --glow: rgba(54, 190, 255, 0.35);
+      --accent: #ffe36d;
+      --blue: #56c7ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(86, 199, 255, 0.18), transparent 28rem),
+        radial-gradient(circle at 82% 18%, rgba(255, 227, 109, 0.11), transparent 24rem),
+        linear-gradient(135deg, #03070b 0%, var(--bg) 55%, #0b1821 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 82%);
+    }
+
+    main {
+      width: min(1100px, calc(100% - 32px));
+      min-height: 100vh;
+      margin: 0 auto;
+      display: grid;
+      align-content: center;
+      gap: 24px;
+      padding: 72px 0;
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: clamp(28px, 6vw, 72px);
+      background: linear-gradient(180deg, rgba(10, 26, 40, 0.88), rgba(6, 16, 24, 0.72));
+      box-shadow: 0 24px 80px rgba(0,0,0,0.35), 0 0 60px var(--glow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      position: absolute;
+      right: -120px;
+      top: -120px;
+      width: 320px;
+      height: 320px;
+      content: "";
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 227, 109, 0.18), transparent 68%);
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: var(--accent);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 860px;
+      font-size: clamp(2.6rem, 9vw, 7.4rem);
+      line-height: 0.91;
+      letter-spacing: -0.08em;
+    }
+
+    .lead {
+      margin: 28px 0 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      line-height: 1.65;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      background: var(--panel);
+      min-height: 150px;
+    }
+
+    .card strong {
+      display: block;
+      color: var(--blue);
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    footer {
+      color: rgba(234, 246, 255, 0.58);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      main {
+        align-content: start;
+        padding-top: 32px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero" aria-labelledby="title">
+      <p class="eyebrow">GitHub Pages Demo</p>
+      <h1 id="title">NexusRealtime Experiments</h1>
+      <p class="lead">
+        A tiny deployment target for playable NexusRealtime validation apps: runtime-driven, kit-composed,
+        sequence-orchestrated experiments that can be promoted only after they prove themselves.
+      </p>
+    </section>
+
+    <section class="grid" aria-label="Project layers">
+      <article class="card">
+        <strong>Runtime</strong>
+        <p>Deterministic ticks, resources, events, components, systems, surfaces, and sequence execution.</p>
+      </article>
+      <article class="card">
+        <strong>Kits</strong>
+        <p>Reusable coded behavior that owns simulation rules while hosts and renderers stay presentation-only.</p>
+      </article>
+      <article class="card">
+        <strong>Experiments</strong>
+        <p>Small playable proofs that validate game feel, kit composition, renderer boundaries, and promotion readiness.</p>
+      </article>
+    </section>
+
+    <footer>
+      Deployed from <code>main</code> with GitHub Actions and GitHub Pages.
+    </footer>
+  </main>
+</body>
+</html>
