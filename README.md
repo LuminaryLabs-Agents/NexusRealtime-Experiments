@@ -2,6 +2,14 @@
 
 Browser experiments that compose NexusRealtime kits into playable slices.
 
+## Next Ledge
+
+experiments/next-ledge/ is a cinematic grapple-climb validation demo. It imports the real NexusRealtime runtime, composes the Next Ledge cinematic ascent ProtoKit, maps browser input into engine.nextLedge APIs, ticks the runtime, and renders engine.nextLedge.getSnapshot() with Three.js.
+
+Open experiments/next-ledge/index.html in a browser or serve the repository with any static file server.
+
+Controls: Click/tap/Space release or fire grapple, A/D or arrows swing momentum, R restart, N advance sector.
+
 ## Fogline Relay
 
 experiments/fogline-relay/ is a first-person fog-forest relay experiment. It imports NexusRealtime 0.0.1, composes stable kits with the ProtoKits render-layer-kit, keeps the Canvas renderer presentation-only, and validates renderer-agnostic visual buckets, fog volumes, volumetric light descriptors, relay scanning, objective flow, and wraith hazards.
