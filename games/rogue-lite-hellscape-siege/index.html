@@ -3,19 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Rogue-Lite Hellscape Siege, a NexusRealtime experiment." />
   <title>Rogue-Lite Hellscape Siege</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <main id="app" aria-label="Rogue-Lite Hellscape Siege">
-    <canvas id="gameCanvas" role="application" aria-label="Game canvas"></canvas>
-    <aside id="hud" aria-label="Game HUD">
-      <header id="topHud" aria-live="polite">NEXUS CORE ONLINE</header>
-      <footer id="bottomHud">WASD move · Space harvest/strike/start wave · B build · I inventory</footer>
-    </aside>
-    <section id="errorPanel" role="alert" hidden></section>
+  <main id="app">
+    <canvas id="game"></canvas>
+    <section id="errorPanel" hidden></section>
   </main>
-  <script type="module" src="./src/game.js"></script>
+  <script type="module" src="./src/main.js"></script>
 </body>
 </html>
