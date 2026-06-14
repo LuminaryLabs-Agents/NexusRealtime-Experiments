@@ -2,15 +2,50 @@ import { NEXUS_URL, RENDER_LAYER_URL } from "./urls.js";
 import { createFoglineRelayKit } from "./fogline-relay-kit.js";
 import { createFoglineRelayLevel } from "./level.js";
 import { createVisualSignals } from "./visual-signals.js";
+import { DOMAIN_KITS_URL, createUnifiedDomainKits, syncUnifiedDomainState } from "../../_shared/domain-foundation.js";
+
+function domainSnapshot(engine) {
+  return {
+    timedPressure: engine.timedPressure?.getSnapshot?.(),
+    zoneField: engine.zoneField?.getSnapshot?.(),
+    scanSurvey: engine.scanSurvey?.getSnapshot?.(),
+    routeCheckpoint: engine.routeCheckpoint?.getSnapshot?.(),
+    resourcePressure: engine.resourcePressure?.getSnapshot?.(),
+    hazardDirector: engine.hazardDirector?.getSnapshot?.(),
+    visualFidelity: engine.visualFidelity?.getSnapshot?.(),
+    audioEventFeedback: engine.audioEventFeedback?.getSnapshot?.(),
+    cameraCinematic: engine.cameraCinematic?.getSnapshot?.(),
+    scenarioQa: engine.scenarioQa?.getSnapshot?.(),
+    deterministicReplay: engine.deterministicReplay?.getSnapshot?.(),
+    gamehostStandard: engine.gamehostStandard?.getSnapshot?.(),
+    tokenRegistry: engine.tokenRegistry?.getSnapshot?.(),
+    foglineSurveyPressure: engine.foglineSurveyPressure?.getSnapshot?.()
+  };
+}
 
 export async function createFoglineRelaySession() {
-  const [NexusRealtime, VisualPipeline] = await Promise.all([
+  const [NexusRealtime, VisualPipeline, DomainKits] = await Promise.all([
     import(NEXUS_URL),
-    import(RENDER_LAYER_URL)
+    import(RENDER_LAYER_URL),
+    import(DOMAIN_KITS_URL)
   ]);
 
   const level = createFoglineRelayLevel();
   const visualPreset = VisualPipeline.createFoglineVisualPreset();
+  const domainKits = createUnifiedDomainKits(NexusRealtime, DomainKits, {
+    prefix: "fogline-relay",
+    presetId: level.id,
+    includeFoglineBridge: true,
+    relayTargetIds: (level.relays ?? []).map((relay) => relay.id),
+    durationSeconds: 480,
+    visualProfile: "fogline-relay",
+    zoneX: 0,
+    zoneY: 20,
+    zoneRadius: 999,
+    zoneEffects: [{ id: "corruption", amountPerSecond: 0.03, threshold: 1 }],
+    consumes: ["scan:survey", "zone:field", "pressure:timed"],
+    provides: ["experiment:fogline-relay"]
+  });
   const realismKit = NexusRealtime.createRealismKit({
     id: "fogline-realism-kit",
     preset: visualPreset,
@@ -49,6 +84,7 @@ export async function createFoglineRelaySession() {
       forestKit,
       renderLayerKit,
       NexusRealtime.createInteractionTargetKit({ id: "fogline-interaction-target-kit", sceneRecipe: level.sceneRecipe }),
+      ...domainKits,
       foglineKit,
       NexusRealtime.createObjectiveFlowKit({
         id: "fogline-objective-flow-kit",
@@ -63,6 +99,19 @@ export async function createFoglineRelaySession() {
 
   function prepareFrame() {
     const game = engine.foglineRelay.getState();
+    syncUnifiedDomainState(engine, { level, game }, {
+      label: "fogline-relay",
+      scanRadius: 4,
+      scanAmount: 0.08,
+      zoneX: 0,
+      zoneY: 20,
+      zoneRadius: 999,
+      zoneEffects: [{ id: "corruption", amountPerSecond: 0.03, threshold: 1 }],
+      visualProfile: "fogline-relay",
+      cameraMode: "first-person",
+      consumes: ["scan:survey", "zone:field", "pressure:timed"],
+      provides: ["experiment:fogline-relay"]
+    });
     engine.visualPipeline.setViewer({ x: game.player.x, y: 1.6, z: game.player.z });
     engine.visualPipeline.setSignals(createVisualSignals(game));
   }
@@ -75,7 +124,8 @@ export async function createFoglineRelaySession() {
       objective: engine.objectiveFlow?.getState?.(),
       interactions: engine.interactionTargets?.getState?.(),
       visual: engine.visualPipeline.snapshot(),
-      render: engine.renderDescriptors?.getState?.()
+      render: engine.renderDescriptors?.getState?.(),
+      domain: domainSnapshot(engine)
     };
   }
 
@@ -84,6 +134,7 @@ export async function createFoglineRelaySession() {
     level,
     NexusRealtime,
     VisualPipeline,
+    DomainKits,
     prepareFrame,
     snapshot,
     getState: snapshot
