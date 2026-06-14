@@ -3,599 +3,91 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Playable NexusRealtime browser games and experiments." />
-  <title>NexusRealtime Arcade</title>
+  <meta name="description" content="Canonical NexusRealtime browser experiments composed from runtime kits and ProtoKits." />
+  <title>NexusRealtime Experiments Arcade</title>
   <style>
-    :root {
-      color-scheme: dark;
-      --bg0: #03070b;
-      --bg1: #071321;
-      --panel: rgba(9, 20, 32, 0.82);
-      --panel2: rgba(16, 31, 49, 0.9);
-      --text: #eff8ff;
-      --muted: #9fb6c8;
-      --line: rgba(125, 206, 255, 0.24);
-      --line2: rgba(255, 227, 109, 0.42);
-      --blue: #57c7ff;
-      --gold: #ffe36d;
-      --red: #ff5b45;
-      --green: #3df0a1;
-      --purple: #af7cff;
-      --shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
-    }
-
+    :root { color-scheme: dark; --bg:#03070b; --panel:rgba(7,18,30,.84); --line:rgba(125,206,255,.24); --text:#eff8ff; --muted:#9fb6c8; --blue:#57c7ff; --gold:#ffe36d; --green:#3df0a1; --red:#ff806c; }
     * { box-sizing: border-box; }
-
-    html,
-    body {
-      margin: 0;
-      min-height: 100%;
-      background:
-        radial-gradient(circle at 20% 10%, rgba(87, 199, 255, 0.17), transparent 26rem),
-        radial-gradient(circle at 82% 18%, rgba(255, 227, 109, 0.14), transparent 24rem),
-        radial-gradient(circle at 72% 80%, rgba(255, 91, 69, 0.16), transparent 28rem),
-        linear-gradient(135deg, var(--bg0), var(--bg1) 58%, #091a24);
-      color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    body::before {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      content: "";
-      background-image:
-        linear-gradient(rgba(255,255,255,0.026) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.026) 1px, transparent 1px);
-      background-size: 42px 42px;
-      mask-image: linear-gradient(to bottom, black 0 55%, transparent 90%);
-    }
-
-    a { color: inherit; }
-
-    .shell {
-      width: min(1240px, calc(100% - 28px));
-      margin: 0 auto;
-      padding: 22px 0 56px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 22px;
-      padding: 12px 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 18px;
-      background: rgba(4, 10, 16, 0.54);
-      backdrop-filter: blur(16px);
-      box-shadow: var(--shadow);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .mark {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background:
-        radial-gradient(circle at 36% 34%, var(--gold) 0 4px, transparent 5px),
-        radial-gradient(circle at 63% 60%, var(--blue) 0 6px, transparent 7px),
-        linear-gradient(135deg, rgba(87,199,255,.18), rgba(255,227,109,.18));
-      border: 1px solid rgba(255,255,255,0.18);
-      box-shadow: 0 0 28px rgba(87,199,255,0.22);
-    }
-
-    .brand strong { display: block; letter-spacing: -0.02em; }
-    .brand span { display: block; color: var(--muted); font-size: 0.82rem; }
-
-    nav {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: end;
-    }
-
-    .tab,
-    .mini-link {
-      border: 1px solid rgba(125, 206, 255, 0.18);
-      color: var(--text);
-      background: rgba(10, 23, 36, 0.64);
-      border-radius: 999px;
-      padding: 9px 12px;
-      font-weight: 800;
-      font-size: 0.78rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .tab:hover,
-    .tab[aria-pressed="true"],
-    .mini-link:hover {
-      border-color: rgba(255, 227, 109, 0.62);
-      color: var(--gold);
-      box-shadow: 0 0 28px rgba(255, 227, 109, 0.14);
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 18px;
-      align-items: stretch;
-      margin-bottom: 18px;
-    }
-
-    .hero-copy,
-    .featured {
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(10, 26, 40, 0.92), rgba(6, 16, 24, 0.74));
-      box-shadow: var(--shadow), 0 0 70px rgba(87,199,255,0.16);
-      border-radius: 30px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .hero-copy {
-      min-height: 390px;
-      padding: clamp(26px, 6vw, 68px);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .hero-copy::after {
-      position: absolute;
-      content: "";
-      width: 330px;
-      height: 330px;
-      right: -130px;
-      top: -110px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 227, 109, 0.18), transparent 68%);
-    }
-
-    .eyebrow {
-      margin: 0 0 16px;
-      color: var(--gold);
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      font-size: 0.76rem;
-      font-weight: 900;
-    }
-
-    h1 {
-      margin: 0;
-      max-width: 840px;
-      font-size: clamp(3.2rem, 8vw, 7.9rem);
-      line-height: 0.89;
-      letter-spacing: -0.085em;
-    }
-
-    .lead {
-      margin: 25px 0 0;
-      max-width: 760px;
-      color: var(--muted);
-      font-size: clamp(1.02rem, 1.6vw, 1.24rem);
-      line-height: 1.7;
-    }
-
-    .featured {
-      min-height: 390px;
-      display: grid;
-      align-content: end;
-      padding: 22px;
-      text-decoration: none;
-    }
-
-    .featured::before {
-      position: absolute;
-      inset: 0;
-      content: "";
-      background:
-        radial-gradient(circle at 50% 42%, rgba(126,232,255,.95) 0 7px, transparent 9px),
-        radial-gradient(circle at 50% 42%, rgba(126,232,255,.25), transparent 9rem),
-        radial-gradient(circle at 30% 76%, rgba(255,80,104,.3), transparent 9rem),
-        linear-gradient(150deg, #06101a, #102333 54%, #071018);
-      opacity: 0.95;
-    }
-
-    .featured::after {
-      position: absolute;
-      inset: 18px;
-      content: "";
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 22px;
-      background-image: linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px);
-      background-size: 100% 33%;
-      pointer-events: none;
-    }
-
-    .featured-content {
-      position: relative;
-      z-index: 1;
-      padding: 18px;
-      border: 1px solid rgba(126,232,255,.22);
-      border-radius: 22px;
-      background: rgba(2, 8, 12, 0.58);
-      backdrop-filter: blur(10px);
-    }
-
-    .featured h2 { margin: 0 0 8px; font-size: 2rem; letter-spacing: -0.04em; }
-    .featured p { margin: 0; color: var(--muted); line-height: 1.55; }
-
-    .section-head {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 16px;
-      margin: 22px 0 14px;
-    }
-
-    .section-head h2 {
-      margin: 0;
-      font-size: clamp(1.55rem, 3vw, 2.45rem);
-      letter-spacing: -0.045em;
-    }
-
-    .section-head p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.92rem;
-      text-align: right;
-    }
-
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .card {
-      min-height: 360px;
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      overflow: hidden;
-      color: inherit;
-      text-decoration: none;
-      background: linear-gradient(180deg, rgba(10, 26, 40, 0.9), rgba(6, 16, 24, 0.72));
-      box-shadow: 0 18px 60px rgba(0,0,0,0.28);
-      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .card:hover,
-    .card:focus-visible {
-      transform: translateY(-4px);
-      border-color: var(--line2);
-      box-shadow: 0 24px 80px rgba(0,0,0,0.44), 0 0 70px rgba(255, 227, 109, 0.14);
-      outline: none;
-    }
-
-    .thumb {
-      min-height: 150px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      background: linear-gradient(135deg, #0d1720, #111f2b);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .thumb::before,
-    .thumb::after {
-      position: absolute;
-      content: "";
-      inset: 0;
-      background-size: cover;
-    }
-
-    .thumb::after {
-      background-image:
-        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-      background-size: 28px 28px;
-      opacity: 0.7;
-    }
-
-    .fogline::before {
-      background:
-        radial-gradient(circle at 48% 38%, rgba(126,232,255,.95) 0 6px, transparent 8px),
-        radial-gradient(circle at 48% 38%, rgba(126,232,255,.24), transparent 7rem),
-        radial-gradient(circle at 32% 64%, rgba(255,80,104,.34), transparent 5.5rem),
-        linear-gradient(135deg, #06111a, #102333);
-    }
-
-    .sora::before {
-      background:
-        radial-gradient(circle at 70% 26%, rgba(255,227,109,.95) 0 13px, transparent 15px),
-        radial-gradient(circle at 46% 58%, rgba(87,199,255,.52), transparent 8rem),
-        linear-gradient(145deg, #0b2b52, #5ca7e8 52%, #0a1525);
-    }
-
-    .zombie::before {
-      background:
-        radial-gradient(circle at 45% 54%, rgba(61,240,161,.64), transparent 5rem),
-        radial-gradient(circle at 70% 36%, rgba(255,91,69,.42), transparent 5rem),
-        linear-gradient(135deg, #0d1c13, #33130f);
-    }
-
-    .hell::before {
-      background:
-        radial-gradient(circle at 48% 42%, rgba(255,227,109,.92) 0 8px, transparent 9px),
-        radial-gradient(circle at 42% 48%, rgba(239,68,68,.76) 0 30px, transparent 31px),
-        radial-gradient(circle at 72% 36%, rgba(87,199,255,.28), transparent 5rem),
-        linear-gradient(135deg, #180606, #08121d);
-    }
-
-    .hell2::before {
-      background:
-        radial-gradient(circle at 50% 50%, rgba(87,199,255,.92) 0 7px, transparent 8px),
-        radial-gradient(circle at 30% 38%, rgba(16,185,129,.5), transparent 4.5rem),
-        radial-gradient(circle at 68% 40%, rgba(168,85,247,.5), transparent 4.5rem),
-        radial-gradient(circle at 50% 72%, rgba(249,115,22,.5), transparent 4.5rem),
-        linear-gradient(135deg, #160505, #08121d);
-    }
-
-    .body {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      flex: 1;
-    }
-
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-    }
-
-    .tag {
-      border: 1px solid rgba(87, 199, 255, 0.22);
-      border-radius: 999px;
-      padding: 6px 9px;
-      color: var(--blue);
-      background: rgba(87, 199, 255, 0.06);
-      font-size: 0.72rem;
-      font-weight: 900;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-
-    .tag.gold { color: var(--gold); border-color: rgba(255,227,109,.3); background: rgba(255,227,109,.06); }
-    .tag.red { color: #ff9a88; border-color: rgba(255,91,69,.32); background: rgba(255,91,69,.07); }
-    .tag.green { color: var(--green); border-color: rgba(61,240,161,.25); background: rgba(61,240,161,.06); }
-
-    .card h3 {
-      margin: 0;
-      font-size: 1.32rem;
-      line-height: 1.1;
-      letter-spacing: -0.035em;
-    }
-
-    .card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.55;
-      flex: 1;
-    }
-
-    .play {
-      display: inline-flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 2px;
-      color: var(--gold);
-      font-weight: 950;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-size: 0.78rem;
-    }
-
-    .panel-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 16px;
-    }
-
-    .info-panel {
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      background: rgba(5, 12, 18, 0.62);
-      padding: 22px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .info-panel h3 { color: var(--text); margin: 0 0 8px; }
-    .info-panel p { margin: 0; }
-
-    footer {
-      margin-top: 24px;
-      color: rgba(234,246,255,.58);
-      font-size: 0.9rem;
-      text-align: center;
-    }
-
-    [hidden] { display: none !important; }
-
-    @media (max-width: 980px) {
-      .hero { grid-template-columns: 1fr; }
-      .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .panel-row { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 680px) {
-      .shell { width: min(100% - 20px, 1240px); padding-top: 12px; }
-      .topbar { align-items: start; flex-direction: column; }
-      nav { justify-content: start; }
-      .hero-copy { min-height: auto; }
-      .gallery { grid-template-columns: 1fr; }
-      .section-head { align-items: start; flex-direction: column; }
-      .section-head p { text-align: left; }
-    }
+    body { margin:0; min-height:100vh; color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:radial-gradient(circle at 15% 12%, rgba(87,199,255,.18), transparent 28rem), radial-gradient(circle at 82% 22%, rgba(255,227,109,.14), transparent 24rem), radial-gradient(circle at 60% 82%, rgba(255,91,69,.16), transparent 30rem), linear-gradient(135deg,var(--bg),#071321 58%,#091a24); }
+    body::before { position:fixed; inset:0; content:""; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px); background-size:42px 42px; mask-image:linear-gradient(to bottom, black 0 55%, transparent 90%); }
+    a { color:inherit; }
+    .shell { width:min(1240px, calc(100% - 28px)); margin:0 auto; padding:22px 0 56px; position:relative; z-index:1; }
+    .topbar,.hero,.card,.info-panel { border:1px solid var(--line); background:linear-gradient(180deg,rgba(10,26,40,.92),rgba(6,16,24,.72)); box-shadow:0 24px 80px rgba(0,0,0,.36); }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:12px 14px; border-radius:18px; margin-bottom:18px; }
+    .brand strong { display:block; letter-spacing:-.02em; }
+    .brand span { display:block; color:var(--muted); font-size:.84rem; }
+    nav { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .tab,.mini-link { border:1px solid rgba(125,206,255,.18); border-radius:999px; padding:9px 12px; background:rgba(10,23,36,.64); font-weight:800; font-size:.78rem; letter-spacing:.04em; text-transform:uppercase; text-decoration:none; cursor:pointer; }
+    .tab[aria-pressed="true"],.tab:hover,.mini-link:hover { color:var(--gold); border-color:rgba(255,227,109,.62); }
+    .hero { border-radius:30px; padding:clamp(28px,6vw,70px); margin-bottom:22px; }
+    .eyebrow { margin:0 0 14px; color:var(--gold); letter-spacing:.18em; text-transform:uppercase; font-size:.76rem; font-weight:900; }
+    h1 { margin:0; max-width:880px; font-size:clamp(3.2rem,8vw,7.6rem); line-height:.9; letter-spacing:-.085em; }
+    .lead { margin:24px 0 0; max-width:850px; color:var(--muted); font-size:clamp(1.02rem,1.6vw,1.22rem); line-height:1.7; }
+    .section-head { display:flex; align-items:end; justify-content:space-between; gap:16px; margin:22px 0 14px; }
+    .section-head h2 { margin:0; font-size:clamp(1.55rem,3vw,2.45rem); letter-spacing:-.045em; }
+    .section-head p { margin:0; color:var(--muted); font-size:.92rem; text-align:right; }
+    .gallery { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .card { min-height:320px; border-radius:24px; overflow:hidden; text-decoration:none; display:flex; flex-direction:column; transition:transform 180ms ease,border-color 180ms ease; }
+    .card:hover,.card:focus-visible { transform:translateY(-4px); border-color:rgba(255,227,109,.62); outline:none; }
+    .thumb { min-height:142px; border-bottom:1px solid rgba(255,255,255,.08); position:relative; overflow:hidden; background:linear-gradient(135deg,#0d1720,#111f2b); }
+    .thumb::after { position:absolute; inset:0; content:""; background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px); background-size:28px 28px; opacity:.7; }
+    .next::before,.fogline::before,.sora::before,.zombie::before,.hell::before { position:absolute; inset:0; content:""; }
+    .next::before { background:radial-gradient(circle at 48% 28%,rgba(255,227,109,.9) 0 10px,transparent 12px),linear-gradient(135deg,#1b2440,#0a1220); }
+    .fogline::before { background:radial-gradient(circle at 48% 38%,rgba(126,232,255,.95) 0 6px,transparent 8px),radial-gradient(circle at 32% 64%,rgba(255,80,104,.34),transparent 5.5rem),linear-gradient(135deg,#06111a,#102333); }
+    .sora::before { background:radial-gradient(circle at 70% 26%,rgba(255,227,109,.95) 0 13px,transparent 15px),radial-gradient(circle at 46% 58%,rgba(87,199,255,.52),transparent 8rem),linear-gradient(145deg,#0b2b52,#5ca7e8 52%,#0a1525); }
+    .zombie::before { background:radial-gradient(circle at 45% 54%,rgba(61,240,161,.64),transparent 5rem),radial-gradient(circle at 70% 36%,rgba(255,91,69,.42),transparent 5rem),linear-gradient(135deg,#0d1c13,#33130f); }
+    .hell::before { background:radial-gradient(circle at 48% 42%,rgba(255,227,109,.92) 0 8px,transparent 9px),radial-gradient(circle at 42% 48%,rgba(239,68,68,.76) 0 30px,transparent 31px),radial-gradient(circle at 72% 36%,rgba(87,199,255,.28),transparent 5rem),linear-gradient(135deg,#180606,#08121d); }
+    .body { padding:20px; display:flex; flex-direction:column; gap:14px; flex:1; }
+    .meta { display:flex; flex-wrap:wrap; gap:7px; }
+    .tag { border:1px solid rgba(87,199,255,.22); border-radius:999px; padding:6px 9px; color:var(--blue); background:rgba(87,199,255,.06); font-size:.72rem; font-weight:900; letter-spacing:.03em; text-transform:uppercase; }
+    .tag.gold { color:var(--gold); border-color:rgba(255,227,109,.3); background:rgba(255,227,109,.06); }
+    .tag.green { color:var(--green); border-color:rgba(61,240,161,.25); background:rgba(61,240,161,.06); }
+    .tag.red { color:var(--red); border-color:rgba(255,91,69,.32); background:rgba(255,91,69,.07); }
+    .card h3 { margin:0; font-size:1.32rem; line-height:1.1; letter-spacing:-.035em; }
+    .card p { margin:0; color:var(--muted); line-height:1.55; flex:1; }
+    .play { color:var(--gold); font-weight:950; letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; }
+    .panel-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+    .info-panel { border-radius:24px; padding:22px; color:var(--muted); line-height:1.6; }
+    .info-panel h3 { color:var(--text); margin:0 0 8px; }
+    .info-panel p { margin:0; }
+    footer { margin-top:24px; color:rgba(234,246,255,.58); font-size:.9rem; text-align:center; }
+    [hidden] { display:none !important; }
+    @media (max-width:980px) { .gallery { grid-template-columns:repeat(2,minmax(0,1fr)); } .panel-row { grid-template-columns:1fr; } }
+    @media (max-width:680px) { .shell { width:min(100% - 20px,1240px); padding-top:12px; } .topbar,.section-head { align-items:start; flex-direction:column; } nav { justify-content:start; } .gallery { grid-template-columns:1fr; } .section-head p { text-align:left; } }
   </style>
 </head>
 <body>
   <main class="shell">
     <header class="topbar" aria-label="Arcade navigation">
-      <div class="brand">
-        <div class="mark" aria-hidden="true"></div>
-        <div>
-          <strong>NexusRealtime Arcade</strong>
-          <span>Experiments, games, and playable kit validation.</span>
-        </div>
-      </div>
+      <div class="brand"><strong>NexusRealtime Arcade</strong><span>One canonical high-fidelity route per experiment.</span></div>
       <nav aria-label="Game filters">
         <button class="tab" type="button" data-filter="all" aria-pressed="true">All</button>
-        <button class="tab" type="button" data-filter="featured">Featured</button>
         <button class="tab" type="button" data-filter="experiment">Experiments</button>
         <button class="tab" type="button" data-filter="game">Games</button>
         <a class="mini-link" href="https://github.com/LuminaryLabs-Agents/NexusRealtime-Experiments">Repo</a>
       </nav>
     </header>
-
     <section class="hero" aria-labelledby="title">
-      <div class="hero-copy">
-        <p class="eyebrow">Browser arcade gallery</p>
-        <h1 id="title">Play the lab.</h1>
-        <p class="lead">
-          A Kongregate-style home page for every NexusRealtime game slice. Each card launches a static playable folder,
-          while the experiments validate runtime, kits, ProtoKits, sequence flow, renderer boundaries, and game feel.
-        </p>
-      </div>
-      <a class="featured" href="./experiments/fogline-relay/" aria-label="Play featured game Fogline Relay">
-        <div class="featured-content">
-          <p class="eyebrow">Featured experiment</p>
-          <h2>Fogline Relay</h2>
-          <p>Link blue relays in a fog forest, avoid red wraiths, and cross the opened gate.</p>
-          <span class="play">Play featured →</span>
-        </div>
-      </a>
+      <p class="eyebrow">Unified domain-kit gallery</p>
+      <h1 id="title">One base route per game.</h1>
+      <p class="lead">Every playable slice now points at its base folder name. Versioned folders are removed from the arcade; the integration target is a single high-fidelity host per game that composes runtime kits, ProtoKits, bridge/preset code, and renderer-only presentation.</p>
     </section>
-
-    <section class="section-head" aria-labelledby="games-title">
-      <div>
-        <p class="eyebrow">Games</p>
-        <h2 id="games-title">Playable gallery</h2>
-      </div>
-      <p>Cards link to folders under <code>/experiments</code> and <code>/games</code>.</p>
-    </section>
-
+    <section class="section-head" aria-labelledby="games-title"><div><p class="eyebrow">Playable base routes</p><h2 id="games-title">Experiments and games</h2></div><p>Cards link only to canonical folders under <code>/experiments</code> and <code>/games</code>.</p></section>
     <section class="gallery" aria-label="Playable game gallery" id="gallery">
-      <a class="card" data-kind="featured experiment" href="./experiments/fogline-relay/" aria-label="Play Fogline Relay">
-        <div class="thumb fogline" aria-hidden="true"></div>
-        <div class="body">
-          <div class="meta">
-            <span class="tag gold">Featured</span>
-            <span class="tag">Nexus 0.0.1</span>
-            <span class="tag green">ProtoKit visual</span>
-          </div>
-          <h3>Fogline Relay</h3>
-          <p>First-person fog-forest relay loop using runtime kits, objective flow, visual buckets, fog volumes, and wraith pressure.</p>
-          <span class="play">Play experiment →</span>
-        </div>
-      </a>
-
-      <a class="card" data-kind="featured experiment" href="./experiments/sora-the-infinite/" aria-label="Play Sora The Infinite">
-        <div class="thumb sora" aria-hidden="true"></div>
-        <div class="body">
-          <div class="meta">
-            <span class="tag gold">Featured</span>
-            <span class="tag">Aerial</span>
-            <span class="tag green">Three.js</span>
-          </div>
-          <h3>Sora The Infinite</h3>
-          <p>Soar through an infinite sky route while validating the generic aerial ProtoKit stack and renderer descriptors.</p>
-          <span class="play">Play experiment →</span>
-        </div>
-      </a>
-
-      <a class="card" data-kind="experiment" href="./experiments/zombie-orchard/" aria-label="Play Zombie Orchard">
-        <div class="thumb zombie" aria-hidden="true"></div>
-        <div class="body">
-          <div class="meta">
-            <span class="tag">Survival</span>
-            <span class="tag red">Combat</span>
-            <span class="tag">Canvas</span>
-          </div>
-          <h3>Zombie Orchard</h3>
-          <p>Kit-composed survival slice with collection, equipped gear, waves, zombies, and debug-friendly runtime state.</p>
-          <span class="play">Play experiment →</span>
-        </div>
-      </a>
-
-      <a class="card" data-kind="game" href="./games/rogue-lite-hellscape-siege-v2/" aria-label="Play Rogue-Lite Hellscape Siege V2">
-        <div class="thumb hell2" aria-hidden="true"></div>
-        <div class="body">
-          <div class="meta">
-            <span class="tag gold">V2</span>
-            <span class="tag">Local kits</span>
-            <span class="tag red">Defense</span>
-          </div>
-          <h3>Rogue-Lite Hellscape Siege V2</h3>
-          <p>Kit-shaped rebuild with realms, inventory, harvesting, build blueprints, wave defense, FX, and renderer-only presentation.</p>
-          <span class="play">Play V2 →</span>
-        </div>
-      </a>
-
-      <a class="card" data-kind="game" href="./games/rogue-lite-hellscape-siege/" aria-label="Play Rogue-Lite Hellscape Siege">
-        <div class="thumb hell" aria-hidden="true"></div>
-        <div class="body">
-          <div class="meta">
-            <span class="tag">Canvas</span>
-            <span class="tag">Rogue-lite</span>
-            <span class="tag red">Base defense</span>
-          </div>
-          <h3>Rogue-Lite Hellscape Siege</h3>
-          <p>Gather materials through portals, construct defenses around the Nexus core, then trigger escalating demonic siege waves.</p>
-          <span class="play">Play game →</span>
-        </div>
-      </a>
+      <a class="card" data-kind="experiment" href="./experiments/next-ledge/" aria-label="Play Next Ledge"><div class="thumb next" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Climb</span><span class="tag green">Route</span><span class="tag">ProtoKit</span></div><h3>Next Ledge</h3><p>Cinematic grapple-climb validation with action input, ledge routes, swing pressure, feedback descriptors, and a Three.js host.</p><span class="play">Play experiment →</span></div></a>
+      <a class="card" data-kind="experiment" href="./experiments/fogline-relay/" aria-label="Play Fogline Relay"><div class="thumb fogline" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Featured</span><span class="tag green">Domain cutover</span><span class="tag">Fog</span></div><h3>Fogline Relay</h3><p>First-person survey-pressure loop for scan targets, fog zones, timed pressure, hazard state, and renderer-only visual buckets.</p><span class="play">Play experiment →</span></div></a>
+      <a class="card" data-kind="experiment" href="./experiments/sora-the-infinite/" aria-label="Play Sora The Infinite"><div class="thumb sora" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Aerial</span><span class="tag green">World</span><span class="tag">Three.js</span></div><h3>Sora The Infinite</h3><p>Flight-domain validation for terrain patches, updraft volumes, checkpoints, render descriptors, and aerial camera state.</p><span class="play">Play experiment →</span></div></a>
+      <a class="card" data-kind="experiment" href="./experiments/zombie-orchard/" aria-label="Play Zombie Orchard"><div class="thumb zombie" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag">Survival</span><span class="tag red">Horde</span><span class="tag green">Canvas</span></div><h3>Zombie Orchard</h3><p>Kit-composed survival slice for rounds, horde pressure, pickups, weapons, orchard content, and debug-friendly runtime state.</p><span class="play">Play experiment →</span></div></a>
+      <a class="card" data-kind="game" href="./games/rogue-lite-hellscape-siege/" aria-label="Play Rogue-Lite Hellscape Siege"><div class="thumb hell" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Unified</span><span class="tag green">Base name</span><span class="tag red">Defense</span></div><h3>Rogue-Lite Hellscape Siege</h3><p>Unified high-fidelity base route for the kit-shaped realm, inventory, harvesting, building, wave-defense, FX, and renderer-only presentation loop.</p><span class="play">Play game →</span></div></a>
     </section>
-
-    <section class="panel-row" aria-label="Arcade notes">
-      <article class="info-panel">
-        <h3>Why this page exists</h3>
-        <p>The root should be the arcade lobby. Individual games stay isolated in their own folders so assets, level data, renderer code, and experiment docs remain close to the game.</p>
-      </article>
-      <article class="info-panel">
-        <h3>How to add the next game</h3>
-        <p>Create a new folder under <code>experiments/</code> or <code>games/</code>, make it playable from <code>index.html</code>, then add one card here.</p>
-      </article>
-    </section>
-
-    <footer>
-      Deployed from <code>main</code> with GitHub Pages. Static arcade, no build step required.
-    </footer>
+    <section class="panel-row" aria-label="Arcade notes"><article class="info-panel"><h3>Canonical route rule</h3><p>Do not add V1/V2 gallery routes. Fold successful variants back into the base game folder.</p></article><article class="info-panel"><h3>Cutover target</h3><p>Each game should compose reusable domain ProtoKits, keep game-specific mapping in bridge/preset code, and expose a standard GameHost/debug snapshot.</p></article></section>
+    <footer>Deployed from <code>main</code> with GitHub Pages. Static arcade, no build step required.</footer>
   </main>
-
   <script>
     const tabs = Array.from(document.querySelectorAll(".tab"));
     const cards = Array.from(document.querySelectorAll(".card"));
-
-    function applyFilter(filter) {
-      for (const tab of tabs) tab.setAttribute("aria-pressed", String(tab.dataset.filter === filter));
-      for (const card of cards) {
-        const kinds = String(card.dataset.kind || "").split(/\s+/);
-        card.hidden = filter !== "all" && !kinds.includes(filter);
-      }
-    }
-
-    for (const tab of tabs) {
-      tab.addEventListener("click", () => applyFilter(tab.dataset.filter || "all"));
-    }
+    function applyFilter(filter) { for (const tab of tabs) tab.setAttribute("aria-pressed", String(tab.dataset.filter === filter)); for (const card of cards) { const kinds = String(card.dataset.kind || "").split(/\s+/); card.hidden = filter !== "all" && !kinds.includes(filter); } }
+    for (const tab of tabs) tab.addEventListener("click", () => applyFilter(tab.dataset.filter || "all"));
   </script>
 </body>
 </html>
