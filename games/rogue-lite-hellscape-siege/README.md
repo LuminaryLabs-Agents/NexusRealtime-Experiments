@@ -1,8 +1,6 @@
 # Rogue-Lite Hellscape Siege
 
-A browser-playable NexusRealtime experiment folder for the uploaded rogue-lite base-defense game.
-
-## Run
+Canonical base route for the high-fidelity Rogue-Lite Hellscape Siege experiment.
 
 Open:
 
@@ -10,49 +8,53 @@ Open:
 /games/rogue-lite-hellscape-siege/
 ```
 
-or serve the repository root and visit:
+## Unified version rule
+
+This folder is the only gallery-facing route. The earlier `rogue-lite-hellscape-siege-v2` variant has been folded into this base folder and removed from the arcade route list.
+
+## Current implementation
+
+The base route now owns the kit-shaped high-fidelity implementation that added:
 
 ```txt
-http://localhost:PORT/games/rogue-lite-hellscape-siege/
+local runtime-style kits
+realm/portal loop
+inventory and cargo-like resources
+harvest and pickup loop
+build blueprints
+wave/core defense
+FX descriptors consumed by the renderer
+renderer-only presentation
+GameHost debug hooks
 ```
 
 ## Controls
 
 ```txt
 WASD / Arrow Keys: Move
-Space: Harvest, attack, or start siege near the core
-B: Toggle build blueprint panel in lobby
-Q/E: Cycle build blueprint
-F / Enter: Place selected build
-I: Toggle inventory
+Mouse / Space: Harvest, attack, or primary action
+E / Enter: Interact
+B: Build selected blueprint
+Q / C: Cycle build blueprint
+1 / 2 / 3: Select build blueprint
 ```
 
-## Folder contract
+## Domain-kit cutover target
 
-This game folder keeps the game-local host, styles, and source together:
+Next pass should replace the local temporary kits with shared ProtoKits from `NexusRealtime-ProtoKits`:
 
 ```txt
-index.html
-styles.css
-src/game.js
-README.md
+action-input-kit
+resource-pressure-kit
+cargo-delivery-kit
+agent-group-kit
+hazard-director-kit
+route-checkpoint-kit
+visual-fidelity-maker-kit
+audio-event-feedback-maker-kit
+camera-cinematic-maker-kit
+scenario-qa-harness
+gamehost-standard-kit
 ```
 
-That makes the root `index.html` usable as a gallery while each game stays self-contained under `/games/<game-id>/`.
-
-## Next extraction targets
-
-The uploaded source was a monolithic single-file HTML experiment. The next cleanup pass should split the game into kit-shaped files:
-
-```txt
-src/asset-kit.js
-src/world-kit.js
-src/entity-kit.js
-src/foraging-kit.js
-src/inventory-kit.js
-src/build-kit.js
-src/enemy-siege-kit.js
-src/feedback-kit.js
-```
-
-After that, reusable behavior can move to NexusRealtime-ProtoKits.
+Game-specific realm, build, wave, and economy mapping should live in a Hellscape bridge/preset, not in generic domain kits.
