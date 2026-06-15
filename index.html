@@ -13,15 +13,15 @@
     a { color:inherit; }
     .shell { width:min(1240px, calc(100% - 28px)); margin:0 auto; padding:22px 0 56px; position:relative; z-index:1; }
     .topbar,.hero,.card,.info-panel { border:1px solid var(--line); background:linear-gradient(180deg,rgba(10,26,40,.92),rgba(6,16,24,.72)); box-shadow:0 24px 80px rgba(0,0,0,.36); }
-    .topbar { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:12px 14px; border-radius:18px; margin-bottom:18px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:12px 14px; border-radius:18px; margin-bottom:12px; }
     .brand strong { display:block; letter-spacing:-.02em; }
     .brand span { display:block; color:var(--muted); font-size:.84rem; }
     nav { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
     .tab,.mini-link { border:1px solid rgba(125,206,255,.18); border-radius:999px; padding:9px 12px; background:rgba(10,23,36,.64); font-weight:800; font-size:.78rem; letter-spacing:.04em; text-transform:uppercase; text-decoration:none; cursor:pointer; }
     .tab[aria-pressed="true"],.tab:hover,.mini-link:hover { color:var(--gold); border-color:rgba(255,227,109,.62); }
-    .hero { border-radius:30px; padding:clamp(28px,6vw,70px); margin-bottom:22px; }
+    .hero { border-radius:18px; padding:10px 16px; margin-bottom:18px; min-height:auto; display:flex; align-items:center; justify-content:center; }
     .eyebrow { margin:0 0 14px; color:var(--gold); letter-spacing:.18em; text-transform:uppercase; font-size:.76rem; font-weight:900; }
-    h1 { margin:0; max-width:880px; font-size:clamp(3.2rem,8vw,7.6rem); line-height:.9; letter-spacing:-.085em; }
+    h1 { margin:0; color:var(--gold); font-size:clamp(.95rem,2vw,1.28rem); line-height:1; letter-spacing:.22em; text-transform:uppercase; font-weight:900; text-align:center; }
     .lead { margin:24px 0 0; max-width:850px; color:var(--muted); font-size:clamp(1.02rem,1.6vw,1.22rem); line-height:1.7; }
     .section-head { display:flex; align-items:end; justify-content:space-between; gap:16px; margin:22px 0 14px; }
     .section-head h2 { margin:0; font-size:clamp(1.55rem,3vw,2.45rem); letter-spacing:-.045em; }
@@ -68,9 +68,7 @@
       </nav>
     </header>
     <section class="hero" aria-labelledby="title">
-      <p class="eyebrow">Unified domain-kit gallery</p>
-      <h1 id="title">One base route per game.</h1>
-      <p class="lead">Every playable slice now points at its base folder name. Versioned folders are removed from the arcade; the integration target is a single high-fidelity host per game that composes runtime kits, ProtoKits, bridge/preset code, and renderer-only presentation.</p>
+      <h1 id="title">Experiments</h1>
     </section>
     <section class="section-head" aria-labelledby="games-title"><div><p class="eyebrow">Playable base routes</p><h2 id="games-title">Experiments and games</h2></div><p>Cards link only to canonical folders under <code>/experiments</code> and <code>/games</code>.</p></section>
     <section class="gallery" aria-label="Playable game gallery" id="gallery">
