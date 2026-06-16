@@ -23,7 +23,10 @@ assert.ok(threeRenderer.includes("makeDenseForest"), "Three renderer should crea
 assert.ok(threeRenderer.includes("InstancedMesh"), "Three renderer should use instanced meshes for dense trees");
 assert.ok(threeRenderer.includes("createFoglineEnvironmentContent"), "Three renderer should consume Fogline environment content data");
 assert.ok(threeRenderer.includes("syncEnvironment"), "Three renderer should sync the dense environment once per level");
-assert.ok(threeRenderer.includes("syncObjects"), "Three renderer should bind gameplay snapshots to scene objects");
+assert.ok(threeRenderer.includes("player.pitch"), "Three renderer should use vertical player pitch");
+assert.ok(threeRenderer.includes("player.eyeHeight"), "Three renderer should use player eye height");
+assert.ok(threeRenderer.includes("tiltX"), "Three renderer should apply vegetation x tilt");
+assert.ok(threeRenderer.includes("tiltZ"), "Three renderer should apply vegetation z tilt");
 assert.ok(threeRenderer.includes("forwardFromYaw"), "Three renderer should drive camera direction from player yaw");
 
 assert.ok(canvasRenderer.includes('canvas.getContext("2d")'), "legacy Canvas renderer should remain as fallback");
