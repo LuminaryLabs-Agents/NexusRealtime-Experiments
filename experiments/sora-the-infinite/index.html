@@ -20,17 +20,375 @@
   attachNexusRealtimePageLoader({ title: "Super Fly", loadingLabel: "Loading Super Fly" });
 </script>
 <script type="module">
-const NEXUS_URL="https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@0.0.1/src/index.js";
-const KIT_URL=new URLSearchParams(location.search).get("kit")||"https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@e98cc32194ea5fb092885ff8a2c629a05bb6de6f/protokits/aerial-flight-kits/index.js";
-const canvas=document.querySelector("#game"),topHud=document.querySelector("#top"),err=document.querySelector("#err"),cross=document.querySelector("#cross");
-function fatal(e){err.hidden=false;err.textContent=String(e?.stack||e?.message||e);topHud.textContent="Runtime error — see panel"}
-function rgb(hex,f=[.16,.32,.2]){const s=String(hex||"").replace("#","");return s.length===6?[parseInt(s.slice(0,2),16)/255,parseInt(s.slice(2,4),16)/255,parseInt(s.slice(4,6),16)/255]:f}
-function makeBird(THREE){const root=new THREE.Group(),bodyMat=new THREE.MeshStandardMaterial({color:0xf8f9fa,roughness:.62}),wingMat=new THREE.MeshStandardMaterial({color:0xe4e8ea,roughness:.58});const body=new THREE.ConeGeometry(1.2,5.2,7);body.rotateX(Math.PI/2);root.add(new THREE.Mesh(body,bodyMat));const head=new THREE.Mesh(new THREE.DodecahedronGeometry(.82,0),bodyMat);head.position.set(0,.55,-2.8);root.add(head);function wing(side){const shoulder=new THREE.Group();shoulder.position.set(.72*side,0,-.35);const innerLength=3.8,outerLength=3.25;const innerGeo=new THREE.BoxGeometry(innerLength,.07,1.35);innerGeo.translate(innerLength*.5*side,0,0);shoulder.add(new THREE.Mesh(innerGeo,wingMat));const elbow=new THREE.Group();elbow.position.set(innerLength*side,0,0);const outerGeo=new THREE.BoxGeometry(outerLength,.055,1.02);outerGeo.translate(outerLength*.5*side,0,0);elbow.add(new THREE.Mesh(outerGeo,wingMat));const tip=new THREE.Group();tip.position.set(outerLength*side,0,0);const tipGeo=new THREE.BoxGeometry(.72,.04,.72);tipGeo.translate(.36*side,0,0);tip.add(new THREE.Mesh(tipGeo,wingMat));elbow.add(tip);shoulder.add(elbow);root.add(shoulder);return{shoulder,elbow,tip}}const left=wing(-1),right=wing(1);root.userData.joints={leftShoulder:left.shoulder,rightShoulder:right.shoulder,leftElbow:left.elbow,rightElbow:right.elbow,leftTip:left.tip,rightTip:right.tip};return root}
-function applyRigAnimation(bird,animation={}){const joints=bird.userData.joints||{};for(const[id,descriptor]of Object.entries(animation.joints||{})){const joint=joints[id];if(!joint)continue;const r=descriptor.rotation||{};joint.rotation.set(r.x||0,r.y||0,r.z||0)}return animation.bodyOffset||{x:0,y:0,z:0}}
-function makePatchGeometry(THREE,p){const seg=p.segments??p.sampleSegments??8,count=(seg+1)*(seg+1),pos=new Float32Array(count*3),col=new Float32Array(count*3),idx=[];const s=p.samples||[];for(let i=0;i<count;i++){const v=s[i]||{x:0,y:0,z:0,biome:"forest"};pos[i*3]=v.x;pos[i*3+1]=v.y;pos[i*3+2]=v.z;const c=rgb(v.biome==="alpine"?"#8fa0a6":v.biome==="shore"?"#d9ad6a":v.biome==="rock"?"#6f7678":"#1f4a29");col[i*3]=c[0];col[i*3+1]=c[1];col[i*3+2]=c[2]}for(let z=0;z<seg;z++)for(let x=0;x<seg;x++){const a=z*(seg+1)+x,b=a+1,c=a+seg+1,d=c+1;idx.push(a,c,b,b,c,d)}const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.BufferAttribute(pos,3));g.setAttribute("color",new THREE.BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();g.computeBoundingSphere();return g}
-function createTerrainMaterial(THREE){return new THREE.ShaderMaterial({vertexColors:true,uniforms:{sunDir:{value:new THREE.Vector3(.2,.8,.35).normalize()},fogColor:{value:new THREE.Color("#ffdfb3")},fogStrength:{value:.42}},vertexShader:`varying vec3 vc;varying vec3 wp;varying vec3 vn;void main(){vc=color;vec4 w=modelMatrix*vec4(position,1.0);wp=w.xyz;vn=normalize(normalMatrix*normal);gl_Position=projectionMatrix*viewMatrix*w;}`,fragmentShader:`varying vec3 vc;varying vec3 wp;varying vec3 vn;uniform vec3 sunDir;uniform vec3 fogColor;uniform float fogStrength;float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);float a=h(i),b=h(i+vec2(1.,0.)),c=h(i+vec2(0.,1.)),d=h(i+vec2(1.,1.));return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);}void main(){float macro=n(wp.xz*.0025);float detail=n(wp.xz*.018+macro*2.0);float slope=1.0-max(vn.y,0.0);float light=.48+max(dot(normalize(vn),sunDir),0.0)*.52;float scatter=pow(max(dot(normalize(vn),sunDir),0.0),.55);vec3 band=vc*(.82+detail*.28)+vec3(macro*.06)+fogColor*scatter*.08*max(fogStrength,.1);band=mix(band,band*.62,slope*.34);float dist=length(wp.xz)*.000035;band=mix(band,fogColor,clamp(dist*fogStrength,0.0,.55));gl_FragColor=vec4(band*light,1.0);}`})}
-function createRenderer(THREE){const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(1);renderer.setSize(innerWidth,innerHeight,false);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,12000),cameraPos=new THREE.Vector3(),lookAt=new THREE.Vector3();const hemi=new THREE.HemisphereLight(0xb3e5fc,0xffdfb3,.55),sun=new THREE.DirectionalLight(0xfff8e7,3.6);sun.castShadow=false;scene.add(hemi,sun,sun.target);const fog=new THREE.FogExp2(0xffdfb3,.00055);scene.fog=fog;const skyMat=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{topColor:{value:new THREE.Color("#42a5f5")},bottomColor:{value:new THREE.Color("#ffdfb3")},sunColor:{value:new THREE.Color("#fff8e1")},sunDir:{value:new THREE.Vector3(.1,.5,-.4).normalize()},fogTint:{value:new THREE.Color("#ffdfb3")},fogPower:{value:.42}},vertexShader:`varying vec3 v;void main(){vec4 w=modelMatrix*vec4(position,1.);v=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,fragmentShader:`varying vec3 v;uniform vec3 topColor,bottomColor,sunColor,sunDir,fogTint;uniform float fogPower;float wave(float x){return sin(x*5.1)*.5+sin(x*11.3)*.25+sin(x*19.7)*.12;}void main(){vec3 d=normalize(v);float h=max(0.,d.y);vec3 sky=mix(bottomColor,topColor,smoothstep(-.15,.75,h));float a=atan(d.x,d.z);float ridge=wave(a)+.42;float horizon=1.0-smoothstep(.015,.13,abs(d.y-ridge*.025));vec3 mountains=mix(vec3(.10,.15,.17),vec3(.35,.42,.44),smoothstep(.0,.08,d.y));sky=mix(sky,mountains,horizon*.42);float sd=max(0.,dot(d,sunDir));float fogGlow=pow(max(0.,dot(d,sunDir)),3.0)*fogPower;sky=mix(sky,fogTint,smoothstep(-.02,.18,d.y)*fogPower*.22);gl_FragColor=vec4(sky+sunColor*(pow(sd,80.)*.45+pow(sd,8.)*.3+smoothstep(.996,.998,sd)+fogGlow*.35),1.);}`});scene.add(new THREE.Mesh(new THREE.SphereGeometry(9000,40,18),skyMat));const terrainMat=createTerrainMaterial(THREE),ringMat=new THREE.MeshBasicMaterial({color:0x00f3ff,transparent:true,opacity:.78,wireframe:true}),liftMat=new THREE.MeshBasicMaterial({color:0x3dfa99,transparent:true,opacity:.07,wireframe:true,side:THREE.DoubleSide});const bird=makeBird(THREE);scene.add(bird);const patches=new Map(),rings=new Map(),lifts=new Map();let lastHudAt=0;function draw(s){if(!s?.body)return;const liveP=new Set();for(const p of s.world?.patches||[]){const key=p.id||p.key,rev=p.revision||`${key}:${p.sampleSegments||0}`;liveP.add(key);let rec=patches.get(key);if(!rec||rec.rev!==rev){if(rec){scene.remove(rec.mesh);rec.mesh.geometry.dispose()}const mesh=new THREE.Mesh(makePatchGeometry(THREE,p),terrainMat);mesh.receiveShadow=false;scene.add(mesh);patches.set(key,{rev,mesh})}}for(const[k,rec]of patches)if(!liveP.has(k)){scene.remove(rec.mesh);rec.mesh.geometry.dispose();patches.delete(k)}const liveR=new Set();for(const q of s.checkpoints?.volumes||[]){if(q.collected)continue;liveR.add(q.id);let m=rings.get(q.id);if(!m){m=new THREE.Mesh(new THREE.TorusGeometry(q.radius,1.1,6,16),ringMat);rings.set(q.id,m);scene.add(m)}m.position.set(q.x,q.y,q.z);m.rotation.y=q.rotationY||0}for(const[k,m]of rings)if(!liveR.has(k)){scene.remove(m);m.geometry.dispose();rings.delete(k)}const liveL=new Set();for(const q of s.liftVolumes?.volumes||[]){liveL.add(q.id);let m=lifts.get(q.id);if(!m){m=new THREE.Mesh(new THREE.CylinderGeometry(q.radius,q.radius,q.height,8,1,true),liftMat);lifts.set(q.id,m);scene.add(m)}m.position.set(q.x,q.y+q.height/2,q.z)}for(const[k,m]of lifts)if(!liveL.has(k)){scene.remove(m);m.geometry.dispose();lifts.delete(k)}const b=s.body,offset=applyRigAnimation(bird,s.rig?.animation);bird.position.set(b.position.x+(offset.x||0),b.position.y+(offset.y||0),b.position.z+(offset.z||0));bird.rotation.set(b.rotation.pitch||0,b.rotation.yaw||0,b.rotation.roll||0,"YXZ");const cam=s.camera||{};if(cam.position){cameraPos.set(cam.position.x,cam.position.y,cam.position.z);camera.position.lerp(cameraPos,.16)}if(cam.lookAt){lookAt.set(cam.lookAt.x,cam.lookAt.y,cam.lookAt.z);camera.lookAt(lookAt)}const nextFov=cam.fov||65;if(Math.abs(camera.fov-nextFov)>.02){camera.fov+=(nextFov-camera.fov)*.12;camera.updateProjectionMatrix()}const weatherFog=s.weather?.fog||{},vol=s.volumetricLighting||{},fogColor=vol.fogColor||weatherFog.color||s.sky?.horizonColor||0xffdfb3,scattering=vol.scattering||{};terrainMat.uniforms.fogColor.value.set(fogColor);terrainMat.uniforms.fogStrength.value=Math.max(.18,scattering.intensity||.42);skyMat.uniforms.fogTint.value.set(fogColor);skyMat.uniforms.fogPower.value=Math.max(.12,scattering.intensity||.42);const sd=vol.sunDirection||s.sky?.sunDirection;if(sd){sun.position.set(b.position.x+sd.x*300,b.position.y+sd.y*300,b.position.z+sd.z*300);sun.target.position.set(b.position.x,b.position.y,b.position.z);sun.target.updateMatrixWorld();terrainMat.uniforms.sunDir.value.set(sd.x,sd.y,sd.z).normalize();skyMat.uniforms.sunDir.value.set(sd.x,sd.y,sd.z).normalize()}fog.color.set(fogColor);fog.density=weatherFog.density||s.sky?.hazeDensity||.00055;cross.classList.toggle("flash",(s.vfx?.boostFlash||0)>.2);const t=performance.now();if(t-lastHudAt>140){lastHudAt=t;const stats=s.world?.streamingStats||{},lod=stats.lodCounts||{},pose=s.rig?.animation?.pose?.mode||"rig";topHud.innerHTML=`Super Fly · ${s.challenge?.prompt||"Fly"}<br>Speed: ${Math.round(b.speed||0)} · Alt: ${Math.round(b.altitude||0)} · Pose: ${pose}<br>Patches: ${s.world?.patchCount??0} · N/M/F: ${lod.near??0}/${lod.mid??0}/${lod.far??0} · Fog: ${Math.round((fog.density||0)*100000)}`;}renderer.render(scene,camera)}function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/Math.max(1,innerHeight);camera.updateProjectionMatrix()}return{draw,renderer,resize}}
-async function boot(){try{const[THREE,Nexus,Aerial]=await Promise.all([import("https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js"),import(NEXUS_URL),import(KIT_URL)]);const engine=Nexus.createRealtimeGame({kits:Aerial.createGenericAerialAdventureKits(Nexus,{seed:new URLSearchParams(location.search).get("seed")||"super-fly",terrain:{heightScale:155,scale:.00145,waterLevel:-45,shoreline:-35,timberline:140,patchSize:900,sampleSegments:14,renderDistance:1,scatterDensity:.00002},world:{quality:"adaptive",preloadSeconds:4.5,forwardPreloadBias:.72,maxPatchBuildsPerTick:1,initialPatchBuilds:4,maxCachedPatches:76,detailNoiseScale:.018,macroNoiseScale:.0026,horizonMountainScale:.2,lodRings:[{id:"near",radius:1,patchSize:900,sampleSegments:14,collision:true,scatterDensity:.00002},{id:"mid",radius:2,patchSize:1800,sampleSegments:7,collision:false,scatterDensity:.000004},{id:"far",radius:2,patchSize:3600,sampleSegments:3,collision:false,scatterDensity:0}]},rig:{wingSpan:8.9,innerWingLength:3.8,outerWingLength:3.25,baseFlapRate:3.05,speedFlapRate:.012,maxAmplitude:.72,tipLag:.58,tipFold:.78,boostAmplitude:.3,climbAmplitude:.26,glideFlattening:.9},weather:{windSpeed:21,fogDensity:.00105,hazeDensity:.00072,cloudOpacity:.34,fogColor:'#ffdfb3'},lighting:{sunPower:1.22,anisotropy:.48,godRays:true,godRayExposure:.24,horizonBoost:.62},physics:{maxSpeed:145},checkpoints:{count:72,radius:18,density:2},liftVolumes:{count:42,lift:15.5,density:1},challenge:{targetCheckpoints:12}})});const view=createRenderer(THREE),keys=new Set();addEventListener("keydown",e=>{keys.add(e.code);if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code))e.preventDefault();if(e.code==="Backquote")console.log(window.GameHost.getState(),window.GameHost.getStreamingState())});addEventListener("keyup",e=>keys.delete(e.code));addEventListener("blur",()=>keys.clear());addEventListener("resize",()=>view.resize());window.GameHost={engine,renderer:view,getState:()=>engine.genericAerialRenderDescriptor?.getState?.(),getRawState:()=>engine.genericAerialRenderDescriptor?.getRawState?.(),getRigState:()=>engine.rigAnimationDescriptor?.getState?.(),getWeatherState:()=>engine.atmosphericWeather?.getState?.(),getLightingState:()=>engine.volumetricLighting?.getState?.(),getStreamingState:()=>engine.terrainStreamer?.getStats?.()??engine.genericWorldPatch?.getStreamingState?.(),setTerrainQuality:(tier)=>engine.terrainStreamer?.setQuality?.(tier),forceTerrainRebuild:()=>engine.terrainStreamer?.forceRebuild?.()};let last=performance.now();function frame(t){try{const d=Math.min(1/30,(t-last)/1000||1/60);last=t;engine.genericFlightInput.setInput({pitch:(keys.has("KeyW")||keys.has("ArrowUp")?1:0)-(keys.has("KeyS")||keys.has("ArrowDown")?1:0),bank:(keys.has("KeyA")||keys.has("ArrowLeft")?1:0)-(keys.has("KeyD")||keys.has("ArrowRight")?1:0),boost:keys.has("Space")});engine.tick(d);view.draw(engine.genericAerialRenderDescriptor.getState());requestAnimationFrame(frame)}catch(e){fatal(e)}}requestAnimationFrame(frame)}catch(e){fatal(e)}}boot();
+import { createCloudRenderer } from "./cloud-renderer.js";
+
+const NEXUS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@0.0.1/src/index.js";
+const KIT_URL = new URLSearchParams(location.search).get("kit") || "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@e98cc32194ea5fb092885ff8a2c629a05bb6de6f/protokits/aerial-flight-kits/index.js";
+const canvas = document.querySelector("#game");
+const topHud = document.querySelector("#top");
+const err = document.querySelector("#err");
+const cross = document.querySelector("#cross");
+
+function fatal(error) {
+  err.hidden = false;
+  err.textContent = String(error?.stack || error?.message || error);
+  topHud.textContent = "Runtime error — see panel";
+}
+
+function rgb(hex, fallback = [0.16, 0.32, 0.2]) {
+  const value = String(hex || "").replace("#", "");
+  if (value.length !== 6) return fallback;
+  return [parseInt(value.slice(0, 2), 16) / 255, parseInt(value.slice(2, 4), 16) / 255, parseInt(value.slice(4, 6), 16) / 255];
+}
+
+function makeBird(THREE) {
+  const root = new THREE.Group();
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf8f9fa, roughness: 0.62 });
+  const wingMat = new THREE.MeshStandardMaterial({ color: 0xe4e8ea, roughness: 0.58 });
+  const body = new THREE.ConeGeometry(1.2, 5.2, 7);
+  body.rotateX(Math.PI / 2);
+  root.add(new THREE.Mesh(body, bodyMat));
+  const head = new THREE.Mesh(new THREE.DodecahedronGeometry(0.82, 0), bodyMat);
+  head.position.set(0, 0.55, -2.8);
+  root.add(head);
+
+  function wing(side) {
+    const shoulder = new THREE.Group();
+    shoulder.position.set(0.72 * side, 0, -0.35);
+    const innerLength = 3.8;
+    const outerLength = 3.25;
+    const innerGeo = new THREE.BoxGeometry(innerLength, 0.07, 1.35);
+    innerGeo.translate(innerLength * 0.5 * side, 0, 0);
+    shoulder.add(new THREE.Mesh(innerGeo, wingMat));
+    const elbow = new THREE.Group();
+    elbow.position.set(innerLength * side, 0, 0);
+    const outerGeo = new THREE.BoxGeometry(outerLength, 0.055, 1.02);
+    outerGeo.translate(outerLength * 0.5 * side, 0, 0);
+    elbow.add(new THREE.Mesh(outerGeo, wingMat));
+    const tip = new THREE.Group();
+    tip.position.set(outerLength * side, 0, 0);
+    const tipGeo = new THREE.BoxGeometry(0.72, 0.04, 0.72);
+    tipGeo.translate(0.36 * side, 0, 0);
+    tip.add(new THREE.Mesh(tipGeo, wingMat));
+    elbow.add(tip);
+    shoulder.add(elbow);
+    root.add(shoulder);
+    return { shoulder, elbow, tip };
+  }
+
+  const left = wing(-1);
+  const right = wing(1);
+  root.userData.joints = {
+    leftShoulder: left.shoulder,
+    rightShoulder: right.shoulder,
+    leftElbow: left.elbow,
+    rightElbow: right.elbow,
+    leftTip: left.tip,
+    rightTip: right.tip
+  };
+  return root;
+}
+
+function applyRigAnimation(bird, animation = {}) {
+  const joints = bird.userData.joints || {};
+  for (const [id, descriptor] of Object.entries(animation.joints || {})) {
+    const joint = joints[id];
+    if (!joint) continue;
+    const rotation = descriptor.rotation || {};
+    joint.rotation.set(rotation.x || 0, rotation.y || 0, rotation.z || 0);
+  }
+  return animation.bodyOffset || { x: 0, y: 0, z: 0 };
+}
+
+function makePatchGeometry(THREE, patch) {
+  const segments = patch.segments ?? patch.sampleSegments ?? 8;
+  const count = (segments + 1) * (segments + 1);
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const indices = [];
+  const samples = patch.samples || [];
+  for (let index = 0; index < count; index += 1) {
+    const sample = samples[index] || { x: 0, y: 0, z: 0, biome: "forest" };
+    positions[index * 3] = sample.x;
+    positions[index * 3 + 1] = sample.y;
+    positions[index * 3 + 2] = sample.z;
+    const color = rgb(sample.biome === "alpine" ? "#8fa0a6" : sample.biome === "shore" ? "#d9ad6a" : sample.biome === "rock" ? "#6f7678" : "#1f4a29");
+    colors[index * 3] = color[0];
+    colors[index * 3 + 1] = color[1];
+    colors[index * 3 + 2] = color[2];
+  }
+  for (let z = 0; z < segments; z += 1) {
+    for (let x = 0; x < segments; x += 1) {
+      const a = z * (segments + 1) + x;
+      const b = a + 1;
+      const c = a + segments + 1;
+      const d = c + 1;
+      indices.push(a, c, b, b, c, d);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  geometry.computeBoundingSphere();
+  return geometry;
+}
+
+function createTerrainMaterial(THREE) {
+  return new THREE.ShaderMaterial({
+    vertexColors: true,
+    uniforms: {
+      sunDir: { value: new THREE.Vector3(0.2, 0.8, 0.35).normalize() },
+      fogColor: { value: new THREE.Color("#ffdfb3") },
+      fogStrength: { value: 0.42 }
+    },
+    vertexShader: `varying vec3 vc;varying vec3 wp;varying vec3 vn;void main(){vc=color;vec4 w=modelMatrix*vec4(position,1.0);wp=w.xyz;vn=normalize(normalMatrix*normal);gl_Position=projectionMatrix*viewMatrix*w;}`,
+    fragmentShader: `varying vec3 vc;varying vec3 wp;varying vec3 vn;uniform vec3 sunDir;uniform vec3 fogColor;uniform float fogStrength;float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);float a=h(i),b=h(i+vec2(1.,0.)),c=h(i+vec2(0.,1.)),d=h(i+vec2(1.,1.));return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);}void main(){float macro=n(wp.xz*.0025);float detail=n(wp.xz*.018+macro*2.0);float slope=1.0-max(vn.y,0.0);float light=.48+max(dot(normalize(vn),sunDir),0.0)*.52;float scatter=pow(max(dot(normalize(vn),sunDir),0.0),.55);vec3 band=vc*(.82+detail*.28)+vec3(macro*.06)+fogColor*scatter*.08*max(fogStrength,.1);band=mix(band,band*.62,slope*.34);float dist=length(wp.xz)*.000035;band=mix(band,fogColor,clamp(dist*fogStrength,0.0,.55));gl_FragColor=vec4(band*light,1.0);}`
+  });
+}
+
+function createRenderer(THREE) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });
+  renderer.setPixelRatio(1);
+  renderer.setSize(innerWidth, innerHeight, false);
+  renderer.shadowMap.enabled = false;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 12000);
+  const cameraPos = new THREE.Vector3();
+  const lookAt = new THREE.Vector3();
+  const hemi = new THREE.HemisphereLight(0xb3e5fc, 0xffdfb3, 0.55);
+  const sun = new THREE.DirectionalLight(0xfff8e7, 3.6);
+  sun.castShadow = false;
+  scene.add(hemi, sun, sun.target);
+
+  const fog = new THREE.FogExp2(0xffdfb3, 0.00055);
+  scene.fog = fog;
+
+  const skyMat = new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    depthWrite: false,
+    uniforms: {
+      topColor: { value: new THREE.Color("#42a5f5") },
+      bottomColor: { value: new THREE.Color("#ffdfb3") },
+      sunColor: { value: new THREE.Color("#fff8e1") },
+      sunDir: { value: new THREE.Vector3(0.1, 0.5, -0.4).normalize() },
+      fogTint: { value: new THREE.Color("#ffdfb3") },
+      fogPower: { value: 0.42 }
+    },
+    vertexShader: `varying vec3 v;void main(){vec4 w=modelMatrix*vec4(position,1.);v=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
+    fragmentShader: `varying vec3 v;uniform vec3 topColor,bottomColor,sunColor,sunDir,fogTint;uniform float fogPower;float wave(float x){return sin(x*5.1)*.5+sin(x*11.3)*.25+sin(x*19.7)*.12;}void main(){vec3 d=normalize(v);float h=max(0.,d.y);vec3 sky=mix(bottomColor,topColor,smoothstep(-.15,.75,h));float a=atan(d.x,d.z);float ridge=wave(a)+.42;float horizon=1.0-smoothstep(.015,.13,abs(d.y-ridge*.025));vec3 mountains=mix(vec3(.10,.15,.17),vec3(.35,.42,.44),smoothstep(.0,.08,d.y));sky=mix(sky,mountains,horizon*.42);float sd=max(0.,dot(d,sunDir));float fogGlow=pow(max(0.,dot(d,sunDir)),3.0)*fogPower;sky=mix(sky,fogTint,smoothstep(-.02,.18,d.y)*fogPower*.22);gl_FragColor=vec4(sky+sunColor*(pow(sd,80.)*.45+pow(sd,8.)*.3+smoothstep(.996,.998,sd)+fogGlow*.35),1.);}`
+  });
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(9000, 40, 18), skyMat));
+
+  const terrainMat = createTerrainMaterial(THREE);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.78, wireframe: true });
+  const liftMat = new THREE.MeshBasicMaterial({ color: 0x3dfa99, transparent: true, opacity: 0.07, wireframe: true, side: THREE.DoubleSide });
+  const bird = makeBird(THREE);
+  const cloudRenderer = createCloudRenderer(THREE, scene);
+  scene.add(bird);
+
+  const patches = new Map();
+  const rings = new Map();
+  const lifts = new Map();
+  let lastHudAt = 0;
+
+  function draw(state) {
+    if (!state?.body) return;
+    const livePatches = new Set();
+    for (const patch of state.world?.patches || []) {
+      const key = patch.id || patch.key;
+      const revision = patch.revision || `${key}:${patch.sampleSegments || 0}`;
+      livePatches.add(key);
+      let record = patches.get(key);
+      if (!record || record.revision !== revision) {
+        if (record) {
+          scene.remove(record.mesh);
+          record.mesh.geometry.dispose();
+        }
+        const mesh = new THREE.Mesh(makePatchGeometry(THREE, patch), terrainMat);
+        mesh.receiveShadow = false;
+        scene.add(mesh);
+        patches.set(key, { revision, mesh });
+      }
+    }
+    for (const [key, record] of patches) {
+      if (livePatches.has(key)) continue;
+      scene.remove(record.mesh);
+      record.mesh.geometry.dispose();
+      patches.delete(key);
+    }
+
+    const liveRings = new Set();
+    for (const ring of state.checkpoints?.volumes || []) {
+      if (ring.collected) continue;
+      liveRings.add(ring.id);
+      let mesh = rings.get(ring.id);
+      if (!mesh) {
+        mesh = new THREE.Mesh(new THREE.TorusGeometry(ring.radius, 1.1, 6, 16), ringMat);
+        rings.set(ring.id, mesh);
+        scene.add(mesh);
+      }
+      mesh.position.set(ring.x, ring.y, ring.z);
+      mesh.rotation.y = ring.rotationY || 0;
+    }
+    for (const [key, mesh] of rings) {
+      if (liveRings.has(key)) continue;
+      scene.remove(mesh);
+      mesh.geometry.dispose();
+      rings.delete(key);
+    }
+
+    const liveLifts = new Set();
+    for (const lift of state.liftVolumes?.volumes || []) {
+      liveLifts.add(lift.id);
+      let mesh = lifts.get(lift.id);
+      if (!mesh) {
+        mesh = new THREE.Mesh(new THREE.CylinderGeometry(lift.radius, lift.radius, lift.height, 8, 1, true), liftMat);
+        lifts.set(lift.id, mesh);
+        scene.add(mesh);
+      }
+      mesh.position.set(lift.x, lift.y + lift.height / 2, lift.z);
+    }
+    for (const [key, mesh] of lifts) {
+      if (liveLifts.has(key)) continue;
+      scene.remove(mesh);
+      mesh.geometry.dispose();
+      lifts.delete(key);
+    }
+
+    const body = state.body;
+    const offset = applyRigAnimation(bird, state.rig?.animation);
+    bird.position.set(body.position.x + (offset.x || 0), body.position.y + (offset.y || 0), body.position.z + (offset.z || 0));
+    bird.rotation.set(body.rotation.pitch || 0, body.rotation.yaw || 0, body.rotation.roll || 0, "YXZ");
+
+    const cam = state.camera || {};
+    if (cam.position) {
+      cameraPos.set(cam.position.x, cam.position.y, cam.position.z);
+      camera.position.lerp(cameraPos, 0.16);
+    }
+    if (cam.lookAt) {
+      lookAt.set(cam.lookAt.x, cam.lookAt.y, cam.lookAt.z);
+      camera.lookAt(lookAt);
+    }
+    const nextFov = cam.fov || 65;
+    if (Math.abs(camera.fov - nextFov) > 0.02) {
+      camera.fov += (nextFov - camera.fov) * 0.12;
+      camera.updateProjectionMatrix();
+    }
+
+    const weatherFog = state.weather?.fog || {};
+    const volumetric = state.volumetricLighting || {};
+    const fogColor = volumetric.fogColor || weatherFog.color || state.sky?.horizonColor || 0xffdfb3;
+    const scattering = volumetric.scattering || {};
+    terrainMat.uniforms.fogColor.value.set(fogColor);
+    terrainMat.uniforms.fogStrength.value = Math.max(0.18, scattering.intensity || 0.42);
+    skyMat.uniforms.fogTint.value.set(fogColor);
+    skyMat.uniforms.fogPower.value = Math.max(0.12, scattering.intensity || 0.42);
+    const sunDirection = volumetric.sunDirection || state.sky?.sunDirection;
+    if (sunDirection) {
+      sun.position.set(body.position.x + sunDirection.x * 300, body.position.y + sunDirection.y * 300, body.position.z + sunDirection.z * 300);
+      sun.target.position.set(body.position.x, body.position.y, body.position.z);
+      sun.target.updateMatrixWorld();
+      terrainMat.uniforms.sunDir.value.set(sunDirection.x, sunDirection.y, sunDirection.z).normalize();
+      skyMat.uniforms.sunDir.value.set(sunDirection.x, sunDirection.y, sunDirection.z).normalize();
+    }
+    fog.color.set(fogColor);
+    fog.density = weatherFog.density || state.sky?.hazeDensity || 0.00055;
+    cloudRenderer.update(state);
+
+    cross.classList.toggle("flash", (state.vfx?.boostFlash || 0) > 0.2);
+    const time = performance.now();
+    if (time - lastHudAt > 140) {
+      lastHudAt = time;
+      const stats = state.world?.streamingStats || {};
+      const lod = stats.lodCounts || {};
+      const pose = state.rig?.animation?.pose?.mode || "rig";
+      const cloudCount = state.weather?.cloudLayers?.length ?? 0;
+      topHud.innerHTML = `Super Fly · ${state.challenge?.prompt || "Fly"}<br>Speed: ${Math.round(body.speed || 0)} · Alt: ${Math.round(body.altitude || 0)} · Pose: ${pose}<br>Patches: ${state.world?.patchCount ?? 0} · N/M/F: ${lod.near ?? 0}/${lod.mid ?? 0}/${lod.far ?? 0} · Clouds: ${cloudCount}`;
+    }
+    renderer.render(scene, camera);
+  }
+
+  function resize() {
+    renderer.setSize(innerWidth, innerHeight, false);
+    camera.aspect = innerWidth / Math.max(1, innerHeight);
+    camera.updateProjectionMatrix();
+  }
+
+  return { draw, renderer, resize };
+}
+
+async function boot() {
+  try {
+    const [THREE, Nexus, Aerial] = await Promise.all([
+      import("https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js"),
+      import(NEXUS_URL),
+      import(KIT_URL)
+    ]);
+    const engine = Nexus.createRealtimeGame({
+      kits: Aerial.createGenericAerialAdventureKits(Nexus, {
+        seed: new URLSearchParams(location.search).get("seed") || "super-fly",
+        terrain: { heightScale: 155, scale: 0.00145, waterLevel: -45, shoreline: -35, timberline: 140, patchSize: 900, sampleSegments: 14, renderDistance: 1, scatterDensity: 0.00002 },
+        world: { quality: "adaptive", preloadSeconds: 4.5, forwardPreloadBias: 0.72, maxPatchBuildsPerTick: 1, initialPatchBuilds: 4, maxCachedPatches: 76, detailNoiseScale: 0.018, macroNoiseScale: 0.0026, horizonMountainScale: 0.2, lodRings: [{ id: "near", radius: 1, patchSize: 900, sampleSegments: 14, collision: true, scatterDensity: 0.00002 }, { id: "mid", radius: 2, patchSize: 1800, sampleSegments: 7, collision: false, scatterDensity: 0.000004 }, { id: "far", radius: 2, patchSize: 3600, sampleSegments: 3, collision: false, scatterDensity: 0 }] },
+        rig: { wingSpan: 8.9, innerWingLength: 3.8, outerWingLength: 3.25, baseFlapRate: 3.05, speedFlapRate: 0.012, maxAmplitude: 0.72, tipLag: 0.58, tipFold: 0.78, boostAmplitude: 0.3, climbAmplitude: 0.26, glideFlattening: 0.9 },
+        weather: { windSpeed: 21, fogDensity: 0.00105, hazeDensity: 0.00072, cloudOpacity: 0.48, cloudSpeed: 0.02, lowerCloudAltitude: 760, lowerCloudThickness: 210, highCloudAltitude: 1520, highCloudThickness: 330, fogColor: "#ffdfb3" },
+        lighting: { sunPower: 1.22, anisotropy: 0.48, godRays: true, godRayExposure: 0.24, horizonBoost: 0.62 },
+        physics: { maxSpeed: 145 },
+        checkpoints: { count: 72, radius: 18, density: 2 },
+        liftVolumes: { count: 42, lift: 15.5, density: 1 },
+        challenge: { targetCheckpoints: 12 }
+      })
+    });
+    const view = createRenderer(THREE);
+    const keys = new Set();
+    addEventListener("keydown", (event) => {
+      keys.add(event.code);
+      if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) event.preventDefault();
+      if (event.code === "Backquote") console.log(window.GameHost.getState(), window.GameHost.getStreamingState());
+    });
+    addEventListener("keyup", (event) => keys.delete(event.code));
+    addEventListener("blur", () => keys.clear());
+    addEventListener("resize", () => view.resize());
+    window.GameHost = {
+      engine,
+      renderer: view,
+      getState: () => engine.genericAerialRenderDescriptor?.getState?.(),
+      getRawState: () => engine.genericAerialRenderDescriptor?.getRawState?.(),
+      getRigState: () => engine.rigAnimationDescriptor?.getState?.(),
+      getWeatherState: () => engine.atmosphericWeather?.getState?.(),
+      getLightingState: () => engine.volumetricLighting?.getState?.(),
+      getStreamingState: () => engine.terrainStreamer?.getStats?.() ?? engine.genericWorldPatch?.getStreamingState?.(),
+      setTerrainQuality: (tier) => engine.terrainStreamer?.setQuality?.(tier),
+      forceTerrainRebuild: () => engine.terrainStreamer?.forceRebuild?.()
+    };
+    let last = performance.now();
+    function frame(time) {
+      try {
+        const delta = Math.min(1 / 30, (time - last) / 1000 || 1 / 60);
+        last = time;
+        engine.genericFlightInput.setInput({
+          pitch: (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0),
+          bank: (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0) - (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0),
+          boost: keys.has("Space")
+        });
+        engine.tick(delta);
+        view.draw(engine.genericAerialRenderDescriptor.getState());
+        requestAnimationFrame(frame);
+      } catch (error) {
+        fatal(error);
+      }
+    }
+    requestAnimationFrame(frame);
+  } catch (error) {
+    fatal(error);
+  }
+}
+
+boot();
 </script>
 </body>
 </html>
