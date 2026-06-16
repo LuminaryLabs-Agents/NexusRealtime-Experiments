@@ -27,7 +27,7 @@ function injectStyles(documentRef) {
       --green:#6bf0b8;
       --red:#ff8b7b;
       --card:clamp(280px,28vw,370px);
-      --featured:clamp(390px,43vw,580px);
+      --selected:clamp(390px,43vw,580px);
     }
     * { box-sizing:border-box; }
     html,body { margin:0; min-height:100%; }
@@ -103,7 +103,14 @@ function injectStyles(documentRef) {
       color:var(--muted);
       font-size:.88rem;
     }
+    .nexus-top-actions,
+    .nexus-gallery-controls {
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
     .nexus-repo-button,
+    .nexus-launch-button,
     .nexus-scroll-button {
       border:1px solid rgba(255,227,109,.56);
       border-radius:999px;
@@ -114,14 +121,23 @@ function injectStyles(documentRef) {
       text-transform:uppercase;
       text-decoration:none;
       box-shadow:0 14px 34px rgba(0,0,0,.22);
+      cursor:pointer;
     }
-    .nexus-repo-button {
+    .nexus-repo-button,
+    .nexus-launch-button {
       flex:0 0 auto;
       padding:10px 16px;
       font-size:.78rem;
     }
+    .nexus-launch-button {
+      color:#07110d;
+      background:linear-gradient(90deg,#ffe36d,#6bf0b8);
+      border-color:rgba(255,227,109,.86);
+    }
     .nexus-repo-button:hover,
     .nexus-repo-button:focus-visible,
+    .nexus-launch-button:hover,
+    .nexus-launch-button:focus-visible,
     .nexus-scroll-button:hover,
     .nexus-scroll-button:focus-visible {
       outline:none;
@@ -138,13 +154,12 @@ function injectStyles(documentRef) {
       padding:0 2px;
     }
     .nexus-count { color:var(--gold); font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
-    .nexus-gallery-controls { display:flex; align-items:center; gap:8px; }
+    .nexus-selected-title { color:rgba(244,247,248,.9); font-weight:800; }
     .nexus-scroll-button {
       width:42px;
       height:38px;
       display:grid;
       place-items:center;
-      cursor:pointer;
       font-size:1.05rem;
     }
     .nexus-scroll-button:disabled { opacity:.35; cursor:default; box-shadow:none; }
@@ -156,7 +171,7 @@ function injectStyles(documentRef) {
       gap:24px;
       overflow-x:auto;
       overflow-y:hidden;
-      padding:18px 2px 34px;
+      padding:18px max(12px,calc(50vw - var(--selected) / 2)) 34px;
       scroll-snap-type:x proximity;
       scroll-behavior:smooth;
       scrollbar-color:rgba(230,231,220,.66) rgba(255,255,255,.09);
@@ -173,46 +188,52 @@ function injectStyles(documentRef) {
       min-height:430px;
       display:flex;
       flex-direction:column;
-      scroll-snap-align:start;
+      scroll-snap-align:center;
       overflow:hidden;
       border:0;
       border-left:1px solid rgba(236,242,245,.22);
       border-right:1px solid rgba(236,242,245,.22);
       color:inherit;
+      text-align:left;
       text-decoration:none;
       background:linear-gradient(180deg,rgba(20,25,27,.76),rgba(4,6,7,.74));
       box-shadow:0 34px 95px rgba(0,0,0,.48),0 16px 34px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.06);
-      transform:translateY(0) scale(.98);
-      transition:transform 180ms ease,border-color 180ms ease,box-shadow 180ms ease,filter 180ms ease;
+      transform:translateY(0) scale(.96);
+      transition:flex-basis 220ms ease,width 220ms ease,transform 180ms ease,border-color 180ms ease,box-shadow 180ms ease,filter 180ms ease;
       backdrop-filter:blur(18px);
-      filter:saturate(.92) brightness(.9);
+      filter:saturate(.88) brightness(.84);
+      cursor:pointer;
+      user-select:none;
     }
-    .nexus-game-tile.is-featured {
-      flex-basis:var(--featured);
-      width:var(--featured);
+    .nexus-game-tile.is-selected {
+      flex-basis:var(--selected);
+      width:var(--selected);
       aspect-ratio:5/6;
-      border-left-color:rgba(255,227,109,.74);
-      border-right-color:rgba(255,227,109,.74);
+      border-left-color:rgba(255,227,109,.82);
+      border-right-color:rgba(255,227,109,.82);
       box-shadow:0 52px 140px rgba(0,0,0,.62),0 0 94px rgba(255,227,109,.16),inset 0 1px 0 rgba(255,255,255,.1);
-      transform:translateY(-4px) scale(1);
-      filter:saturate(1.04) brightness(1);
+      transform:translateY(-6px) scale(1);
+      filter:saturate(1.06) brightness(1.02);
+      z-index:2;
     }
     .nexus-game-tile:hover,
     .nexus-game-tile:focus-visible {
-      transform:translateY(-12px) scale(1.012);
+      transform:translateY(-12px) scale(1.01);
       border-left-color:rgba(255,227,109,.82);
       border-right-color:rgba(255,227,109,.82);
       outline:none;
       box-shadow:0 60px 150px rgba(0,0,0,.64),0 0 110px rgba(255,227,109,.13),inset 0 1px 0 rgba(255,255,255,.12);
       filter:saturate(1.08) brightness(1.04);
     }
+    .nexus-game-tile.is-selected:hover,
+    .nexus-game-tile.is-selected:focus-visible { transform:translateY(-12px) scale(1.012); }
     .nexus-game-art {
       flex:0 0 39%;
       position:relative;
       overflow:hidden;
       background:linear-gradient(135deg,#101315,#050606);
     }
-    .is-featured .nexus-game-art { flex-basis:43%; }
+    .is-selected .nexus-game-art { flex-basis:43%; }
     .nexus-game-art::after {
       position:absolute;
       inset:0;
@@ -233,16 +254,19 @@ function injectStyles(documentRef) {
     .nexus-tag.green { color:var(--green); border-color:rgba(105,240,184,.25); background:rgba(105,240,184,.06); }
     .nexus-tag.red { color:var(--red); border-color:rgba(255,139,123,.34); background:rgba(255,139,123,.07); }
     .nexus-game-tile h2 { margin:0; font-size:clamp(1.25rem,1.8vw,1.58rem); line-height:1.05; letter-spacing:-.04em; }
-    .nexus-game-tile.is-featured h2 { font-size:clamp(2rem,3.2vw,2.85rem); }
+    .nexus-game-tile.is-selected h2 { font-size:clamp(2rem,3.2vw,2.85rem); }
     .nexus-game-tile p { margin:0; color:var(--muted); line-height:1.5; flex:1; overflow:hidden; }
     .nexus-play { color:var(--gold); font-weight:950; letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; }
+    .nexus-game-tile.is-selected .nexus-play::before { content:"Selected · "; color:var(--green); }
     .nexus-noscript { position:relative; z-index:2; color:var(--text); padding:24px; }
     @media (max-width:760px) {
       .nexus-shell { width:min(100% - 20px,1680px); padding-top:12px; }
       .nexus-topbar { align-items:flex-start; flex-direction:column; }
-      .nexus-repo-button { width:100%; text-align:center; }
+      .nexus-top-actions { width:100%; flex-direction:column; align-items:stretch; }
+      .nexus-repo-button,.nexus-launch-button { width:100%; text-align:center; }
       .nexus-gallery-help { align-items:flex-start; flex-direction:column; }
-      .nexus-game-tile,.nexus-game-tile.is-featured { flex-basis:82vw; width:82vw; aspect-ratio:4/5.35; transform:translateY(0) scale(.98); }
+      .nexus-game-tile,.nexus-game-tile.is-selected { flex-basis:82vw; width:82vw; aspect-ratio:4/5.35; transform:translateY(0) scale(.98); }
+      .nexus-game-tile.is-selected h2 { font-size:2rem; }
     }
   `;
   documentRef.head.append(style);
@@ -253,10 +277,10 @@ function renderTag(tag) {
   return `<span class="nexus-tag ${tone}">${escapeHtml(tag.label)}</span>`;
 }
 
-function renderTile(game) {
-  const featured = game.featured ? " is-featured" : "";
+function renderTile(game, selectedId) {
+  const selected = game.id === selectedId ? " is-selected" : "";
   return `
-    <a class="nexus-game-tile${featured}" href="${escapeHtml(game.route)}" aria-label="${escapeHtml(`${game.playLabel} ${game.title}`)}" data-game-id="${escapeHtml(game.id)}">
+    <article class="nexus-game-tile${selected}" role="button" tabindex="0" aria-current="${game.id === selectedId ? "true" : "false"}" aria-label="Select ${escapeHtml(game.title)}" data-game-id="${escapeHtml(game.id)}">
       <div class="nexus-game-art ${escapeHtml(game.visual)}" aria-hidden="true"></div>
       <div class="nexus-game-info">
         <div class="nexus-tags">${game.tags.map(renderTag).join("")}</div>
@@ -264,34 +288,39 @@ function renderTile(game) {
         <p>${escapeHtml(game.description)}</p>
         <span class="nexus-play">${escapeHtml(game.playLabel)} →</span>
       </div>
-    </a>
+    </article>
   `;
 }
 
-function renderShell(root, documentRef) {
-  const featured = getFeaturedGame();
+function renderShell(root) {
+  const selected = getFeaturedGame();
   root.innerHTML = `
     <section class="nexus-shell" aria-label="NexusRealtime experiments arcade">
       <header class="nexus-topbar" aria-label="Experiments navigation">
         <div class="nexus-brand"><strong>${escapeHtml(galleryConfig.title)}</strong><span>${escapeHtml(galleryConfig.subtitle)}</span></div>
-        <a class="nexus-repo-button" href="${escapeHtml(galleryConfig.repoUrl)}">Open repo</a>
+        <div class="nexus-top-actions">
+          <a class="nexus-launch-button" href="${escapeHtml(selected?.route ?? "#")}" target="_blank" rel="noopener" data-launch-selected>Launch selected</a>
+          <a class="nexus-repo-button" href="${escapeHtml(galleryConfig.repoUrl)}">Open repo</a>
+        </div>
       </header>
       <section class="nexus-gallery-help" aria-label="Gallery controls">
-        <span>${escapeHtml(galleryConfig.hint)}</span>
+        <span>${escapeHtml(galleryConfig.hint)} <span class="nexus-selected-title"></span></span>
         <div class="nexus-gallery-controls">
           <button class="nexus-scroll-button" type="button" data-scroll="previous" aria-label="Previous experiment">‹</button>
           <span class="nexus-count" aria-live="polite">1 / ${games.length}</span>
           <button class="nexus-scroll-button" type="button" data-scroll="next" aria-label="Next experiment">›</button>
         </div>
       </section>
-      <section class="nexus-gallery-row" aria-label="Playable experiments" tabindex="0" data-featured="${escapeHtml(featured?.id ?? "")}">
-        ${games.map(renderTile).join("")}
+      <section class="nexus-gallery-row" aria-label="Playable experiments" tabindex="0">
+        ${games.map((game) => renderTile(game, selected?.id)).join("")}
       </section>
     </section>
   `;
   return {
     row: root.querySelector(".nexus-gallery-row"),
     count: root.querySelector(".nexus-count"),
+    selectedTitle: root.querySelector(".nexus-selected-title"),
+    launch: root.querySelector("[data-launch-selected]"),
     previous: root.querySelector('[data-scroll="previous"]'),
     next: root.querySelector('[data-scroll="next"]'),
     tiles: Array.from(root.querySelectorAll(".nexus-game-tile"))
@@ -313,33 +342,65 @@ function getNearestTile(row, tiles) {
   return nearest;
 }
 
+function selectedGameForTile(tile) {
+  return games.find((game) => game.id === tile?.dataset?.gameId) ?? games[0];
+}
+
+function centerTile(row, tile) {
+  if (!tile) return;
+  const left = tile.offsetLeft - row.clientWidth / 2 + tile.offsetWidth / 2;
+  row.scrollTo({ left, behavior: "smooth" });
+}
+
 function wireScrolling(parts) {
-  const { row, count, previous, next, tiles } = parts;
+  const { row, count, selectedTitle, launch, previous, next, tiles } = parts;
   let pointerDown = false;
   let startX = 0;
   let startScroll = 0;
   let dragged = false;
+  let selectedTile = tiles.find((tile) => tile.classList.contains("is-selected")) ?? tiles[0];
 
-  function updateControls() {
-    const nearest = getNearestTile(row, tiles);
-    const index = Math.max(0, tiles.indexOf(nearest));
+  function setSelected(tile, options = {}) {
+    if (!tile || tile === selectedTile && !options.force) return;
+    selectedTile = tile;
+    const selectedGame = selectedGameForTile(tile);
+    for (const candidate of tiles) {
+      const active = candidate === tile;
+      candidate.classList.toggle("is-selected", active);
+      candidate.setAttribute("aria-current", String(active));
+    }
+    const index = Math.max(0, tiles.indexOf(tile));
     count.textContent = `${index + 1} / ${tiles.length}`;
-    previous.disabled = row.scrollLeft <= 4;
-    next.disabled = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
+    selectedTitle.textContent = `Selected: ${selectedGame.title}`;
+    launch.href = selectedGame.route;
+    launch.setAttribute("aria-label", `Launch ${selectedGame.title} in a new tab`);
+    previous.disabled = index <= 0;
+    next.disabled = index >= tiles.length - 1;
+  }
+
+  function updateFromScroll() {
+    setSelected(getNearestTile(row, tiles));
+  }
+
+  function scrollToIndex(index) {
+    const clamped = Math.max(0, Math.min(tiles.length - 1, index));
+    const tile = tiles[clamped];
+    setSelected(tile);
+    centerTile(row, tile);
   }
 
   function scrollByCard(direction) {
-    const amount = Math.max(row.clientWidth * 0.72, tiles[0]?.clientWidth ?? 320);
-    row.scrollBy({ left: direction * amount, behavior: "smooth" });
+    const index = Math.max(0, tiles.indexOf(selectedTile));
+    scrollToIndex(index + direction);
   }
 
   previous.addEventListener("click", () => scrollByCard(-1));
   next.addEventListener("click", () => scrollByCard(1));
 
   row.addEventListener("wheel", (event) => {
-    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+    const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
     event.preventDefault();
-    row.scrollBy({ left: event.deltaY, behavior: "auto" });
+    row.scrollBy({ left: horizontal ? event.deltaX : event.deltaY, behavior: "auto" });
   }, { passive: false });
 
   row.addEventListener("pointerdown", (event) => {
@@ -363,16 +424,26 @@ function wireScrolling(parts) {
     pointerDown = false;
     row.classList.remove("is-dragging");
     row.releasePointerCapture?.(event.pointerId);
-    setTimeout(() => { dragged = false; }, 60);
+    setTimeout(() => { dragged = false; }, 80);
   }
 
   row.addEventListener("pointerup", releasePointer);
   row.addEventListener("pointercancel", releasePointer);
-  row.addEventListener("scroll", () => requestAnimationFrame(updateControls), { passive: true });
-  row.addEventListener("click", (event) => {
-    if (!dragged) return;
-    event.preventDefault();
-  }, true);
+  row.addEventListener("scroll", () => requestAnimationFrame(updateFromScroll), { passive: true });
+
+  for (const tile of tiles) {
+    tile.addEventListener("click", () => {
+      if (dragged) return;
+      setSelected(tile);
+      centerTile(row, tile);
+    });
+    tile.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      setSelected(tile);
+      centerTile(row, tile);
+    });
+  }
 
   globalThis.addEventListener("keydown", (event) => {
     if (event.defaultPrevented) return;
@@ -382,10 +453,14 @@ function wireScrolling(parts) {
     } else if (event.key === "ArrowLeft") {
       event.preventDefault();
       scrollByCard(-1);
+    } else if (event.key === "Enter" && document.activeElement === row) {
+      event.preventDefault();
+      launch.click();
     }
   });
 
-  updateControls();
+  setSelected(selectedTile, { force: true });
+  requestAnimationFrame(() => centerTile(row, selectedTile));
 }
 
 export function renderNexusExperimentsShell(options = {}) {
@@ -394,7 +469,7 @@ export function renderNexusExperimentsShell(options = {}) {
   if (!root) throw new Error("Nexus experiments shell needs a root element.");
   injectStyles(documentRef);
   startNexusGalleryShader({ document: documentRef });
-  const parts = renderShell(root, documentRef);
+  const parts = renderShell(root);
   wireScrolling(parts);
   return parts;
 }
