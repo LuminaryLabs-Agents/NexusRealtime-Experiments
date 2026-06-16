@@ -4,32 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Canonical NexusRealtime browser experiments composed from runtime kits and ProtoKits." />
-  <title>NexusRealtime Experiments Arcade</title>
+  <title>NexusRealtime Experiments</title>
   <style>
     :root { color-scheme: dark; --bg:#03070b; --panel:rgba(7,18,30,.84); --line:rgba(125,206,255,.24); --text:#eff8ff; --muted:#9fb6c8; --blue:#57c7ff; --gold:#ffe36d; --green:#3df0a1; --red:#ff806c; }
     * { box-sizing: border-box; }
-    body { margin:0; min-height:100vh; color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:radial-gradient(circle at 15% 12%, rgba(87,199,255,.18), transparent 28rem), radial-gradient(circle at 82% 22%, rgba(255,227,109,.14), transparent 24rem), radial-gradient(circle at 60% 82%, rgba(255,91,69,.16), transparent 30rem), linear-gradient(135deg,var(--bg),#071321 58%,#091a24); }
-    body::before { position:fixed; inset:0; content:""; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px); background-size:42px 42px; mask-image:linear-gradient(to bottom, black 0 55%, transparent 90%); }
+    html,body { margin:0; min-height:100%; }
+    body { color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:radial-gradient(circle at 15% 12%, rgba(87,199,255,.18), transparent 28rem), radial-gradient(circle at 82% 22%, rgba(255,227,109,.14), transparent 28rem), linear-gradient(135deg,var(--bg),#071321 58%,#091a24); }
+    body::before { position:fixed; inset:0; content:""; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px); background-size:42px 42px; mask-image:linear-gradient(to bottom, black 0 62%, transparent 92%); }
     a { color:inherit; }
-    .shell { width:min(1240px, calc(100% - 28px)); margin:0 auto; padding:22px 0 56px; position:relative; z-index:1; }
-    .topbar,.hero,.card,.info-panel { border:1px solid var(--line); background:linear-gradient(180deg,rgba(10,26,40,.92),rgba(6,16,24,.72)); box-shadow:0 24px 80px rgba(0,0,0,.36); }
-    .topbar { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:12px 14px; border-radius:18px; margin-bottom:12px; }
-    .brand strong { display:block; letter-spacing:-.02em; }
-    .brand span { display:block; color:var(--muted); font-size:.84rem; }
-    nav { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-    .tab,.mini-link { border:1px solid rgba(125,206,255,.18); border-radius:999px; padding:9px 12px; background:rgba(10,23,36,.64); font-weight:800; font-size:.78rem; letter-spacing:.04em; text-transform:uppercase; text-decoration:none; cursor:pointer; }
-    .tab[aria-pressed="true"],.tab:hover,.mini-link:hover { color:var(--gold); border-color:rgba(255,227,109,.62); }
-    .hero { border-radius:18px; padding:10px 16px; margin-bottom:18px; min-height:auto; display:flex; align-items:center; justify-content:center; }
-    .eyebrow { margin:0 0 14px; color:var(--gold); letter-spacing:.18em; text-transform:uppercase; font-size:.76rem; font-weight:900; }
-    h1 { margin:0; color:var(--gold); font-size:clamp(.95rem,2vw,1.28rem); line-height:1; letter-spacing:.22em; text-transform:uppercase; font-weight:900; text-align:center; }
-    .lead { margin:24px 0 0; max-width:850px; color:var(--muted); font-size:clamp(1.02rem,1.6vw,1.22rem); line-height:1.7; }
-    .section-head { display:flex; align-items:end; justify-content:space-between; gap:16px; margin:22px 0 14px; }
-    .section-head h2 { margin:0; font-size:clamp(1.55rem,3vw,2.45rem); letter-spacing:-.045em; }
-    .section-head p { margin:0; color:var(--muted); font-size:.92rem; text-align:right; }
-    .gallery { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
-    .card { min-height:320px; border-radius:24px; overflow:hidden; text-decoration:none; display:flex; flex-direction:column; transition:transform 180ms ease,border-color 180ms ease; }
-    .card:hover,.card:focus-visible { transform:translateY(-4px); border-color:rgba(255,227,109,.62); outline:none; }
-    .thumb { min-height:142px; border-bottom:1px solid rgba(255,255,255,.08); position:relative; overflow:hidden; background:linear-gradient(135deg,#0d1720,#111f2b); }
+    .shell { width:min(100% - 28px, 1680px); margin:0 auto; padding:22px 0 46px; position:relative; z-index:1; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 18px; border:1px solid var(--line); border-radius:22px; background:linear-gradient(180deg,rgba(10,26,40,.92),rgba(6,16,24,.72)); box-shadow:0 24px 80px rgba(0,0,0,.36); }
+    .brand strong { display:block; font-size:1.08rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); }
+    .brand span { display:block; margin-top:3px; color:var(--muted); font-size:.88rem; }
+    .repo-button { flex:0 0 auto; border:1px solid rgba(255,227,109,.58); border-radius:999px; padding:10px 16px; color:var(--gold); background:rgba(255,227,109,.06); font-size:.78rem; font-weight:950; letter-spacing:.08em; text-transform:uppercase; text-decoration:none; }
+    .repo-button:hover,.repo-button:focus-visible { outline:none; box-shadow:0 0 32px rgba(255,227,109,.18); border-color:rgba(255,227,109,.9); }
+    .gallery-wrap { margin-top:18px; }
+    .gallery-row { display:flex; gap:18px; overflow-x:auto; overflow-y:hidden; padding:4px 4px 22px; scroll-snap-type:x mandatory; scrollbar-color:rgba(255,227,109,.55) rgba(125,206,255,.12); }
+    .game-tile { flex:0 0 min(330px,82vw); min-height:390px; display:flex; flex-direction:column; scroll-snap-align:start; overflow:hidden; border:1px solid var(--line); border-radius:28px; color:inherit; text-decoration:none; background:linear-gradient(180deg,rgba(10,26,40,.92),rgba(6,16,24,.76)); box-shadow:0 18px 64px rgba(0,0,0,.32); transition:transform 180ms ease,border-color 180ms ease,box-shadow 180ms ease; }
+    .game-tile.featured { flex-basis:min(540px,90vw); min-height:430px; border-color:rgba(255,227,109,.55); box-shadow:0 24px 90px rgba(0,0,0,.42),0 0 80px rgba(255,227,109,.12); }
+    .game-tile:hover,.game-tile:focus-visible { transform:translateY(-5px); border-color:rgba(255,227,109,.72); outline:none; }
+    .thumb { min-height:158px; border-bottom:1px solid rgba(255,255,255,.08); position:relative; overflow:hidden; background:linear-gradient(135deg,#0d1720,#111f2b); }
+    .featured .thumb { min-height:205px; }
     .thumb::after { position:absolute; inset:0; content:""; background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px); background-size:28px 28px; opacity:.7; }
     .next::before,.fogline::before,.sora::before,.zombie::before,.hell::before { position:absolute; inset:0; content:""; }
     .next::before { background:radial-gradient(circle at 48% 28%,rgba(255,227,109,.9) 0 10px,transparent 12px),linear-gradient(135deg,#1b2440,#0a1220); }
@@ -37,55 +32,36 @@
     .sora::before { background:radial-gradient(circle at 70% 26%,rgba(255,227,109,.95) 0 13px,transparent 15px),radial-gradient(circle at 46% 58%,rgba(87,199,255,.52),transparent 8rem),linear-gradient(145deg,#0b2b52,#5ca7e8 52%,#0a1525); }
     .zombie::before { background:radial-gradient(circle at 45% 54%,rgba(61,240,161,.64),transparent 5rem),radial-gradient(circle at 70% 36%,rgba(255,91,69,.42),transparent 5rem),linear-gradient(135deg,#0d1c13,#33130f); }
     .hell::before { background:radial-gradient(circle at 48% 42%,rgba(255,227,109,.92) 0 8px,transparent 9px),radial-gradient(circle at 42% 48%,rgba(239,68,68,.76) 0 30px,transparent 31px),radial-gradient(circle at 72% 36%,rgba(87,199,255,.28),transparent 5rem),linear-gradient(135deg,#180606,#08121d); }
-    .body { padding:20px; display:flex; flex-direction:column; gap:14px; flex:1; }
+    .body { padding:20px; display:flex; flex-direction:column; gap:13px; flex:1; }
     .meta { display:flex; flex-wrap:wrap; gap:7px; }
     .tag { border:1px solid rgba(87,199,255,.22); border-radius:999px; padding:6px 9px; color:var(--blue); background:rgba(87,199,255,.06); font-size:.72rem; font-weight:900; letter-spacing:.03em; text-transform:uppercase; }
     .tag.gold { color:var(--gold); border-color:rgba(255,227,109,.3); background:rgba(255,227,109,.06); }
     .tag.green { color:var(--green); border-color:rgba(61,240,161,.25); background:rgba(61,240,161,.06); }
     .tag.red { color:var(--red); border-color:rgba(255,91,69,.32); background:rgba(255,91,69,.07); }
-    .card h3 { margin:0; font-size:1.32rem; line-height:1.1; letter-spacing:-.035em; }
-    .card p { margin:0; color:var(--muted); line-height:1.55; flex:1; }
+    .game-tile h2 { margin:0; font-size:1.42rem; line-height:1.05; letter-spacing:-.04em; }
+    .featured h2 { font-size:2rem; }
+    .game-tile p { margin:0; color:var(--muted); line-height:1.55; flex:1; }
     .play { color:var(--gold); font-weight:950; letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; }
-    .panel-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
-    .info-panel { border-radius:24px; padding:22px; color:var(--muted); line-height:1.6; }
-    .info-panel h3 { color:var(--text); margin:0 0 8px; }
-    .info-panel p { margin:0; }
-    footer { margin-top:24px; color:rgba(234,246,255,.58); font-size:.9rem; text-align:center; }
-    [hidden] { display:none !important; }
-    @media (max-width:980px) { .gallery { grid-template-columns:repeat(2,minmax(0,1fr)); } .panel-row { grid-template-columns:1fr; } }
-    @media (max-width:680px) { .shell { width:min(100% - 20px,1240px); padding-top:12px; } .topbar,.section-head { align-items:start; flex-direction:column; } nav { justify-content:start; } .gallery { grid-template-columns:1fr; } .section-head p { text-align:left; } }
+    footer { margin-top:16px; color:rgba(234,246,255,.58); font-size:.86rem; text-align:center; }
+    @media (max-width:680px) { .shell { width:min(100% - 20px,1680px); padding-top:12px; } .topbar { align-items:flex-start; flex-direction:column; } .repo-button { width:100%; text-align:center; } .game-tile,.game-tile.featured { flex-basis:86vw; } }
   </style>
 </head>
 <body>
   <main class="shell">
     <header class="topbar" aria-label="Arcade navigation">
-      <div class="brand"><strong>NexusRealtime Arcade</strong><span>One canonical high-fidelity route per experiment.</span></div>
-      <nav aria-label="Game filters">
-        <button class="tab" type="button" data-filter="all" aria-pressed="true">All</button>
-        <button class="tab" type="button" data-filter="experiment">Experiments</button>
-        <button class="tab" type="button" data-filter="game">Games</button>
-        <a class="mini-link" href="https://github.com/LuminaryLabs-Agents/NexusRealtime-Experiments">Repo</a>
-      </nav>
+      <div class="brand"><strong>Experiments</strong><span>NexusRealtime playable routes</span></div>
+      <a class="repo-button" href="https://github.com/LuminaryLabs-Agents/NexusRealtime-Experiments">Open repo</a>
     </header>
-    <section class="hero" aria-labelledby="title">
-      <h1 id="title">Experiments</h1>
+    <section class="gallery-wrap" aria-label="Playable one-row gallery">
+      <div class="gallery-row">
+        <a class="game-tile featured" href="./experiments/fogline-relay/" aria-label="Play Fogline Relay"><div class="thumb fogline" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Featured</span><span class="tag green">Domain cutover</span><span class="tag">Fog</span></div><h2>Fogline Relay</h2><p>First-person survey-pressure loop for scan targets, fog zones, timed pressure, hazard state, and renderer-only visual buckets.</p><span class="play">Play experiment →</span></div></a>
+        <a class="game-tile" href="./experiments/next-ledge/" aria-label="Play Next Ledge"><div class="thumb next" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Climb</span><span class="tag green">Route</span><span class="tag">ProtoKit</span></div><h2>Next Ledge</h2><p>Cinematic grapple-climb validation with action input, ledge routes, swing pressure, feedback descriptors, and a Three.js host.</p><span class="play">Play experiment →</span></div></a>
+        <a class="game-tile" href="./experiments/sora-the-infinite/" aria-label="Play Sora The Infinite"><div class="thumb sora" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Aerial</span><span class="tag green">World</span><span class="tag">Three.js</span></div><h2>Sora The Infinite</h2><p>Flight-domain validation for terrain patches, updraft volumes, checkpoints, render descriptors, and aerial camera state.</p><span class="play">Play experiment →</span></div></a>
+        <a class="game-tile" href="./experiments/zombie-orchard/" aria-label="Play Zombie Orchard"><div class="thumb zombie" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag">Survival</span><span class="tag red">Horde</span><span class="tag green">Canvas</span></div><h2>Zombie Orchard</h2><p>Kit-composed survival slice for rounds, horde pressure, pickups, weapons, orchard content, and debug-friendly runtime state.</p><span class="play">Play experiment →</span></div></a>
+        <a class="game-tile" href="./games/rogue-lite-hellscape-siege/" aria-label="Play Rogue-Lite Hellscape Siege"><div class="thumb hell" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Unified</span><span class="tag green">Base name</span><span class="tag red">Defense</span></div><h2>Rogue-Lite Hellscape Siege</h2><p>Unified high-fidelity base route for the kit-shaped realm, inventory, harvesting, building, wave-defense, FX, and renderer-only presentation loop.</p><span class="play">Play game →</span></div></a>
+      </div>
     </section>
-    <section class="section-head" aria-labelledby="games-title"><div><p class="eyebrow">Playable base routes</p><h2 id="games-title">Experiments and games</h2></div><p>Cards link only to canonical folders under <code>/experiments</code> and <code>/games</code>.</p></section>
-    <section class="gallery" aria-label="Playable game gallery" id="gallery">
-      <a class="card" data-kind="experiment" href="./experiments/next-ledge/" aria-label="Play Next Ledge"><div class="thumb next" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Climb</span><span class="tag green">Route</span><span class="tag">ProtoKit</span></div><h3>Next Ledge</h3><p>Cinematic grapple-climb validation with action input, ledge routes, swing pressure, feedback descriptors, and a Three.js host.</p><span class="play">Play experiment →</span></div></a>
-      <a class="card" data-kind="experiment" href="./experiments/fogline-relay/" aria-label="Play Fogline Relay"><div class="thumb fogline" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Featured</span><span class="tag green">Domain cutover</span><span class="tag">Fog</span></div><h3>Fogline Relay</h3><p>First-person survey-pressure loop for scan targets, fog zones, timed pressure, hazard state, and renderer-only visual buckets.</p><span class="play">Play experiment →</span></div></a>
-      <a class="card" data-kind="experiment" href="./experiments/sora-the-infinite/" aria-label="Play Sora The Infinite"><div class="thumb sora" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Aerial</span><span class="tag green">World</span><span class="tag">Three.js</span></div><h3>Sora The Infinite</h3><p>Flight-domain validation for terrain patches, updraft volumes, checkpoints, render descriptors, and aerial camera state.</p><span class="play">Play experiment →</span></div></a>
-      <a class="card" data-kind="experiment" href="./experiments/zombie-orchard/" aria-label="Play Zombie Orchard"><div class="thumb zombie" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag">Survival</span><span class="tag red">Horde</span><span class="tag green">Canvas</span></div><h3>Zombie Orchard</h3><p>Kit-composed survival slice for rounds, horde pressure, pickups, weapons, orchard content, and debug-friendly runtime state.</p><span class="play">Play experiment →</span></div></a>
-      <a class="card" data-kind="game" href="./games/rogue-lite-hellscape-siege/" aria-label="Play Rogue-Lite Hellscape Siege"><div class="thumb hell" aria-hidden="true"></div><div class="body"><div class="meta"><span class="tag gold">Unified</span><span class="tag green">Base name</span><span class="tag red">Defense</span></div><h3>Rogue-Lite Hellscape Siege</h3><p>Unified high-fidelity base route for the kit-shaped realm, inventory, harvesting, building, wave-defense, FX, and renderer-only presentation loop.</p><span class="play">Play game →</span></div></a>
-    </section>
-    <section class="panel-row" aria-label="Arcade notes"><article class="info-panel"><h3>Canonical route rule</h3><p>Do not add V1/V2 gallery routes. Fold successful variants back into the base game folder.</p></article><article class="info-panel"><h3>Cutover target</h3><p>Each game should compose reusable domain ProtoKits, keep game-specific mapping in bridge/preset code, and expose a standard GameHost/debug snapshot.</p></article></section>
-    <footer>Deployed from <code>main</code> with GitHub Pages. Static arcade, no build step required.</footer>
+    <footer>One row gallery · one featured route · no filters · no V1/V2 routes.</footer>
   </main>
-  <script>
-    const tabs = Array.from(document.querySelectorAll(".tab"));
-    const cards = Array.from(document.querySelectorAll(".card"));
-    function applyFilter(filter) { for (const tab of tabs) tab.setAttribute("aria-pressed", String(tab.dataset.filter === filter)); for (const card of cards) { const kinds = String(card.dataset.kind || "").split(/\s+/); card.hidden = filter !== "all" && !kinds.includes(filter); } }
-    for (const tab of tabs) tab.addEventListener("click", () => applyFilter(tab.dataset.filter || "all"));
-  </script>
 </body>
 </html>
