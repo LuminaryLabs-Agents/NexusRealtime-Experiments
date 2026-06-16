@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   NexusRealtimeLoader,
   createNexusRealtimeBootTracker,
@@ -46,5 +47,17 @@ assert.deepEqual(calls, ["nexus:mock", "game:mock"], "loader should import runti
 assert.ok(host.engine, "loader should return a GameHost-like host");
 assert.equal(typeof host.getBootState, "function", "host should expose boot state");
 assert.equal(NexusRealtimeLoader.loadExperiment, loadNexusRealtimeExperiment, "namespace export should expose loader");
+
+for (const route of [
+  "experiments/next-ledge/index.html",
+  "experiments/fogline-relay/index.html",
+  "experiments/sora-the-infinite/index.html",
+  "experiments/zombie-orchard/index.html",
+  "games/rogue-lite-hellscape-siege/index.html"
+]) {
+  const html = readFileSync(route, "utf8");
+  assert.ok(html.includes("nexus-realtime-page-loader.js"), `${route} should load Nexus Realtime Loader before its game script`);
+  assert.ok(html.includes("attachNexusRealtimePageLoader"), `${route} should attach Nexus Realtime Loader`);
+}
 
 console.log("Nexus Realtime Loader smoke passed.");
