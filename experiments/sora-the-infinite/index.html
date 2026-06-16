@@ -28,7 +28,7 @@
     import { SORA_BIRD_SCALE } from "./bird-scale.js";
 
     const NEXUS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@main/src/index.js";
-    const KIT_URL = new URLSearchParams(location.search).get("kit") || "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@main/protokits/aerial-flight-kits/index.js";
+    const KIT_URL = new URLSearchParams(location.search).get("kit") || "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@e873f1a4397fec58c2a47451e7e1f51cf4e170d2/protokits/aerial-flight-kits/index.js";
     const canvas = document.querySelector("#game");
     const topHud = document.querySelector("#top");
     const err = document.querySelector("#err");
@@ -43,6 +43,58 @@
     function rgb(hex, fallback = [0.16, 0.32, 0.2]) {
       const s = String(hex || "").replace("#", "");
       return s.length === 6 ? [parseInt(s.slice(0,2),16)/255, parseInt(s.slice(2,4),16)/255, parseInt(s.slice(4,6),16)/255] : fallback;
+    }
+
+    function makeCanvasTexture(T, painter) {
+      const size = 128;
+      const textureCanvas = document.createElement("canvas");
+      textureCanvas.width = size;
+      textureCanvas.height = size;
+      const ctx = textureCanvas.getContext("2d");
+      painter(ctx, size);
+      const texture = new T.CanvasTexture(textureCanvas);
+      texture.wrapS = T.RepeatWrapping;
+      texture.wrapT = T.RepeatWrapping;
+      texture.repeat.set(8, 8);
+      texture.anisotropy = 4;
+      texture.needsUpdate = true;
+      return texture;
+    }
+
+    function createTerrainPbrMaterial(T) {
+      const colorMap = makeCanvasTexture(T, (ctx, size) => {
+        const base = ctx.createLinearGradient(0, 0, size, size);
+        base.addColorStop(0, "#25452c");
+        base.addColorStop(0.5, "#3f5e32");
+        base.addColorStop(1, "#6c705f");
+        ctx.fillStyle = base;
+        ctx.fillRect(0, 0, size, size);
+        for (let i = 0; i < 1800; i++) {
+          const v = 70 + Math.random() * 70;
+          ctx.fillStyle = `rgba(${v},${v * 1.08},${v * 0.78},${0.035 + Math.random() * 0.05})`;
+          ctx.fillRect(Math.random() * size, Math.random() * size, 1 + Math.random() * 3, 1 + Math.random() * 3);
+        }
+      });
+      const roughnessMap = makeCanvasTexture(T, (ctx, size) => {
+        ctx.fillStyle = "#d0d0d0";
+        ctx.fillRect(0, 0, size, size);
+        for (let i = 0; i < 1500; i++) {
+          const v = 128 + Math.random() * 95;
+          ctx.fillStyle = `rgb(${v},${v},${v})`;
+          ctx.fillRect(Math.random() * size, Math.random() * size, 1, 1);
+        }
+      });
+      const normalMap = makeCanvasTexture(T, (ctx, size) => {
+        ctx.fillStyle = "#8080ff";
+        ctx.fillRect(0, 0, size, size);
+        for (let i = 0; i < 1800; i++) {
+          const r = 112 + Math.random() * 42;
+          const g = 112 + Math.random() * 42;
+          ctx.fillStyle = `rgb(${r},${g},255)`;
+          ctx.fillRect(Math.random() * size, Math.random() * size, 1 + Math.random() * 2, 1 + Math.random() * 2);
+        }
+      });
+      return new T.MeshStandardMaterial({ vertexColors: true, map: colorMap, roughnessMap, normalMap, normalScale: new T.Vector2(0.18, 0.18), roughness: 0.9, metalness: 0.015, envMapIntensity: 0.78 });
     }
 
     function makeBird(T, scale = SORA_BIRD_SCALE) {
@@ -105,11 +157,14 @@
       const count = (seg + 1) * (seg + 1);
       const pos = new Float32Array(count * 3);
       const col = new Float32Array(count * 3);
+      const uv = new Float32Array(count * 2);
       const idx = [];
       const samples = p.samples || [];
       for (let i = 0; i < count; i++) {
         const v = samples[i] || { x: 0, y: 0, z: 0, biome: "forest" };
         pos[i*3] = v.x; pos[i*3+1] = v.y; pos[i*3+2] = v.z;
+        const xi = i % (seg + 1), zi = Math.floor(i / (seg + 1));
+        uv[i*2] = xi / seg; uv[i*2+1] = zi / seg;
         const c = rgb(v.biome === "alpine" ? "#8fa0a6" : v.biome === "shore" ? "#d9ad6a" : v.biome === "rock" ? "#6f7678" : "#1f4a29");
         col[i*3] = c[0]; col[i*3+1] = c[1]; col[i*3+2] = c[2];
       }
@@ -120,25 +175,26 @@
       const g = new T.BufferGeometry();
       g.setAttribute("position", new T.BufferAttribute(pos, 3));
       g.setAttribute("color", new T.BufferAttribute(col, 3));
+      g.setAttribute("uv", new T.BufferAttribute(uv, 2));
       g.setIndex(idx); g.computeVertexNormals(); g.computeBoundingSphere();
       return g;
     }
 
     function createRenderer(T) {
-      const renderer = new T.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
-      renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
+      const renderer = new T.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });
+      renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.25));
       renderer.setSize(innerWidth, innerHeight, false);
       renderer.toneMapping = T.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.05;
+      renderer.toneMappingExposure = 1.08;
       const scene = new T.Scene();
-      scene.fog = new T.FogExp2(0xffdfb3, 0.00055);
+      scene.fog = new T.FogExp2(0xffd4a3, 0.0011);
       const camera = new T.PerspectiveCamera(65, innerWidth / innerHeight, 0.03, 12000);
-      const hemi = new T.HemisphereLight(0xb3e5fc, 0xffdfb3, 0.65);
-      const sun = new T.DirectionalLight(0xfff8e7, 3.4);
+      const hemi = new T.HemisphereLight(0xb3e5fc, 0xffc58d, 0.72);
+      const sun = new T.DirectionalLight(0xffc47a, 4.4);
       scene.add(hemi, sun, sun.target);
-      const skyMat = new T.ShaderMaterial({ side: T.BackSide, depthWrite: false, uniforms: { topColor: { value: new T.Color("#42a5f5") }, bottomColor: { value: new T.Color("#ffdfb3") } }, vertexShader: `varying vec3 v;void main(){v=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(v,1.);}`, fragmentShader: `varying vec3 v;uniform vec3 topColor,bottomColor;void main(){vec3 d=normalize(v);float h=max(0.,d.y);vec3 col=mix(bottomColor,topColor,smoothstep(-.1,.9,h));float sun=pow(max(0.,dot(d,normalize(vec3(.25,.55,-.35)))),32.);gl_FragColor=vec4(col+vec3(1.,.86,.45)*sun*.8,1.);}` });
+      const skyMat = new T.ShaderMaterial({ side: T.BackSide, depthWrite: false, uniforms: { topColor: { value: new T.Color("#315d8f") }, bottomColor: { value: new T.Color("#ff9e64") }, sunColor: { value: new T.Color("#ffd18a") }, sunDir: { value: new T.Vector3(.25,.55,-.35).normalize() }, fogPower: { value: 0.9 } }, vertexShader: `varying vec3 v;void main(){v=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(v,1.);}`, fragmentShader: `varying vec3 v;uniform vec3 topColor,bottomColor,sunColor,sunDir;uniform float fogPower;void main(){vec3 d=normalize(v);float h=max(0.,d.y);vec3 col=mix(bottomColor,topColor,smoothstep(-.1,.9,h));float sun=pow(max(0.,dot(d,normalize(sunDir))),18.);float low=smoothstep(-.05,.18,d.y);col=mix(col,bottomColor,low*fogPower*.18);gl_FragColor=vec4(col+sunColor*sun*(.55+fogPower*.38),1.);}` });
       scene.add(new T.Mesh(new T.SphereGeometry(9000, 40, 18), skyMat));
-      const terrainMat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0.02 });
+      const terrainMat = createTerrainPbrMaterial(T);
       const ringMat = new T.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.78, wireframe: true });
       const liftMat = new T.MeshBasicMaterial({ color: 0x3dfa99, transparent: true, opacity: 0.07, wireframe: true, side: T.DoubleSide });
       const bird = makeBird(T, SORA_BIRD_SCALE);
@@ -185,19 +241,27 @@
         if (cam.position) camera.position.lerp(new T.Vector3(cam.position.x, cam.position.y, cam.position.z), 0.18);
         if (cam.lookAt) camera.lookAt(cam.lookAt.x, cam.lookAt.y, cam.lookAt.z);
         if (cam.fov && Math.abs(camera.fov - cam.fov) > 0.02) { camera.fov += (cam.fov - camera.fov) * 0.12; camera.updateProjectionMatrix(); }
-        const sky = s.sky || {};
-        skyMat.uniforms.topColor.value.set(sky.topColor || "#42a5f5");
-        skyMat.uniforms.bottomColor.value.set(sky.horizonColor || "#ffdfb3");
-        hemi.color.set(sky.ambientColor || 0xb3e5fc); hemi.intensity = sky.ambientIntensity ?? 0.6;
-        sun.color.set(sky.sunColor || 0xfff8e7); sun.intensity = sky.sunIntensity ?? 3.4;
-        const sd = sky.sunDirection || { x: 0.25, y: 0.55, z: -0.35 };
+        const sky = s.sky || {}, weather = s.weather || {}, fog = weather.fog || {}, vol = s.volumetricLighting || {}, morning = weather.morning || {}, scat = vol.scattering || {};
+        const fogColor = vol.fogColor || fog.color || sky.horizonColor || "#ffd4a3";
+        skyMat.uniforms.topColor.value.set(sky.topColor || "#315d8f");
+        skyMat.uniforms.bottomColor.value.set(sky.horizonColor || "#ff9e64");
+        skyMat.uniforms.sunColor.value.set(vol.sunColor || sky.sunColor || "#ffd18a");
+        skyMat.uniforms.fogPower.value = Math.max(0.45, scat.intensity || 0.9);
+        hemi.color.set(sky.ambientColor || 0xb3e5fc); hemi.intensity = sky.ambientIntensity ?? 0.72;
+        sun.color.set(vol.sunColor || sky.sunColor || 0xffc47a); sun.intensity = sky.sunIntensity ?? 4.4;
+        terrainMat.roughness = Math.max(0.66, 0.9 - (morning.dew || 0) * 0.22);
+        terrainMat.envMapIntensity = 0.78 + (morning.sunrise || 0) * 0.45;
+        scene.fog.color.set(fogColor);
+        scene.fog.density = Math.max(fog.density || 0, sky.hazeDensity || 0.00105);
+        const sd = vol.sunDirection || sky.sunDirection || { x: 0.25, y: 0.55, z: -0.35 };
         sun.position.set(b.position.x + sd.x * 300, b.position.y + sd.y * 300, b.position.z + sd.z * 300);
         sun.target.position.set(b.position.x, b.position.y, b.position.z); sun.target.updateMatrixWorld();
+        skyMat.uniforms.sunDir.value.set(sd.x, sd.y, sd.z).normalize();
         cross.classList.toggle("flash", (s.vfx?.boostFlash || 0) > 0.2);
         const t = performance.now();
         if (t - lastHudAt > 160) {
           lastHudAt = t;
-          topHud.innerHTML = `Sora The Infinite · ${(s.challenge?.prompt || "Fly")}<br>Bird: ${SORA_BIRD_SCALE.bodyLengthM}m body · ${SORA_BIRD_SCALE.wingspanM}m wingspan<br>Speed: ${Math.round(b.speed || 0)} · Alt: ${Math.round(b.altitude || 0)} · Rings: ${s.challenge?.checkpoints ?? 0}/${s.challenge?.targetCheckpoints ?? 12}`;
+          topHud.innerHTML = `Sora The Infinite · ${(s.challenge?.prompt || "Fly")}<br>Sky: ${sky.cycle?.label || "sunrise"} · Fog: ${Math.round((scene.fog.density || 0) * 100000)} · PBR terrain<br>Speed: ${Math.round(b.speed || 0)} · Alt: ${Math.round(b.altitude || 0)} · Rings: ${s.challenge?.checkpoints ?? 0}/${s.challenge?.targetCheckpoints ?? 12}`;
         }
         renderer.render(scene, camera);
       }
@@ -219,7 +283,9 @@
           liftVolumes: { count: 22, range: 1700, radius: 16, height: 95, lift: 6.5 },
           world: { renderDistance: 1, patchSize: 300, sampleSegments: 24, scatterDensity: 0.000035 },
           terrain: { renderDistance: 1, patchSize: 300, sampleSegments: 24, heightScale: 68, waterLevel: -35, timberline: 80 },
-          sky: { dayNightCycle: true, dayLengthSeconds: 600 }
+          sky: { dayNightCycle: true, dayLengthSeconds: 600, startOffset: 0.255, twilightHorizonColor: "#ff9e64", dayHorizonColor: "#ffdfb3", sunriseBoost: 0.7, sunriseHazeBoost: 0.00085 },
+          weather: { fogDensity: 0.00135, hazeDensity: 0.00105, sunriseFogBoost: 1.45, sunriseFogColor: "#ffd4a3", groundMistStrength: 0.92, dewStrength: 0.62, cloudOpacity: 0.44, cloudSpeed: 0.018 },
+          lighting: { sunPower: 1.34, sunriseSunPowerBoost: 0.68, sunriseSunColor: "#ffd18a", anisotropy: 0.54, horizonBoost: 0.72, godRays: true, godRayExposure: 0.32 }
         });
         engine.genericAerialBody?.reset?.({ altitude: 80, speed: 24 });
         const renderer = createRenderer(THREE);
@@ -227,7 +293,7 @@
         addEventListener("keydown", (e) => { keys.add(e.key.toLowerCase()); if (e.code === "Space") e.preventDefault(); if (e.key.toLowerCase() === "r") engine.genericAerialBody?.reset?.({ altitude: 80, speed: 24 }); });
         addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
         addEventListener("blur", () => keys.clear());
-        window.GameHost = { engine, renderer, birdScale: SORA_BIRD_SCALE, getState: () => engine.genericAerialBody.getState() };
+        window.GameHost = { engine, renderer, birdScale: SORA_BIRD_SCALE, getState: () => engine.genericAerialBody.getState(), getSkyCycle: () => engine.skyCycle?.getState?.(), getWeather: () => engine.atmosphericWeather?.getState?.(), getLighting: () => engine.volumetricLighting?.getState?.() };
         let last = performance.now();
         function frame(now) {
           const dt = Math.min(1 / 30, (now - last) / 1000 || 1 / 60); last = now;
