@@ -1,1 +1,250 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Super Fly</title><style>html,body{margin:0;height:100%;overflow:hidden;background:#07111d;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}main,canvas{position:fixed;inset:0;width:100vw;height:100vh}canvas{display:block}#hud{position:fixed;inset:0;pointer-events:none}#top{position:fixed;left:14px;top:12px;padding:8px 10px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(2,8,18,.48);font-size:12px;line-height:1.35;backdrop-filter:blur(8px)}#bottom{position:fixed;left:14px;bottom:12px;padding:7px 9px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(2,8,18,.34);font-size:11px;opacity:.86}#cross{position:fixed;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border:2px solid rgba(255,255,255,.48);border-radius:50%;box-sizing:border-box;transition:.14s}#cross.flash{transform:scale(1.8);border-color:white}#err{position:fixed;left:16px;right:16px;bottom:16px;white-space:pre-wrap;background:rgba(32,5,4,.93);color:#fff0e8;border:1px solid rgba(255,150,100,.55);border-radius:12px;padding:12px;font:12px/1.4 ui-monospace,Menlo,monospace}#err[hidden]{display:none}</style></head><body><main><canvas id="game" role="application" aria-label="Super Fly"></canvas><aside id="hud"><header id="top">Booting Super Fly…</header><footer id="bottom">W/S pitch · A/D bank · Space boost · ` debug</footer></aside><div id="cross"></div><section id="err" role="alert" hidden></section></main><script type="module">import{attachNexusRealtimePageLoader}from"../_shared/nexus-realtime-page-loader.js";attachNexusRealtimePageLoader({title:"Super Fly",loadingLabel:"Loading Super Fly"});</script><script type="module">import{createCloudRenderer}from"./cloud-renderer.js";const NEXUS_URL="https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@0.0.1/src/index.js",KIT_URL=new URLSearchParams(location.search).get("kit")||"https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@20063e6983c8475250b34e6544b54c602a517dd4/protokits/aerial-flight-kits/index.js",canvas=document.querySelector("#game"),topHud=document.querySelector("#top"),err=document.querySelector("#err"),cross=document.querySelector("#cross");function fatal(e){err.hidden=false;err.textContent=String(e?.stack||e?.message||e);topHud.textContent="Runtime error — see panel"}function rgb(h,f=[.16,.32,.2]){const s=String(h||"").replace("#","");return s.length===6?[parseInt(s.slice(0,2),16)/255,parseInt(s.slice(2,4),16)/255,parseInt(s.slice(4,6),16)/255]:f}function makeBird(T){const r=new T.Group(),bm=new T.MeshStandardMaterial({color:0xf8f9fa,roughness:.62}),wm=new T.MeshStandardMaterial({color:0xe4e8ea,roughness:.58}),body=new T.ConeGeometry(1.2,5.2,7);body.rotateX(Math.PI/2);r.add(new T.Mesh(body,bm));const head=new T.Mesh(new T.DodecahedronGeometry(.82,0),bm);head.position.set(0,.55,-2.8);r.add(head);function wing(side){const sh=new T.Group();sh.position.set(.72*side,0,-.35);const il=3.8,ol=3.25,ig=new T.BoxGeometry(il,.07,1.35);ig.translate(il*.5*side,0,0);sh.add(new T.Mesh(ig,wm));const el=new T.Group();el.position.set(il*side,0,0);const og=new T.BoxGeometry(ol,.055,1.02);og.translate(ol*.5*side,0,0);el.add(new T.Mesh(og,wm));const tip=new T.Group();tip.position.set(ol*side,0,0);const tg=new T.BoxGeometry(.72,.04,.72);tg.translate(.36*side,0,0);tip.add(new T.Mesh(tg,wm));el.add(tip);sh.add(el);r.add(sh);return{sh,el,tip}}const l=wing(-1),ri=wing(1);r.userData.joints={leftShoulder:l.sh,rightShoulder:ri.sh,leftElbow:l.el,rightElbow:ri.el,leftTip:l.tip,rightTip:ri.tip};return r}function applyRig(bird,anim={}){const joints=bird.userData.joints||{};for(const[id,d]of Object.entries(anim.joints||{})){const j=joints[id];if(!j)continue;const q=d.rotation||{};j.rotation.set(q.x||0,q.y||0,q.z||0)}return anim.bodyOffset||{x:0,y:0,z:0}}function patchGeo(T,p){const seg=p.segments??p.sampleSegments??8,c=(seg+1)*(seg+1),pos=new Float32Array(c*3),col=new Float32Array(c*3),idx=[],s=p.samples||[];for(let i=0;i<c;i++){const v=s[i]||{x:0,y:0,z:0,biome:"forest"};pos[i*3]=v.x;pos[i*3+1]=v.y;pos[i*3+2]=v.z;const co=rgb(v.biome==="alpine"?"#8fa0a6":v.biome==="shore"?"#d9ad6a":v.biome==="rock"?"#6f7678":"#1f4a29");col[i*3]=co[0];col[i*3+1]=co[1];col[i*3+2]=co[2]}for(let z=0;z<seg;z++)for(let x=0;x<seg;x++){const a=z*(seg+1)+x,b=a+1,c=a+seg+1,d=c+1;idx.push(a,c,b,b,c,d)}const g=new T.BufferGeometry();g.setAttribute("position",new T.BufferAttribute(pos,3));g.setAttribute("color",new T.BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();g.computeBoundingSphere();return g}function terrainMat(T){return new T.ShaderMaterial({vertexColors:true,uniforms:{sunDir:{value:new T.Vector3(.2,.8,.35).normalize()},fogColor:{value:new T.Color("#ffdfb3")},fogStrength:{value:.42}},vertexShader:`varying vec3 vc;varying vec3 wp;varying vec3 vn;void main(){vc=color;vec4 w=modelMatrix*vec4(position,1.0);wp=w.xyz;vn=normalize(normalMatrix*normal);gl_Position=projectionMatrix*viewMatrix*w;}`,fragmentShader:`varying vec3 vc;varying vec3 wp;varying vec3 vn;uniform vec3 sunDir;uniform vec3 fogColor;uniform float fogStrength;float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);float a=h(i),b=h(i+vec2(1.,0.)),c=h(i+vec2(0.,1.)),d=h(i+vec2(1.,1.));return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);}void main(){float macro=n(wp.xz*.0025);float detail=n(wp.xz*.018+macro*2.0);float slope=1.0-max(vn.y,0.0);float light=.48+max(dot(normalize(vn),sunDir),0.0)*.52;float scatter=pow(max(dot(normalize(vn),sunDir),0.0),.55);vec3 band=vc*(.82+detail*.28)+vec3(macro*.06)+fogColor*scatter*.08*max(fogStrength,.1);band=mix(band,band*.62,slope*.34);float dist=length(wp.xz)*.000035;band=mix(band,fogColor,clamp(dist*fogStrength,0.0,.55));gl_FragColor=vec4(band*light,1.0);}`})}function createRenderer(T){const renderer=new T.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(1);renderer.setSize(innerWidth,innerHeight,false);renderer.shadowMap.enabled=false;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;const scene=new T.Scene(),camera=new T.PerspectiveCamera(65,innerWidth/innerHeight,.1,12000),cameraPos=new T.Vector3(),lookAt=new T.Vector3(),hemi=new T.HemisphereLight(0xb3e5fc,0xffdfb3,.55),sun=new T.DirectionalLight(0xfff8e7,3.6);sun.castShadow=false;scene.add(hemi,sun,sun.target);const fog=new T.FogExp2(0xffdfb3,.00055);scene.fog=fog;const skyMat=new T.ShaderMaterial({side:T.BackSide,depthWrite:false,uniforms:{topColor:{value:new T.Color("#42a5f5")},bottomColor:{value:new T.Color("#ffdfb3")},sunColor:{value:new T.Color("#fff8e1")},sunDir:{value:new T.Vector3(.1,.5,-.4).normalize()},fogTint:{value:new T.Color("#ffdfb3")},fogPower:{value:.42}},vertexShader:`varying vec3 v;void main(){vec4 w=modelMatrix*vec4(position,1.);v=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,fragmentShader:`varying vec3 v;uniform vec3 topColor,bottomColor,sunColor,sunDir,fogTint;uniform float fogPower;float wave(float x){return sin(x*5.1)*.5+sin(x*11.3)*.25+sin(x*19.7)*.12;}void main(){vec3 d=normalize(v);float h=max(0.,d.y);vec3 sky=mix(bottomColor,topColor,smoothstep(-.15,.75,h));float a=atan(d.x,d.z);float ridge=wave(a)+.42;float horizon=1.0-smoothstep(.015,.13,abs(d.y-ridge*.025));vec3 mountains=mix(vec3(.10,.15,.17),vec3(.35,.42,.44),smoothstep(.0,.08,d.y));sky=mix(sky,mountains,horizon*.42);float sd=max(0.,dot(d,sunDir));float fogGlow=pow(max(0.,dot(d,sunDir)),3.0)*fogPower;sky=mix(sky,fogTint,smoothstep(-.02,.18,d.y)*fogPower*.22);gl_FragColor=vec4(sky+sunColor*(pow(sd,80.)*.45+pow(sd,8.)*.3+smoothstep(.996,.998,sd)+fogGlow*.35),1.);}`});scene.add(new T.Mesh(new T.SphereGeometry(9000,40,18),skyMat));const tm=terrainMat(T),ringMat=new T.MeshBasicMaterial({color:0x00f3ff,transparent:true,opacity:.78,wireframe:true}),liftMat=new T.MeshBasicMaterial({color:0x3dfa99,transparent:true,opacity:.07,wireframe:true,side:T.DoubleSide}),bird=makeBird(T),clouds=createCloudRenderer(T,scene);scene.add(bird);const patches=new Map(),rings=new Map(),lifts=new Map();let lastHudAt=0;function draw(s){if(!s?.body)return;const liveP=new Set();for(const p of s.world?.patches||[]){const key=p.id||p.key,rev=p.revision||`${key}:${p.sampleSegments||0}`;liveP.add(key);let rec=patches.get(key);if(!rec||rec.rev!==rev){if(rec){scene.remove(rec.mesh);rec.mesh.geometry.dispose()}const mesh=new T.Mesh(patchGeo(T,p),tm);scene.add(mesh);patches.set(key,{rev,mesh})}}for(const[k,rec]of patches)if(!liveP.has(k)){scene.remove(rec.mesh);rec.mesh.geometry.dispose();patches.delete(k)}const liveR=new Set();for(const q of s.checkpoints?.volumes||[]){if(q.collected)continue;liveR.add(q.id);let m=rings.get(q.id);if(!m){m=new T.Mesh(new T.TorusGeometry(q.radius,1.1,6,16),ringMat);rings.set(q.id,m);scene.add(m)}m.position.set(q.x,q.y,q.z);m.rotation.y=q.rotationY||0}for(const[k,m]of rings)if(!liveR.has(k)){scene.remove(m);m.geometry.dispose();rings.delete(k)}const liveL=new Set();for(const q of s.liftVolumes?.volumes||[]){liveL.add(q.id);let m=lifts.get(q.id);if(!m){m=new T.Mesh(new T.CylinderGeometry(q.radius,q.radius,q.height,8,1,true),liftMat);lifts.set(q.id,m);scene.add(m)}m.position.set(q.x,q.y+q.height/2,q.z)}for(const[k,m]of lifts)if(!liveL.has(k)){scene.remove(m);m.geometry.dispose();lifts.delete(k)}const b=s.body,off=applyRig(bird,s.rig?.animation);bird.position.set(b.position.x+(off.x||0),b.position.y+(off.y||0),b.position.z+(off.z||0));bird.rotation.set(b.rotation.pitch||0,b.rotation.yaw||0,b.rotation.roll||0,"YXZ");const cam=s.camera||{};if(cam.position){cameraPos.set(cam.position.x,cam.position.y,cam.position.z);camera.position.lerp(cameraPos,.16)}if(cam.lookAt){lookAt.set(cam.lookAt.x,cam.lookAt.y,cam.lookAt.z);camera.lookAt(lookAt)}const nf=cam.fov||65;if(Math.abs(camera.fov-nf)>.02){camera.fov+=(nf-camera.fov)*.12;camera.updateProjectionMatrix()}const sky=s.sky||{},wf=s.weather?.fog||{},vol=s.volumetricLighting||{},fogColor=sky.horizonColor||vol.fogColor||wf.color||0xffdfb3,scat=vol.scattering||{};skyMat.uniforms.topColor.value.set(sky.topColor||"#42a5f5");skyMat.uniforms.bottomColor.value.set(sky.horizonColor||"#ffdfb3");skyMat.uniforms.sunColor.value.set(sky.sunColor||"#fff8e1");tm.uniforms.fogColor.value.set(fogColor);tm.uniforms.fogStrength.value=Math.max(.18,scat.intensity||.42);skyMat.uniforms.fogTint.value.set(fogColor);skyMat.uniforms.fogPower.value=Math.max(.12,scat.intensity||.42);hemi.color.set(sky.ambientColor||0xb3e5fc);hemi.intensity=sky.ambientIntensity??.55;sun.color.set(sky.sunColor||0xfff8e7);sun.intensity=sky.sunIntensity??3.6;const sd=vol.sunDirection||sky.sunDirection;if(sd){sun.position.set(b.position.x+sd.x*300,b.position.y+sd.y*300,b.position.z+sd.z*300);sun.target.position.set(b.position.x,b.position.y,b.position.z);sun.target.updateMatrixWorld();tm.uniforms.sunDir.value.set(sd.x,sd.y,sd.z).normalize();skyMat.uniforms.sunDir.value.set(sd.x,sd.y,sd.z).normalize()}fog.color.set(fogColor);fog.density=Math.max(wf.density||0,sky.hazeDensity||.00055);clouds.update(s);cross.classList.toggle("flash",(s.vfx?.boostFlash||0)>.2);const t=performance.now();if(t-lastHudAt>140){lastHudAt=t;const stats=s.world?.streamingStats||{},lod=stats.lodCounts||{},cy=sky.cycle||{};topHud.innerHTML=`Super Fly · ${s.challenge?.prompt||"Fly"}<br>Speed: ${Math.round(b.speed||0)} · Alt: ${Math.round(b.altitude||0)} · Sky: ${cy.label||"day"} ${Math.round((cy.timeOfDay||0)*100)}%<br>Patches: ${s.world?.patchCount??0} · N/M/F: ${lod.near??0}/${lod.mid??0}/${lod.far??0} · Clouds: ${s.weather?.cloudLayers?.length??0}`}renderer.render(scene,camera)}function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/Math.max(1,innerHeight);camera.updateProjectionMatrix()}return{draw,renderer,resize}}async function boot(){try{const[T,Nexus,Aerial]=await Promise.all([import("https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js"),import(NEXUS_URL),import(KIT_URL)]),engine=Nexus.createRealtimeGame({kits:Aerial.createGenericAerialAdventureKits(Nexus,{seed:new URLSearchParams(location.search).get("seed")||"super-fly",terrain:{heightScale:155,scale:.00145,waterLevel:-45,shoreline:-35,timberline:140,patchSize:900,sampleSegments:14,renderDistance:1,scatterDensity:.00002},world:{quality:"adaptive",preloadSeconds:4.5,forwardPreloadBias:.72,maxPatchBuildsPerTick:1,initialPatchBuilds:4,maxCachedPatches:76,detailNoiseScale:.018,macroNoiseScale:.0026,horizonMountainScale:.2,lodRings:[{id:"near",radius:1,patchSize:900,sampleSegments:14,collision:true,scatterDensity:.00002},{id:"mid",radius:2,patchSize:1800,sampleSegments:7,collision:false,scatterDensity:.000004},{id:"far",radius:2,patchSize:3600,sampleSegments:3,collision:false,scatterDensity:0}]},sky:{dayNightCycle:true,dayLengthSeconds:600,startOffset:.23},rig:{wingSpan:8.9,innerWingLength:3.8,outerWingLength:3.25,baseFlapRate:3.05,speedFlapRate:.012,maxAmplitude:.72,tipLag:.58,tipFold:.78,boostAmplitude:.3,climbAmplitude:.26,glideFlattening:.9},weather:{windSpeed:21,fogDensity:.00105,hazeDensity:.00072,cloudOpacity:.48,cloudSpeed:.02,lowerCloudAltitude:760,lowerCloudThickness:210,highCloudAltitude:1520,highCloudThickness:330,fogColor:"#ffdfb3"},lighting:{sunPower:1.22,anisotropy:.48,godRays:true,godRayExposure:.24,horizonBoost:.62},physics:{maxSpeed:145},checkpoints:{count:72,radius:18,density:2},liftVolumes:{count:42,lift:15.5,density:1},challenge:{targetCheckpoints:12}})}),view=createRenderer(T),keys=new Set;addEventListener("keydown",e=>{keys.add(e.code);if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code))e.preventDefault();if(e.code==="Backquote")console.log(window.GameHost.getState(),window.GameHost.getStreamingState())});addEventListener("keyup",e=>keys.delete(e.code));addEventListener("blur",()=>keys.clear());addEventListener("resize",()=>view.resize());window.GameHost={engine,renderer:view,getState:()=>engine.genericAerialRenderDescriptor?.getState?.(),getRawState:()=>engine.genericAerialRenderDescriptor?.getRawState?.(),getRigState:()=>engine.rigAnimationDescriptor?.getState?.(),getWeatherState:()=>engine.atmosphericWeather?.getState?.(),getLightingState:()=>engine.volumetricLighting?.getState?.(),getSkyCycle:()=>engine.skyCycle?.getState?.(),getStreamingState:()=>engine.terrainStreamer?.getStats?.()??engine.genericWorldPatch?.getStreamingState?.(),setTerrainQuality:t=>engine.terrainStreamer?.setQuality?.(t),forceTerrainRebuild:()=>engine.terrainStreamer?.forceRebuild?.()};let last=performance.now();function frame(t){try{const d=Math.min(1/30,(t-last)/1000||1/60);last=t;engine.genericFlightInput.setInput({pitch:(keys.has("KeyW")||keys.has("ArrowUp")?1:0)-(keys.has("KeyS")||keys.has("ArrowDown")?1:0),bank:(keys.has("KeyA")||keys.has("ArrowLeft")?1:0)-(keys.has("KeyD")||keys.has("ArrowRight")?1:0),boost:keys.has("Space")});engine.tick(d);view.draw(engine.genericAerialRenderDescriptor.getState());requestAnimationFrame(frame)}catch(e){fatal(e)}}requestAnimationFrame(frame)}catch(e){fatal(e)}}boot();</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sora The Infinite</title>
+  <style>
+    html,body{margin:0;height:100%;overflow:hidden;background:#07111d;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+    main,canvas{position:fixed;inset:0;width:100vw;height:100vh}canvas{display:block;cursor:none}
+    #hud{position:fixed;inset:0;pointer-events:none}#top{position:fixed;left:14px;top:12px;padding:8px 10px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(2,8,18,.42);font-size:12px;line-height:1.35;backdrop-filter:blur(8px)}
+    #bottom{position:fixed;left:14px;bottom:12px;padding:7px 9px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(2,8,18,.28);font-size:11px;opacity:.82}
+    #cross{position:fixed;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border:2px solid rgba(255,255,255,.42);border-radius:50%;box-sizing:border-box;transition:.14s}#cross.flash{transform:scale(1.7);border-color:white}
+    #err{position:fixed;left:16px;right:16px;bottom:16px;white-space:pre-wrap;background:rgba(32,5,4,.93);color:#fff0e8;border:1px solid rgba(255,150,100,.55);border-radius:12px;padding:12px;font:12px/1.4 ui-monospace,Menlo,monospace}#err[hidden]{display:none}
+  </style>
+</head>
+<body>
+  <main>
+    <canvas id="game" role="application" aria-label="Sora The Infinite"></canvas>
+    <aside id="hud"><header id="top">Booting Sora…</header><footer id="bottom">W/S pitch · A/D bank · Space boost · R reset</footer></aside>
+    <div id="cross"></div><section id="err" role="alert" hidden></section>
+  </main>
+  <script type="module">
+    import { attachNexusRealtimePageLoader } from "../_shared/nexus-realtime-page-loader.js";
+    attachNexusRealtimePageLoader({ title: "Sora The Infinite", loadingLabel: "Loading Sora" });
+  </script>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+    import { SORA_BIRD_SCALE } from "./bird-scale.js";
+
+    const NEXUS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@main/src/index.js";
+    const KIT_URL = new URLSearchParams(location.search).get("kit") || "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@main/protokits/aerial-flight-kits/index.js";
+    const canvas = document.querySelector("#game");
+    const topHud = document.querySelector("#top");
+    const err = document.querySelector("#err");
+    const cross = document.querySelector("#cross");
+
+    function fatal(error) {
+      err.hidden = false;
+      err.textContent = String(error?.stack || error?.message || error);
+      topHud.textContent = "Runtime error — see panel";
+    }
+
+    function rgb(hex, fallback = [0.16, 0.32, 0.2]) {
+      const s = String(hex || "").replace("#", "");
+      return s.length === 6 ? [parseInt(s.slice(0,2),16)/255, parseInt(s.slice(2,4),16)/255, parseInt(s.slice(4,6),16)/255] : fallback;
+    }
+
+    function makeBird(T, scale = SORA_BIRD_SCALE) {
+      const bodyLength = scale.bodyLengthM ?? 0.5;
+      const bodyRadius = scale.bodyRadiusM ?? bodyLength * 0.14;
+      const headRadius = scale.headRadiusM ?? bodyLength * 0.16;
+      const shoulderWidth = scale.shoulderWidthM ?? bodyRadius * 2.3;
+      const inner = scale.innerWingLengthM ?? (scale.wingspanM ?? 1.3) * 0.26;
+      const outer = scale.outerWingLengthM ?? (scale.wingspanM ?? 1.3) * 0.18;
+      const tipLength = scale.tipLengthM ?? 0.08;
+      const thick = scale.wingThicknessM ?? 0.012;
+      const r = new T.Group();
+      r.userData.scaleConvention = scale;
+      const bm = new T.MeshStandardMaterial({ color: 0xf8f9fa, roughness: 0.62 });
+      const wm = new T.MeshStandardMaterial({ color: 0xe4e8ea, roughness: 0.58 });
+      const body = new T.ConeGeometry(bodyRadius, bodyLength, 8);
+      body.rotateX(Math.PI / 2);
+      r.add(new T.Mesh(body, bm));
+      const head = new T.Mesh(new T.DodecahedronGeometry(headRadius, 0), bm);
+      head.position.set(0, bodyRadius * 0.6, -bodyLength * 0.58);
+      r.add(head);
+      function wing(side) {
+        const sh = new T.Group();
+        sh.position.set((shoulderWidth * 0.5) * side, 0, -bodyLength * 0.08);
+        const ig = new T.BoxGeometry(inner, thick, bodyLength * 0.24);
+        ig.translate(inner * 0.5 * side, 0, 0);
+        sh.add(new T.Mesh(ig, wm));
+        const el = new T.Group();
+        el.position.set(inner * side, 0, 0);
+        const og = new T.BoxGeometry(outer, thick * 0.8, bodyLength * 0.18);
+        og.translate(outer * 0.5 * side, 0, 0);
+        el.add(new T.Mesh(og, wm));
+        const tip = new T.Group();
+        tip.position.set(outer * side, 0, 0);
+        const tg = new T.BoxGeometry(tipLength, thick * 0.7, bodyLength * 0.13);
+        tg.translate(tipLength * 0.5 * side, 0, 0);
+        tip.add(new T.Mesh(tg, wm));
+        el.add(tip); sh.add(el); r.add(sh);
+        return { sh, el, tip };
+      }
+      const l = wing(-1), ri = wing(1);
+      r.userData.joints = { leftShoulder: l.sh, rightShoulder: ri.sh, leftElbow: l.el, rightElbow: ri.el, leftTip: l.tip, rightTip: ri.tip };
+      r.scale.setScalar(scale.visualScale ?? 1);
+      return r;
+    }
+
+    function applyRig(bird, anim = {}) {
+      const joints = bird.userData.joints || {};
+      for (const [id, d] of Object.entries(anim.joints || {})) {
+        const joint = joints[id];
+        if (!joint) continue;
+        const q = d.rotation || {};
+        joint.rotation.set(q.x || 0, q.y || 0, q.z || 0);
+      }
+      return anim.bodyOffset || { x: 0, y: 0, z: 0 };
+    }
+
+    function patchGeo(T, p) {
+      const seg = p.segments ?? p.sampleSegments ?? 8;
+      const count = (seg + 1) * (seg + 1);
+      const pos = new Float32Array(count * 3);
+      const col = new Float32Array(count * 3);
+      const idx = [];
+      const samples = p.samples || [];
+      for (let i = 0; i < count; i++) {
+        const v = samples[i] || { x: 0, y: 0, z: 0, biome: "forest" };
+        pos[i*3] = v.x; pos[i*3+1] = v.y; pos[i*3+2] = v.z;
+        const c = rgb(v.biome === "alpine" ? "#8fa0a6" : v.biome === "shore" ? "#d9ad6a" : v.biome === "rock" ? "#6f7678" : "#1f4a29");
+        col[i*3] = c[0]; col[i*3+1] = c[1]; col[i*3+2] = c[2];
+      }
+      for (let z = 0; z < seg; z++) for (let x = 0; x < seg; x++) {
+        const a = z * (seg + 1) + x, b = a + 1, c = a + seg + 1, d = c + 1;
+        idx.push(a, c, b, b, c, d);
+      }
+      const g = new T.BufferGeometry();
+      g.setAttribute("position", new T.BufferAttribute(pos, 3));
+      g.setAttribute("color", new T.BufferAttribute(col, 3));
+      g.setIndex(idx); g.computeVertexNormals(); g.computeBoundingSphere();
+      return g;
+    }
+
+    function createRenderer(T) {
+      const renderer = new T.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+      renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
+      renderer.setSize(innerWidth, innerHeight, false);
+      renderer.toneMapping = T.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
+      const scene = new T.Scene();
+      scene.fog = new T.FogExp2(0xffdfb3, 0.00055);
+      const camera = new T.PerspectiveCamera(65, innerWidth / innerHeight, 0.03, 12000);
+      const hemi = new T.HemisphereLight(0xb3e5fc, 0xffdfb3, 0.65);
+      const sun = new T.DirectionalLight(0xfff8e7, 3.4);
+      scene.add(hemi, sun, sun.target);
+      const skyMat = new T.ShaderMaterial({ side: T.BackSide, depthWrite: false, uniforms: { topColor: { value: new T.Color("#42a5f5") }, bottomColor: { value: new T.Color("#ffdfb3") } }, vertexShader: `varying vec3 v;void main(){v=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(v,1.);}`, fragmentShader: `varying vec3 v;uniform vec3 topColor,bottomColor;void main(){vec3 d=normalize(v);float h=max(0.,d.y);vec3 col=mix(bottomColor,topColor,smoothstep(-.1,.9,h));float sun=pow(max(0.,dot(d,normalize(vec3(.25,.55,-.35)))),32.);gl_FragColor=vec4(col+vec3(1.,.86,.45)*sun*.8,1.);}` });
+      scene.add(new T.Mesh(new T.SphereGeometry(9000, 40, 18), skyMat));
+      const terrainMat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0.02 });
+      const ringMat = new T.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.78, wireframe: true });
+      const liftMat = new T.MeshBasicMaterial({ color: 0x3dfa99, transparent: true, opacity: 0.07, wireframe: true, side: T.DoubleSide });
+      const bird = makeBird(T, SORA_BIRD_SCALE);
+      scene.add(bird);
+      const patches = new Map(), rings = new Map(), lifts = new Map();
+      let lastHudAt = 0;
+      function draw(s) {
+        if (!s?.body) return;
+        const liveP = new Set();
+        for (const p of s.world?.patches || []) {
+          const key = p.id || p.key;
+          const rev = p.revision || `${key}:${p.sampleSegments || 0}`;
+          liveP.add(key);
+          let rec = patches.get(key);
+          if (!rec || rec.rev !== rev) {
+            if (rec) { scene.remove(rec.mesh); rec.mesh.geometry.dispose(); }
+            const mesh = new T.Mesh(patchGeo(T, p), terrainMat);
+            scene.add(mesh); patches.set(key, { rev, mesh });
+          }
+        }
+        for (const [k, rec] of patches) if (!liveP.has(k)) { scene.remove(rec.mesh); rec.mesh.geometry.dispose(); patches.delete(k); }
+        const liveR = new Set();
+        for (const q of s.checkpoints?.volumes || []) {
+          if (q.collected) continue;
+          liveR.add(q.id);
+          let mesh = rings.get(q.id);
+          if (!mesh) { mesh = new T.Mesh(new T.TorusGeometry(q.radius, 0.8, 6, 24), ringMat); rings.set(q.id, mesh); scene.add(mesh); }
+          mesh.position.set(q.x, q.y, q.z); mesh.rotation.y = q.rotationY || 0;
+        }
+        for (const [k, mesh] of rings) if (!liveR.has(k)) { scene.remove(mesh); mesh.geometry.dispose(); rings.delete(k); }
+        const liveL = new Set();
+        for (const q of s.liftVolumes?.volumes || []) {
+          liveL.add(q.id);
+          let mesh = lifts.get(q.id);
+          if (!mesh) { mesh = new T.Mesh(new T.CylinderGeometry(q.radius, q.radius, q.height, 10, 1, true), liftMat); lifts.set(q.id, mesh); scene.add(mesh); }
+          mesh.position.set(q.x, q.y + q.height / 2, q.z);
+        }
+        for (const [k, mesh] of lifts) if (!liveL.has(k)) { scene.remove(mesh); mesh.geometry.dispose(); lifts.delete(k); }
+        const b = s.body;
+        const off = applyRig(bird, s.rig?.animation);
+        bird.position.set(b.position.x + (off.x || 0), b.position.y + (off.y || 0), b.position.z + (off.z || 0));
+        bird.rotation.set(b.rotation.pitch || 0, b.rotation.yaw || 0, b.rotation.roll || 0, "YXZ");
+        const cam = s.camera || {};
+        if (cam.position) camera.position.lerp(new T.Vector3(cam.position.x, cam.position.y, cam.position.z), 0.18);
+        if (cam.lookAt) camera.lookAt(cam.lookAt.x, cam.lookAt.y, cam.lookAt.z);
+        if (cam.fov && Math.abs(camera.fov - cam.fov) > 0.02) { camera.fov += (cam.fov - camera.fov) * 0.12; camera.updateProjectionMatrix(); }
+        const sky = s.sky || {};
+        skyMat.uniforms.topColor.value.set(sky.topColor || "#42a5f5");
+        skyMat.uniforms.bottomColor.value.set(sky.horizonColor || "#ffdfb3");
+        hemi.color.set(sky.ambientColor || 0xb3e5fc); hemi.intensity = sky.ambientIntensity ?? 0.6;
+        sun.color.set(sky.sunColor || 0xfff8e7); sun.intensity = sky.sunIntensity ?? 3.4;
+        const sd = sky.sunDirection || { x: 0.25, y: 0.55, z: -0.35 };
+        sun.position.set(b.position.x + sd.x * 300, b.position.y + sd.y * 300, b.position.z + sd.z * 300);
+        sun.target.position.set(b.position.x, b.position.y, b.position.z); sun.target.updateMatrixWorld();
+        cross.classList.toggle("flash", (s.vfx?.boostFlash || 0) > 0.2);
+        const t = performance.now();
+        if (t - lastHudAt > 160) {
+          lastHudAt = t;
+          topHud.innerHTML = `Sora The Infinite · ${(s.challenge?.prompt || "Fly")}<br>Bird: ${SORA_BIRD_SCALE.bodyLengthM}m body · ${SORA_BIRD_SCALE.wingspanM}m wingspan<br>Speed: ${Math.round(b.speed || 0)} · Alt: ${Math.round(b.altitude || 0)} · Rings: ${s.challenge?.checkpoints ?? 0}/${s.challenge?.targetCheckpoints ?? 12}`;
+        }
+        renderer.render(scene, camera);
+      }
+      function resize() { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / Math.max(1, innerHeight); camera.updateProjectionMatrix(); }
+      addEventListener("resize", resize); resize();
+      return { draw, renderer, resize };
+    }
+
+    async function boot() {
+      try {
+        const [NexusRealtime, Aerial] = await Promise.all([import(NEXUS_URL), import(KIT_URL)]);
+        const engine = Aerial.createGenericAerialAdventureGame(NexusRealtime, {
+          seed: "sora-meter-scale",
+          body: { spawnAltitude: 80 },
+          physics: { clearance: 0.7, minForwardSpeed: 10, maxSpeed: 52, gravity: 0.82, lift: 4.2, dragCoeff: 0.0008, diveAcceleration: 14 },
+          camera: { distance: 3.2, height: 0.85, lookAhead: 5.5, pitchPullback: 0.45, fov: 62, speedFovBoost: 7 },
+          rig: { unit: "meter", bodyLengthM: 0.5, wingspanM: 1.3, wingSpan: 1.3, innerWingLength: 0.34, outerWingLength: 0.24, baseFlapRate: 3.15, maxAmplitude: 0.68 },
+          checkpoints: { count: 30, range: 1800, minHeight: 35, heightRange: 95, radius: 7, impulse: 8 },
+          liftVolumes: { count: 22, range: 1700, radius: 16, height: 95, lift: 6.5 },
+          world: { renderDistance: 1, patchSize: 300, sampleSegments: 24, scatterDensity: 0.000035 },
+          terrain: { renderDistance: 1, patchSize: 300, sampleSegments: 24, heightScale: 68, waterLevel: -35, timberline: 80 },
+          sky: { dayNightCycle: true, dayLengthSeconds: 600 }
+        });
+        engine.genericAerialBody?.reset?.({ altitude: 80, speed: 24 });
+        const renderer = createRenderer(THREE);
+        const keys = new Set();
+        addEventListener("keydown", (e) => { keys.add(e.key.toLowerCase()); if (e.code === "Space") e.preventDefault(); if (e.key.toLowerCase() === "r") engine.genericAerialBody?.reset?.({ altitude: 80, speed: 24 }); });
+        addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
+        addEventListener("blur", () => keys.clear());
+        window.GameHost = { engine, renderer, birdScale: SORA_BIRD_SCALE, getState: () => engine.genericAerialBody.getState() };
+        let last = performance.now();
+        function frame(now) {
+          const dt = Math.min(1 / 30, (now - last) / 1000 || 1 / 60); last = now;
+          engine.genericFlightInput.setInput({
+            pitch: (keys.has("s") || keys.has("arrowdown") ? 1 : 0) - (keys.has("w") || keys.has("arrowup") ? 1 : 0),
+            bank: (keys.has("d") || keys.has("arrowright") ? 1 : 0) - (keys.has("a") || keys.has("arrowleft") ? 1 : 0),
+            brake: keys.has("shift") ? 1 : 0,
+            boost: keys.has(" ") || keys.has("space")
+          });
+          engine.tick(dt);
+          renderer.draw(engine.genericAerialBody.getState());
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      } catch (e) { fatal(e); }
+    }
+    boot();
+  </script>
+</body>
+</html>
