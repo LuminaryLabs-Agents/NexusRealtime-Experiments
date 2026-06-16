@@ -26,8 +26,8 @@ function injectStyles(documentRef) {
       --gold:#ffe36d;
       --green:#6bf0b8;
       --red:#ff8b7b;
-      --card:clamp(280px,28vw,370px);
-      --selected:clamp(390px,43vw,580px);
+      --card:clamp(300px,29vw,380px);
+      --selected-scale:1.13;
     }
     * { box-sizing:border-box; }
     html,body { margin:0; min-height:100%; }
@@ -104,11 +104,7 @@ function injectStyles(documentRef) {
       font-size:.88rem;
     }
     .nexus-top-actions,
-    .nexus-gallery-controls {
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
+    .nexus-gallery-controls { display:flex; align-items:center; gap:8px; }
     .nexus-repo-button,
     .nexus-launch-button,
     .nexus-scroll-button {
@@ -124,11 +120,7 @@ function injectStyles(documentRef) {
       cursor:pointer;
     }
     .nexus-repo-button,
-    .nexus-launch-button {
-      flex:0 0 auto;
-      padding:10px 16px;
-      font-size:.78rem;
-    }
+    .nexus-launch-button { flex:0 0 auto; padding:10px 16px; font-size:.78rem; }
     .nexus-launch-button {
       color:#07110d;
       background:linear-gradient(90deg,#ffe36d,#6bf0b8);
@@ -155,24 +147,18 @@ function injectStyles(documentRef) {
     }
     .nexus-count { color:var(--gold); font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
     .nexus-selected-title { color:rgba(244,247,248,.9); font-weight:800; }
-    .nexus-scroll-button {
-      width:42px;
-      height:38px;
-      display:grid;
-      place-items:center;
-      font-size:1.05rem;
-    }
+    .nexus-scroll-button { width:42px; height:38px; display:grid; place-items:center; font-size:1.05rem; }
     .nexus-scroll-button:disabled { opacity:.35; cursor:default; box-shadow:none; }
     .nexus-gallery-row {
       width:100%;
       min-height:min(74svh,760px);
       display:flex;
       align-items:center;
-      gap:24px;
+      gap:clamp(18px,2.2vw,30px);
       overflow-x:auto;
       overflow-y:hidden;
-      padding:18px max(12px,calc(50vw - var(--selected) / 2)) 34px;
-      scroll-snap-type:x proximity;
+      padding:36px max(24px,calc(50vw - var(--card) / 2)) 44px;
+      scroll-snap-type:x mandatory;
       scroll-behavior:smooth;
       scrollbar-color:rgba(230,231,220,.66) rgba(255,255,255,.09);
       scrollbar-width:thin;
@@ -198,23 +184,22 @@ function injectStyles(documentRef) {
       text-decoration:none;
       background:linear-gradient(180deg,rgba(20,25,27,.76),rgba(4,6,7,.74));
       box-shadow:0 34px 95px rgba(0,0,0,.48),0 16px 34px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.06);
-      transform:translateY(0) scale(.96);
-      transition:flex-basis 220ms ease,width 220ms ease,transform 180ms ease,border-color 180ms ease,box-shadow 180ms ease,filter 180ms ease;
+      transform:translateY(0) scale(.93);
+      transform-origin:center center;
+      transition:transform 190ms ease,border-color 190ms ease,box-shadow 190ms ease,filter 190ms ease;
       backdrop-filter:blur(18px);
-      filter:saturate(.88) brightness(.84);
+      filter:saturate(.86) brightness(.82);
       cursor:pointer;
       user-select:none;
+      z-index:1;
     }
     .nexus-game-tile.is-selected {
-      flex-basis:var(--selected);
-      width:var(--selected);
-      aspect-ratio:5/6;
-      border-left-color:rgba(255,227,109,.82);
-      border-right-color:rgba(255,227,109,.82);
-      box-shadow:0 52px 140px rgba(0,0,0,.62),0 0 94px rgba(255,227,109,.16),inset 0 1px 0 rgba(255,255,255,.1);
-      transform:translateY(-6px) scale(1);
-      filter:saturate(1.06) brightness(1.02);
-      z-index:2;
+      border-left-color:rgba(255,227,109,.86);
+      border-right-color:rgba(255,227,109,.86);
+      box-shadow:0 52px 140px rgba(0,0,0,.62),0 0 94px rgba(255,227,109,.18),inset 0 1px 0 rgba(255,255,255,.1);
+      transform:translateY(-18px) scale(var(--selected-scale));
+      filter:saturate(1.08) brightness(1.04);
+      z-index:3;
     }
     .nexus-game-tile:hover,
     .nexus-game-tile:focus-visible {
@@ -224,23 +209,13 @@ function injectStyles(documentRef) {
       outline:none;
       box-shadow:0 60px 150px rgba(0,0,0,.64),0 0 110px rgba(255,227,109,.13),inset 0 1px 0 rgba(255,255,255,.12);
       filter:saturate(1.08) brightness(1.04);
+      z-index:4;
     }
     .nexus-game-tile.is-selected:hover,
-    .nexus-game-tile.is-selected:focus-visible { transform:translateY(-12px) scale(1.012); }
-    .nexus-game-art {
-      flex:0 0 39%;
-      position:relative;
-      overflow:hidden;
-      background:linear-gradient(135deg,#101315,#050606);
-    }
+    .nexus-game-tile.is-selected:focus-visible { transform:translateY(-20px) scale(calc(var(--selected-scale) + .02)); }
+    .nexus-game-art { flex:0 0 39%; position:relative; overflow:hidden; background:linear-gradient(135deg,#101315,#050606); }
     .is-selected .nexus-game-art { flex-basis:43%; }
-    .nexus-game-art::after {
-      position:absolute;
-      inset:0;
-      content:"";
-      background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.14),transparent 62%),linear-gradient(180deg,transparent,rgba(0,0,0,.18));
-      opacity:.85;
-    }
+    .nexus-game-art::after { position:absolute; inset:0; content:""; background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.14),transparent 62%),linear-gradient(180deg,transparent,rgba(0,0,0,.18)); opacity:.85; }
     .nexus-game-art::before { position:absolute; inset:0; content:""; }
     .nexus-game-art.next::before { background:radial-gradient(circle at 48% 28%,rgba(255,227,109,.9) 0 10px,transparent 12px),linear-gradient(135deg,#1b2440,#0a1220); }
     .nexus-game-art.fogline::before { background:radial-gradient(circle at 48% 38%,rgba(238,248,250,.92) 0 6px,transparent 8px),radial-gradient(circle at 32% 64%,rgba(255,255,255,.18),transparent 5.5rem),linear-gradient(135deg,#050606,#1b2022); }
@@ -254,19 +229,21 @@ function injectStyles(documentRef) {
     .nexus-tag.green { color:var(--green); border-color:rgba(105,240,184,.25); background:rgba(105,240,184,.06); }
     .nexus-tag.red { color:var(--red); border-color:rgba(255,139,123,.34); background:rgba(255,139,123,.07); }
     .nexus-game-tile h2 { margin:0; font-size:clamp(1.25rem,1.8vw,1.58rem); line-height:1.05; letter-spacing:-.04em; }
-    .nexus-game-tile.is-selected h2 { font-size:clamp(2rem,3.2vw,2.85rem); }
+    .nexus-game-tile.is-selected h2 { font-size:clamp(1.75rem,2.5vw,2.35rem); }
     .nexus-game-tile p { margin:0; color:var(--muted); line-height:1.5; flex:1; overflow:hidden; }
     .nexus-play { color:var(--gold); font-weight:950; letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; }
     .nexus-game-tile.is-selected .nexus-play::before { content:"Selected · "; color:var(--green); }
     .nexus-noscript { position:relative; z-index:2; color:var(--text); padding:24px; }
     @media (max-width:760px) {
+      :root { --selected-scale:1.04; }
       .nexus-shell { width:min(100% - 20px,1680px); padding-top:12px; }
       .nexus-topbar { align-items:flex-start; flex-direction:column; }
       .nexus-top-actions { width:100%; flex-direction:column; align-items:stretch; }
       .nexus-repo-button,.nexus-launch-button { width:100%; text-align:center; }
       .nexus-gallery-help { align-items:flex-start; flex-direction:column; }
-      .nexus-game-tile,.nexus-game-tile.is-selected { flex-basis:82vw; width:82vw; aspect-ratio:4/5.35; transform:translateY(0) scale(.98); }
-      .nexus-game-tile.is-selected h2 { font-size:2rem; }
+      .nexus-game-tile { flex-basis:82vw; width:82vw; aspect-ratio:4/5.35; transform:translateY(0) scale(.97); }
+      .nexus-game-tile.is-selected { transform:translateY(-6px) scale(var(--selected-scale)); }
+      .nexus-game-tile.is-selected h2 { font-size:1.9rem; }
     }
   `;
   documentRef.head.append(style);
@@ -346,10 +323,10 @@ function selectedGameForTile(tile) {
   return games.find((game) => game.id === tile?.dataset?.gameId) ?? games[0];
 }
 
-function centerTile(row, tile) {
+function centerTile(row, tile, behavior = "smooth") {
   if (!tile) return;
   const left = tile.offsetLeft - row.clientWidth / 2 + tile.offsetWidth / 2;
-  row.scrollTo({ left, behavior: "smooth" });
+  row.scrollTo({ left, behavior });
 }
 
 function wireScrolling(parts) {
@@ -359,6 +336,7 @@ function wireScrolling(parts) {
   let startScroll = 0;
   let dragged = false;
   let selectedTile = tiles.find((tile) => tile.classList.contains("is-selected")) ?? tiles[0];
+  let scrollRaf = 0;
 
   function setSelected(tile, options = {}) {
     if (!tile || tile === selectedTile && !options.force) return;
@@ -368,6 +346,7 @@ function wireScrolling(parts) {
       const active = candidate === tile;
       candidate.classList.toggle("is-selected", active);
       candidate.setAttribute("aria-current", String(active));
+      candidate.setAttribute("aria-label", `${active ? "Selected" : "Select"} ${selectedGameForTile(candidate).title}`);
     }
     const index = Math.max(0, tiles.indexOf(tile));
     count.textContent = `${index + 1} / ${tiles.length}`;
@@ -379,14 +358,20 @@ function wireScrolling(parts) {
   }
 
   function updateFromScroll() {
+    scrollRaf = 0;
     setSelected(getNearestTile(row, tiles));
   }
 
-  function scrollToIndex(index) {
+  function scheduleScrollUpdate() {
+    if (scrollRaf) return;
+    scrollRaf = requestAnimationFrame(updateFromScroll);
+  }
+
+  function scrollToIndex(index, behavior = "smooth") {
     const clamped = Math.max(0, Math.min(tiles.length - 1, index));
     const tile = tiles[clamped];
     setSelected(tile);
-    centerTile(row, tile);
+    centerTile(row, tile, behavior);
   }
 
   function scrollByCard(direction) {
@@ -400,7 +385,8 @@ function wireScrolling(parts) {
   row.addEventListener("wheel", (event) => {
     const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
     event.preventDefault();
-    row.scrollBy({ left: horizontal ? event.deltaX : event.deltaY, behavior: "auto" });
+    row.scrollLeft += horizontal ? event.deltaX : event.deltaY;
+    scheduleScrollUpdate();
   }, { passive: false });
 
   row.addEventListener("pointerdown", (event) => {
@@ -417,6 +403,7 @@ function wireScrolling(parts) {
     const dx = event.clientX - startX;
     if (Math.abs(dx) > 5) dragged = true;
     row.scrollLeft = startScroll - dx;
+    scheduleScrollUpdate();
   });
 
   function releasePointer(event) {
@@ -424,12 +411,13 @@ function wireScrolling(parts) {
     pointerDown = false;
     row.classList.remove("is-dragging");
     row.releasePointerCapture?.(event.pointerId);
+    scheduleScrollUpdate();
     setTimeout(() => { dragged = false; }, 80);
   }
 
   row.addEventListener("pointerup", releasePointer);
   row.addEventListener("pointercancel", releasePointer);
-  row.addEventListener("scroll", () => requestAnimationFrame(updateFromScroll), { passive: true });
+  row.addEventListener("scroll", scheduleScrollUpdate, { passive: true });
 
   for (const tile of tiles) {
     tile.addEventListener("click", () => {
@@ -437,11 +425,18 @@ function wireScrolling(parts) {
       setSelected(tile);
       centerTile(row, tile);
     });
+    tile.addEventListener("dblclick", () => {
+      setSelected(tile);
+      launch.click();
+    });
     tile.addEventListener("keydown", (event) => {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
-      setSelected(tile);
-      centerTile(row, tile);
+      if (tile === selectedTile && event.key === "Enter") launch.click();
+      else {
+        setSelected(tile);
+        centerTile(row, tile);
+      }
     });
   }
 
@@ -460,7 +455,7 @@ function wireScrolling(parts) {
   });
 
   setSelected(selectedTile, { force: true });
-  requestAnimationFrame(() => centerTile(row, selectedTile));
+  requestAnimationFrame(() => centerTile(row, selectedTile, "auto"));
 }
 
 export function renderNexusExperimentsShell(options = {}) {
