@@ -16,6 +16,10 @@
 <body>
 <main><canvas id="game" role="application" aria-label="Sora The Infinite"></canvas><aside id="hud"><header id="top">Booting Sora The Infinite…</header><footer id="bottom">W/S pitch · A/D bank · Space boost · ` debug</footer></aside><div id="cross"></div><section id="err" role="alert" hidden></section></main>
 <script type="module">
+  import { attachNexusRealtimePageLoader } from "../_shared/nexus-realtime-page-loader.js";
+  attachNexusRealtimePageLoader({ title: "Sora The Infinite", loadingLabel: "Loading Sora The Infinite" });
+</script>
+<script type="module">
 const NEXUS_URL="https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@0.0.1/src/index.js";
 const KIT_URL=new URLSearchParams(location.search).get("kit")||"https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@aa8542d5641186766b37635441ed1da1419f0671/protokits/aerial-flight-kits/index.js";
 const canvas=document.querySelector("#game"),topHud=document.querySelector("#top"),err=document.querySelector("#err"),cross=document.querySelector("#cross");
