@@ -1,5 +1,7 @@
 import { foglineEnvironmentPreset } from "./fogline-environment-preset.js";
 
+const DEG_TO_RAD = Math.PI / 180;
+
 function hashString(value = "seed") {
   let hash = 2166136261;
   for (const char of String(value)) {
@@ -28,6 +30,10 @@ function rangeValue(range, random) {
   const min = Number(range?.[0] ?? 1);
   const max = Number(range?.[1] ?? min);
   return min + (max - min) * random();
+}
+
+function centeredRange(maxAbs, random) {
+  return (random() * 2 - 1) * Number(maxAbs ?? 0);
 }
 
 function distanceToSegment(point, a, b) {
@@ -106,6 +112,7 @@ export function createFoglineEnvironmentContent(level, options = {}) {
   const instances = [];
   const gridStep = preset.placement.gridStep;
   const jitter = preset.placement.jitter;
+  const tiltLimit = Number(preset.placement.tiltDegrees ?? 10) * DEG_TO_RAD;
 
   for (let z = bounds.minZ; z <= bounds.maxZ; z += gridStep) {
     for (let x = bounds.minX; x <= bounds.maxX; x += gridStep) {
@@ -137,7 +144,9 @@ export function createFoglineEnvironmentContent(level, options = {}) {
         lod,
         position: Object.freeze({ x: point.x, y, z: point.z }),
         normal: Object.freeze(normal),
-        rotation: random() * Math.PI * 2
+        rotation: random() * Math.PI * 2,
+        tiltX: centeredRange(tiltLimit, random),
+        tiltZ: centeredRange(tiltLimit, random)
       }));
     }
   }
