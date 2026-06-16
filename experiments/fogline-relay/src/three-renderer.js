@@ -1,10 +1,7 @@
 import { clamp, forwardFromYaw } from "./math.js";
+import { createFoglineEnvironmentContent } from "./fogline-content-adapter.js";
 
 const THREE_URL = "https://unpkg.com/three@0.160.0/build/three.module.js";
-
-function color(value, fallback = "#77f3ff") {
-  return String(value ?? fallback);
-}
 
 function positionOf(object) {
   const transform = object?.position ?? object?.transform ?? object ?? {};
@@ -33,25 +30,15 @@ function setObjectVisible(object, visible) {
 
 function makeRelay(THREE) {
   const group = new THREE.Group();
-  const base = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.22, 0.32, 3.4, 10),
-    new THREE.MeshStandardMaterial({ color: "#10252a", roughness: 0.72, metalness: 0.22 })
-  );
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.32, 3.4, 10), new THREE.MeshStandardMaterial({ color: "#10252a", roughness: 0.72, metalness: 0.22 }));
   base.position.y = 1.7;
-  const coreMaterial = new THREE.MeshStandardMaterial({ color: "#77f3ff", emissive: "#77f3ff", emissiveIntensity: 1.8, roughness: 0.25 });
-  const core = new THREE.Mesh(new THREE.SphereGeometry(0.44, 18, 12), coreMaterial);
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.44, 18, 12), new THREE.MeshStandardMaterial({ color: "#77f3ff", emissive: "#77f3ff", emissiveIntensity: 1.8, roughness: 0.25 }));
   core.position.y = 3.42;
-  const beamMaterial = new THREE.MeshBasicMaterial({ color: "#77f3ff", transparent: true, opacity: 0.2, depthWrite: false });
-  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.34, 16, 14, 1, true), beamMaterial);
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.34, 16, 14, 1, true), new THREE.MeshBasicMaterial({ color: "#77f3ff", transparent: true, opacity: 0.2, depthWrite: false }));
   beam.position.y = 8.2;
-  beam.userData.kind = "beam";
-  const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(0.78, 0.035, 8, 36),
-    new THREE.MeshBasicMaterial({ color: "#bafcff", transparent: true, opacity: 0.6 })
-  );
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.035, 8, 36), new THREE.MeshBasicMaterial({ color: "#bafcff", transparent: true, opacity: 0.6 }));
   ring.position.y = 3.42;
   ring.rotation.x = Math.PI / 2;
-  ring.userData.kind = "scan-ring";
   group.add(base, core, beam, ring);
   group.userData.core = core;
   group.userData.beam = beam;
@@ -71,7 +58,6 @@ function makeGate(THREE) {
   top.position.y = 5.58;
   const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 1.3, 22, 24, 1, true), glow);
   beam.position.y = 11.0;
-  beam.userData.kind = "gate-beam";
   group.add(left, right, top, beam);
   group.userData.beam = beam;
   return group;
@@ -79,12 +65,10 @@ function makeGate(THREE) {
 
 function makeWraith(THREE) {
   const group = new THREE.Group();
-  const bodyMaterial = new THREE.MeshBasicMaterial({ color: "#ff5068", transparent: true, opacity: 0.38, depthWrite: false });
-  const auraMaterial = new THREE.MeshBasicMaterial({ color: "#ff5068", transparent: true, opacity: 0.12, depthWrite: false });
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.55, 18, 12), bodyMaterial);
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.55, 18, 12), new THREE.MeshBasicMaterial({ color: "#ff5068", transparent: true, opacity: 0.38, depthWrite: false }));
   body.scale.set(0.78, 1.85, 0.78);
   body.position.y = 1.3;
-  const aura = new THREE.Mesh(new THREE.SphereGeometry(1.25, 20, 12), auraMaterial);
+  const aura = new THREE.Mesh(new THREE.SphereGeometry(1.25, 20, 12), new THREE.MeshBasicMaterial({ color: "#ff5068", transparent: true, opacity: 0.12, depthWrite: false }));
   aura.scale.set(1.25, 1.65, 1.25);
   aura.position.y = 1.24;
   group.add(aura, body);
@@ -96,55 +80,111 @@ function makeWraith(THREE) {
 function makeTree(THREE, object) {
   const group = new THREE.Group();
   const scale = clamp(positionOf(object).scale, 0.55, 2.6);
-  const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.08 * scale, 0.14 * scale, 2.1 * scale, 6),
-    new THREE.MeshStandardMaterial({ color: "#101812", roughness: 0.95 })
-  );
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08 * scale, 0.14 * scale, 2.1 * scale, 6), new THREE.MeshStandardMaterial({ color: "#101812", roughness: 0.95 }));
   trunk.position.y = 1.05 * scale;
-  const canopy = new THREE.Mesh(
-    new THREE.ConeGeometry(0.9 * scale, 2.3 * scale, 7),
-    new THREE.MeshStandardMaterial({ color: object.archetype === "glow-plant" ? "#315f40" : "#162819", roughness: 0.9 })
-  );
+  const canopy = new THREE.Mesh(new THREE.ConeGeometry(0.9 * scale, 2.3 * scale, 7), new THREE.MeshStandardMaterial({ color: object.archetype === "glow-plant" ? "#315f40" : "#162819", roughness: 0.9 }));
   canopy.position.y = 2.55 * scale;
   group.add(trunk, canopy);
   return group;
 }
 
-function makeTerrain(THREE, snapshot) {
+function makeTerrain(THREE, snapshot, environment) {
   const terrain = new THREE.Group();
-  const bounds = snapshot.level?.bounds ?? { minX: -22, maxX: 22, minZ: -10, maxZ: 52 };
-  const width = Math.abs((bounds.maxX ?? 22) - (bounds.minX ?? -22)) + 20;
-  const depth = Math.abs((bounds.maxZ ?? 52) - (bounds.minZ ?? -10)) + 20;
+  const bounds = environment?.terrain?.bounds ?? snapshot.level?.bounds ?? { minX: -22, maxX: 22, minZ: -10, maxZ: 52 };
+  const width = Math.abs((bounds.maxX ?? 22) - (bounds.minX ?? -22));
+  const depth = Math.abs((bounds.maxZ ?? 52) - (bounds.minZ ?? -10));
+  const centerX = ((bounds.maxX ?? 22) + (bounds.minX ?? -22)) / 2;
   const centerZ = ((bounds.maxZ ?? 52) + (bounds.minZ ?? -10)) / 2;
-
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(width, depth, 48, 72),
-    new THREE.MeshStandardMaterial({ color: "#111c16", roughness: 0.96, metalness: 0.02 })
-  );
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.set(0, -0.04, centerZ);
+  const geometry = new THREE.PlaneGeometry(width, depth, 72, 96);
+  geometry.rotateX(-Math.PI / 2);
+  const positions = geometry.attributes.position;
+  for (let index = 0; index < positions.count; index += 1) {
+    const x = positions.getX(index) + centerX;
+    const z = positions.getZ(index) + centerZ;
+    positions.setY(index, environment?.terrain?.heightAt?.(x, z) ?? 0);
+  }
+  positions.needsUpdate = true;
+  geometry.computeVertexNormals();
+  const ground = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: "#111c16", roughness: 0.96, metalness: 0.02 }));
+  ground.position.set(centerX, -0.04, centerZ);
   terrain.add(ground);
 
-  const pathPoints = (snapshot.level?.route ?? []).map((p) => new THREE.Vector3(p.x, 0.035, p.z));
+  const pathPoints = (snapshot.level?.route ?? []).map((p) => new THREE.Vector3(p.x, (environment?.terrain?.heightAt?.(p.x, p.z) ?? 0) + 0.06, p.z));
   if (pathPoints.length > 1) {
-    const route = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints(pathPoints),
-      new THREE.LineBasicMaterial({ color: "#77f3ff", transparent: true, opacity: 0.42 })
-    );
-    terrain.add(route);
+    terrain.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pathPoints), new THREE.LineBasicMaterial({ color: "#77f3ff", transparent: true, opacity: 0.42 })));
     for (const point of pathPoints) {
-      const pad = new THREE.Mesh(
-        new THREE.CircleGeometry(1.15, 24),
-        new THREE.MeshBasicMaterial({ color: "#77f3ff", transparent: true, opacity: 0.06, depthWrite: false })
-      );
+      const pad = new THREE.Mesh(new THREE.CircleGeometry(1.15, 24), new THREE.MeshBasicMaterial({ color: "#77f3ff", transparent: true, opacity: 0.06, depthWrite: false }));
       pad.rotation.x = -Math.PI / 2;
       pad.position.copy(point);
-      pad.position.y = 0.04;
+      pad.position.y += 0.01;
       terrain.add(pad);
     }
   }
 
   return terrain;
+}
+
+function groupBySpecies(instances) {
+  const groups = new Map();
+  for (const instance of instances) {
+    if (instance.lod === "culled") continue;
+    const key = instance.speciesId;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(instance);
+  }
+  return groups;
+}
+
+function makeDenseForest(THREE, environment) {
+  const group = new THREE.Group();
+  group.name = "fogline-dense-environment";
+  const dummy = new THREE.Object3D();
+  const speciesById = new Map(environment.preset.species.map((species) => [species.id, species]));
+  const matrix = new THREE.Matrix4();
+
+  for (const [speciesId, instances] of groupBySpecies(environment.vegetation)) {
+    const species = speciesById.get(speciesId) ?? {};
+    const trunkMaterial = new THREE.MeshStandardMaterial({ color: species.trunkColor ?? "#101812", roughness: 0.94 });
+    const leafMaterial = new THREE.MeshStandardMaterial({ color: species.leafColor ?? "#162819", roughness: 0.9 });
+    const trunkMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08, 0.14, 2.1, 6), trunkMaterial, instances.length);
+    trunkMesh.name = `${speciesId}-trunks`;
+    trunkMesh.frustumCulled = false;
+    let canopyMesh = null;
+    if (species.crown !== "bare") {
+      const canopyGeometry = species.crown === "round" ? new THREE.SphereGeometry(0.7, 8, 6) : new THREE.ConeGeometry(0.9, 2.3, 7);
+      canopyMesh = new THREE.InstancedMesh(canopyGeometry, leafMaterial, instances.length);
+      canopyMesh.name = `${speciesId}-canopies`;
+      canopyMesh.frustumCulled = false;
+    }
+
+    instances.forEach((instance, index) => {
+      const scale = instance.scale;
+      dummy.position.set(instance.position.x, instance.position.y + 1.05 * scale, instance.position.z);
+      dummy.rotation.set(0, instance.rotation, 0);
+      dummy.scale.set(scale, scale, scale);
+      dummy.updateMatrix();
+      trunkMesh.setMatrixAt(index, dummy.matrix);
+
+      if (canopyMesh) {
+        dummy.position.set(instance.position.x, instance.position.y + 2.55 * scale, instance.position.z);
+        dummy.rotation.set(0, instance.rotation, 0);
+        const crownScale = instance.lod === "far" ? scale * 0.82 : scale;
+        dummy.scale.set(crownScale, crownScale, crownScale);
+        dummy.updateMatrix();
+        canopyMesh.setMatrixAt(index, dummy.matrix);
+      }
+    });
+
+    trunkMesh.instanceMatrix.needsUpdate = true;
+    group.add(trunkMesh);
+    if (canopyMesh) {
+      canopyMesh.instanceMatrix.needsUpdate = true;
+      group.add(canopyMesh);
+    }
+  }
+
+  matrix.identity();
+  return group;
 }
 
 export async function createThreeRenderer(canvas, options = {}) {
@@ -174,6 +214,8 @@ export async function createThreeRenderer(canvas, options = {}) {
   const props = new Map();
   let gate = null;
   let terrain = null;
+  let environment = null;
+  let environmentGroup = null;
   let lastTerrainId = null;
 
   function resize() {
@@ -191,11 +233,18 @@ export async function createThreeRenderer(canvas, options = {}) {
     camera.lookAt(player.x + forward.x * 12, 1.56, player.z + forward.z * 12);
   }
 
+  function syncEnvironment(snapshot) {
+    if (environment) return;
+    environment = createFoglineEnvironmentContent(snapshot.level);
+    environmentGroup = makeDenseForest(THREE, environment);
+    root.add(environmentGroup);
+  }
+
   function syncTerrain(snapshot) {
     const terrainId = snapshot.level?.id ?? "fogline-relay";
     if (terrain && lastTerrainId === terrainId) return;
     if (terrain) root.remove(terrain);
-    terrain = makeTerrain(THREE, snapshot);
+    terrain = makeTerrain(THREE, snapshot, environment);
     terrain.name = "fogline-3d-terrain";
     root.add(terrain);
     lastTerrainId = terrainId;
@@ -242,7 +291,7 @@ export async function createThreeRenderer(canvas, options = {}) {
       } else if (["trunk", "fern", "glow-plant", "tree", "scatter"].includes(object.archetype)) {
         const id = object.id ?? `${object.archetype}-${Math.round(pos.x * 10)}-${Math.round(pos.z * 10)}`;
         mesh = props.get(id);
-        if (!mesh && props.size < 320) {
+        if (!mesh && props.size < 96) {
           mesh = makeTree(THREE, object);
           props.set(id, mesh);
           root.add(mesh);
@@ -251,7 +300,8 @@ export async function createThreeRenderer(canvas, options = {}) {
         seen.add(id);
       }
       if (!mesh) continue;
-      mesh.position.set(pos.x, 0, pos.z);
+      const y = environment?.terrain?.heightAt?.(pos.x, pos.z) ?? 0;
+      mesh.position.set(pos.x, y, pos.z);
       mesh.rotation.y = Number(object.rotation ?? object.transform?.yaw ?? 0);
       setObjectVisible(mesh, true);
     }
@@ -266,6 +316,7 @@ export async function createThreeRenderer(canvas, options = {}) {
     camera,
     draw(snapshot) {
       resize();
+      syncEnvironment(snapshot);
       syncCamera(snapshot);
       syncTerrain(snapshot);
       syncObjects(snapshot);
