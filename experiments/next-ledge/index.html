@@ -22,6 +22,10 @@
     <div id="mobileControls" aria-hidden="true"><div id="leftPad" class="pad">◀</div><div id="rightPad" class="pad">▶</div></div>
     <section id="errorPanel" role="alert" hidden></section>
   </main>
+  <script type="module">
+    import { attachNexusRealtimePageLoader } from "../_shared/nexus-realtime-page-loader.js";
+    attachNexusRealtimePageLoader({ title: "Next Ledge", loadingLabel: "Loading Next Ledge" });
+  </script>
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>
