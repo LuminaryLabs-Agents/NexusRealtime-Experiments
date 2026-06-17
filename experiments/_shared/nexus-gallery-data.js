@@ -57,11 +57,11 @@ export const games = Object.freeze([
     visual: "hell",
     playLabel: "Play game",
     tags: [
-      { label: "AAA Content", tone: "gold" },
+      { label: "2.5D Cel", tone: "gold" },
       { label: "Generic DSK", tone: "green" },
-      { label: "Defense", tone: "blue" }
+      { label: "Tower UI", tone: "blue" }
     ],
-    description: "Full content-pass 2.5D defense game with 3 maps, 12 towers, 12+ enemies, 3 bosses, 30 waves, hard/endless/debug presets, rewards, and campaign metadata."
+    description: "2.5D cel-style defense game with sleek gameplay-only HUD, 12-card tower panel, upgrade/context panel, placement ghost, range rings, and full AAA content pass."
   },
   {
     id: "next-ledge",
