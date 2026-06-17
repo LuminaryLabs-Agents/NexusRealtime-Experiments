@@ -37,7 +37,8 @@ assert.equal(resolveSignalBastionPreset("?preset=hard").mode, "hard");
 assert.equal(resolveSignalBastionPreset("?preset=endless").level.waves.length, 60);
 
 const index = readFileSync("games/signal-bastion/index.html", "utf8");
-assert.match(index, /src\/boot\.js\?v=aaa-dsk-phase/);
+assert.match(index, /src\/boot\.js\?v=aaa-content-pass/);
+assert.match(index, /preset=hard\/endless\/debug/);
 
 const boot = readFileSync("games/signal-bastion/src/boot.js", "utf8");
 assert.match(boot, /generic-defense-aaa-kits/);
