@@ -26,3 +26,5 @@ NexusRealtime-Experiments hosts playable browser experiments that compose NexusR
 - Batch 09 brings the shared AAA route set to 72 seeds from `gpt-it` output; when GPT truncates a route line, preserve the returned slug/title/fantasy/verb and complete only the missing operational details conservatively inside the existing registry schema.
 
 - Batch 10 brings the shared AAA route set to 80 seeds using GPT-sourced route ideas plus the existing registry-driven route shell pattern.
+
+- The 100-game AAA experiment catalog is implemented in the shared registry-driven route shell. The final 20 games came from `gpt-it` output and continue the pressure/resource/action-window/affordance DSK composition marker pattern. Phase 2 SimTime QA should start only after `npm run check` passes on the complete catalog.

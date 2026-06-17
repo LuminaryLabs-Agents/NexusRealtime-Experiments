@@ -1,6 +1,6 @@
 # AAA 100 Game Backlog
 
-Status: Batch 10 implemented from `gpt-it` output.
+Status: 100-game catalog implemented from `gpt-it` output.
 
 ## Batch 01
 
@@ -134,4 +134,29 @@ Status: Batch 10 implemented from `gpt-it` output.
 | `palladium-reef-harvester` | Palladium Reef Harvester | Harvest | Tide toxin rises, reef song desyncs, and overharvest collapses coral branches. | Silver coral, turquoise surf, industrial fog, gold harvesting drones. | pressure, resource, action window, affordance | implemented |
 | `ghostline-bellwright` | Ghostline Bellwright | Cast | Ghost trains accelerate, bell metal cools, and mist switches hide broken track. | Fog rails, translucent locomotives, molten bell molds, brass spectral sparks. | pressure, resource, action window, affordance | implemented |
 
-20 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.
+## Batch 11-13 Final Catalog
+
+| Slug | Title | Verb | Pressure Loop | Visual Identity | Kits | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `aurora-lance-herder` | Aurora Lance Herder | Herd | Herd cohesion frays while aurora gates rotate. | Frozen sky pasture with ribbon bridges and electric horn silhouettes. | pressure, resource, action window, affordance | implemented |
+| `rust-moon-sapper` | Rust Moon Sapper | Defuse | Fuse timers split while moon legs reposition. | Oxidized lunar walkers above crenelated walls and red dust beams. | pressure, resource, action window, affordance | implemented |
+| `silica-titan-mender` | Silica Titan Mender | Stabilize | Fracture stress spreads while mirror pests multiply. | Translucent titan torso, inner scaffolds, refracted battlefield shards. | pressure, resource, action window, affordance | implemented |
+| `nocturne-lock-diviner` | Nocturne Lock Diviner | Decode | False stars accumulate while the vault rotates away. | Black observatory vault with orbiting glyph tumblers and candle lenses. | pressure, resource, action window, affordance | implemented |
+| `crimson-monsoon-librarian` | Crimson Monsoon Librarian | Catalog | Shelf water rises while books mutate into hostile birds. | Vertical rain library with floating aisles, red canals, paper swarms. | pressure, resource, action window, affordance | implemented |
+| `ivory-dragon-ferryman` | Ivory Dragon Ferryman | Ferry | Current memory shifts while eggs wake if jostled. | Mist river, ivory egg barges, vanishing docks, lantern reeds. | pressure, resource, action window, affordance | implemented |
+| `quantum-puppet-bailiff` | Quantum Puppet Bailiff | Bind | Timelines fork while guilty puppets swap strings. | Quantum court stage with judge masks, split benches, tangled neon strings. | pressure, resource, action window, affordance | implemented |
+| `opal-wind-sculptor` | Opal Wind Sculptor | Sculpt | Gust budget drains while fruit bruises from turbulence. | Sky orchard, opal wind ribbons, hanging roots, glass fruit bells. | pressure, resource, action window, affordance | implemented |
+| `tarot-engine-broker` | Tarot Engine Broker | Broker | Trust meters decay while engines demand incompatible omens. | Smoky machine parlor with card pistons, oracle gears, velvet cables. | pressure, resource, action window, affordance | implemented |
+| `glacier-chain-towmaster` | Glacier Chain Towmaster | Tow | Chain tension spikes while ice mass drifts toward mines. | Arctic harbor, chain cranes, blue cliffs, bobbing black mines. | pressure, resource, action window, affordance | implemented |
+| `lilac-crypt-whisperer` | Lilac Crypt Whisperer | Whisper | Ghost suspicion rises while stone ears lose patience. | Lilac crypt halls, rotating statue faces, candle dust, bone doors. | pressure, resource, action window, affordance | implemented |
+| `basalt-gyro-calibrator` | Basalt Gyro Calibrator | Calibrate | Gyro wobble compounds while districts overheat unevenly. | Basalt city rings, lava bearings, rotating skyline, heat gauges. | pressure, resource, action window, affordance | implemented |
+| `marble-rift-magnetist` | Marble Rift Magnetist | Magnetize | Polarity windows invert while island seams crumble. | White marble archipelago, purple rift throat, magnetic halos. | pressure, resource, action window, affordance | implemented |
+| `amber-wasp-chorister` | Amber Wasp Chorister | Harmonize | Swarm anger rises while pitch lanes desync. | Amber hive fortress, musical honeycombs, armored wasp spirals. | pressure, resource, action window, affordance | implemented |
+| `cinder-ink-tracer` | Cinder Ink Tracer | Trace | Trail heat fades while decoy scriptures ignite. | Monastery roofs, glowing ash calligraphy, invisible footsteps. | pressure, resource, action window, affordance | implemented |
+| `saffron-anchor-priest` | Saffron Anchor Priest | Consecrate | Island drift accelerates while anchor prayers desync. | Saffron temples on moving cliffs, chain altars, reality cracks. | pressure, resource, action window, affordance | implemented |
+| `aether-thread-braider` | Aether Thread Braider | Braid | Thread tension snaps while pilgrims panic and scatter. | Empty sky chasm, glowing fingertip threads, tiny pilgrim lanterns. | pressure, resource, action window, affordance | implemented |
+| `bluefire-marrow-igniter` | Bluefire Marrow Igniter | Ignite | Marrow flame consumes oxygen while frost locks joints. | Colossal rib cavern, blue fire veins, fossil pistons, ice crust. | pressure, resource, action window, affordance | implemented |
+| `onyx-sand-distiller` | Onyx Sand Distiller | Distill | Purifier heat rises while dune raiders poison filters. | Black desert refinery, glass coils, camel silhouettes, poison dust. | pressure, resource, action window, affordance | implemented |
+| `prism-bastion-sealer` | Prism Bastion Sealer | Seal | Breach colors stack while wrong seals empower invaders. | Prismatic fortress walls, color storms, stained-glass shields. | pressure, resource, action window, affordance | implemented |
+
+All 100 unique AAA experiment seeds are implemented. Phase 2 SimTime QA is now eligible to start route-by-route.

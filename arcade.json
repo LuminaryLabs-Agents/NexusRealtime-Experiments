@@ -505,6 +505,126 @@
       "path": "./experiments/aaa-batch/ghostline-bellwright/",
       "kind": ["experiment", "aaa-seed"],
       "tags": ["Cast", "Ghostline", "Bell"]
+    },
+    {
+      "title": "Aurora Lance Herder",
+      "path": "./experiments/aaa-batch/aurora-lance-herder/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Herding", "Route Control", "Weather"]
+    },
+    {
+      "title": "Rust Moon Sapper",
+      "path": "./experiments/aaa-batch/rust-moon-sapper/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Sabotage", "Timer", "Traversal"]
+    },
+    {
+      "title": "Silica Titan Mender",
+      "path": "./experiments/aaa-batch/silica-titan-mender/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Repair", "Giant Scale", "Pressure"]
+    },
+    {
+      "title": "Nocturne Lock Diviner",
+      "path": "./experiments/aaa-batch/nocturne-lock-diviner/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Puzzle", "Pattern Read", "Precision"]
+    },
+    {
+      "title": "Crimson Monsoon Librarian",
+      "path": "./experiments/aaa-batch/crimson-monsoon-librarian/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Collection", "Archive", "Hazard"]
+    },
+    {
+      "title": "Ivory Dragon Ferryman",
+      "path": "./experiments/aaa-batch/ivory-dragon-ferryman/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Vehicle", "Cargo", "Navigation"]
+    },
+    {
+      "title": "Quantum Puppet Bailiff",
+      "path": "./experiments/aaa-batch/quantum-puppet-bailiff/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Control", "Chase", "Timeline"]
+    },
+    {
+      "title": "Opal Wind Sculptor",
+      "path": "./experiments/aaa-batch/opal-wind-sculptor/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Airflow", "Physics", "Protection"]
+    },
+    {
+      "title": "Tarot Engine Broker",
+      "path": "./experiments/aaa-batch/tarot-engine-broker/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Negotiation", "Cards", "Systems"]
+    },
+    {
+      "title": "Glacier Chain Towmaster",
+      "path": "./experiments/aaa-batch/glacier-chain-towmaster/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Towing", "Inertia", "Avoidance"]
+    },
+    {
+      "title": "Lilac Crypt Whisperer",
+      "path": "./experiments/aaa-batch/lilac-crypt-whisperer/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Stealth", "Dialogue", "Maze"]
+    },
+    {
+      "title": "Basalt Gyro Calibrator",
+      "path": "./experiments/aaa-batch/basalt-gyro-calibrator/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Balance", "City Scale", "Timing"]
+    },
+    {
+      "title": "Marble Rift Magnetist",
+      "path": "./experiments/aaa-batch/marble-rift-magnetist/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Magnetism", "Traversal", "Assembly"]
+    },
+    {
+      "title": "Amber Wasp Chorister",
+      "path": "./experiments/aaa-batch/amber-wasp-chorister/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Swarm", "Rhythm", "Defense"]
+    },
+    {
+      "title": "Cinder Ink Tracer",
+      "path": "./experiments/aaa-batch/cinder-ink-tracer/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Investigation", "Pursuit", "Reveal"]
+    },
+    {
+      "title": "Saffron Anchor Priest",
+      "path": "./experiments/aaa-batch/saffron-anchor-priest/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Ritual", "Stabilization", "Traversal"]
+    },
+    {
+      "title": "Aether Thread Braider",
+      "path": "./experiments/aaa-batch/aether-thread-braider/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Construction", "Pathing", "Rescue"]
+    },
+    {
+      "title": "Bluefire Marrow Igniter",
+      "path": "./experiments/aaa-batch/bluefire-marrow-igniter/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Ignition", "Oxygen", "Climb"]
+    },
+    {
+      "title": "Onyx Sand Distiller",
+      "path": "./experiments/aaa-batch/onyx-sand-distiller/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Resource", "Refinery", "Survival"]
+    },
+    {
+      "title": "Prism Bastion Sealer",
+      "path": "./experiments/aaa-batch/prism-bastion-sealer/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Matching", "Defense", "Magic"]
     }
   ]
 }
