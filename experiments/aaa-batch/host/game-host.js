@@ -1,4 +1,5 @@
 import { createActionContract } from "./action-contract.js";
+import { createAffordanceContract } from "./affordance-contract.js";
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -16,6 +17,7 @@ function makeNodes(game) {
 
 export function createAaaBatchGameHost(game) {
   const actionContract = createActionContract(game);
+  const affordanceContract = createAffordanceContract(game);
   const state = {
     id: game.id,
     title: game.title,
@@ -46,6 +48,10 @@ export function createAaaBatchGameHost(game) {
     actionContract: {
       actions: actionContract.actions.map((action) => ({ ...action })),
       controls: [...actionContract.controls]
+    },
+    affordances: {
+      available: affordanceContract.getAvailableAffordances({ mode: "active" }).map((affordance) => ({ ...affordance })),
+      descriptors: affordanceContract.affordances.map((affordance) => ({ ...affordance, descriptor: { ...affordance.descriptor } }))
     },
     lastRejectionReason: null
   };
@@ -79,6 +85,14 @@ export function createAaaBatchGameHost(game) {
       state.lastRejectionReason = actionResult.rejectionReason;
       event(`rejected:${action}`);
       return getState();
+    }
+    if (payload.targetId) {
+      const affordanceResult = affordanceContract.validateTargetAffordance(actionResult.actionId, payload.targetId, state);
+      if (!affordanceResult.ok) {
+        state.lastRejectionReason = affordanceResult.rejectionReason;
+        event(`rejected:${actionResult.actionId}`);
+        return getState();
+      }
     }
     state.lastRejectionReason = null;
     action = actionResult.actionId;
@@ -116,6 +130,7 @@ export function createAaaBatchGameHost(game) {
       state.failed = true;
       event("failed");
     }
+    state.affordances.available = affordanceContract.getAvailableAffordances(state).map((affordance) => ({ ...affordance }));
     syncResources();
     return getState();
   }
@@ -152,6 +167,7 @@ export function createAaaBatchGameHost(game) {
       score: state.score,
       lastRejectionReason: state.lastRejectionReason,
       recentEvents: [...state.recentEvents],
+      affordances: clone(state.affordances),
       kitStack: [...state.kitStack]
     };
   }

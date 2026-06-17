@@ -169,6 +169,54 @@
       "path": "./experiments/aaa-batch/catacomb-postmaster/",
       "kind": ["experiment", "aaa-seed"],
       "tags": ["Route", "Mail", "Valves"]
+    },
+    {
+      "title": "Inkstorm Cartel",
+      "path": "./experiments/aaa-batch/inkstorm-cartel/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Reroute", "Noir", "Maps"]
+    },
+    {
+      "title": "Bone Orchard Courier",
+      "path": "./experiments/aaa-batch/bone-orchard-courier/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Deliver", "Bones", "Crows"]
+    },
+    {
+      "title": "Plasma Calligrapher",
+      "path": "./experiments/aaa-batch/plasma-calligrapher/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Trace", "Plasma", "Glyphs"]
+    },
+    {
+      "title": "Iron Whale Vault",
+      "path": "./experiments/aaa-batch/iron-whale-vault/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Divert", "Whale", "Valves"]
+    },
+    {
+      "title": "Velvet Parasite",
+      "path": "./experiments/aaa-batch/velvet-parasite/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Nibble", "Velvet", "Needles"]
+    },
+    {
+      "title": "Monolith Gardener",
+      "path": "./experiments/aaa-batch/monolith-gardener/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Prune", "Garden", "Vines"]
+    },
+    {
+      "title": "Ashen Sommelier",
+      "path": "./experiments/aaa-batch/ashen-sommelier/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Blend", "Volcanic", "Wine"]
+    },
+    {
+      "title": "Halo Mason",
+      "path": "./experiments/aaa-batch/halo-mason/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Socket", "Halo", "Alignment"]
     }
   ]
 }

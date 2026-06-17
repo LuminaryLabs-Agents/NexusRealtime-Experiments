@@ -1,6 +1,6 @@
 # AAA 100 Game Backlog
 
-Status: Batch 03 implemented from `gpt-it` output.
+Status: Batch 04 implemented from `gpt-it` output.
 
 ## Batch 01
 
@@ -43,4 +43,17 @@ Status: Batch 03 implemented from `gpt-it` output.
 | `meteor-tailor` | Meteor Tailor | Stitch | Reentry heat, stitch windows, torn sail descent | High atmosphere, meteors, silver thread | generic pressure, generic resource, generic action window, rotation data | implemented |
 | `catacomb-postmaster` | Catacomb Postmaster | Route | Trace meter, valve jams, warden alerts | Catacombs, brass tubes, glowing letters | generic pressure, generic resource, generic action window, route topology | implemented |
 
-76 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.
+## Batch 04
+
+| Slug | Title | Verb | Pressure Loop | Visual Identity | Kits | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `inkstorm-cartel` | Inkstorm Cartel | Reroute | Ink rain, patrol contracts, map memory erase | Noir rooftops, black rain, glowing map lines | pressure, resource, action window, affordance | implemented |
+| `bone-orchard-courier` | Bone Orchard Courier | Deliver | Crows, grave wind, tree hunger decay | Bone groves, crow swarms, spirit fruit | pressure, resource, affordance, spatial objective | implemented |
+| `plasma-calligrapher` | Plasma Calligrapher | Trace | Stroke decay, brush overheat, glyph leaks | Plasma sky, brush trails, containment grid | pressure, resource, action window, affordance | implemented |
+| `iron-whale-vault` | Iron Whale Vault | Divert | Steam spikes, piston misalignment, chamber flood | Brass organs, whale ribs, valve veins | pressure, resource, action window, affordance | implemented |
+| `velvet-parasite` | Velvet Parasite | Nibble | Tailor awareness, thread tension, needle sweeps | Velvet fibers, gold threads, silver needles | pressure, resource, action window, affordance | implemented |
+| `monolith-gardener` | Monolith Gardener | Prune | Vine overgrowth, poison blooms, fractures | Black stone garden, neon vines, glass flowers | pressure, resource, action window, affordance | implemented |
+| `ashen-sommelier` | Ashen Sommelier | Blend | Temperature, volatile notes, impatient nobles | Lava cellar, obsidian glasses, smoke ribbons | pressure, resource, action window, affordance | implemented |
+| `halo-mason` | Halo Mason | Socket | Inspection gaze, arc drift, cracked halo | Marble void, halo fragments, gaze beams | pressure, resource, action window, affordance | implemented |
+
+68 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.

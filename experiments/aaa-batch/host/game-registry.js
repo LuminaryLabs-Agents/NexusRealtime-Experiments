@@ -1,4 +1,5 @@
 import { createActionContract } from "./action-contract.js";
+import { createAffordanceContract } from "./affordance-contract.js";
 
 const aaaBatchGameSpecs = [
   {
@@ -312,6 +313,110 @@ const aaaBatchGameSpecs = [
     kitStack: ["generic-pressure-loop-kit", "generic-resource-loop-kit", "generic-action-window-kit", "route-topology-data"],
     palette: ["#07100b", "#2fff9a", "#b9853b", "#e9e0b8"],
     smoke: ["rotateValve", "dispatchLetter", "purgeJam"]
+  },
+  {
+    id: "inkstorm-cartel",
+    title: "Inkstorm Cartel",
+    route: "./experiments/aaa-batch/inkstorm-cartel/",
+    fantasy: "Smuggle living maps through a city where rain rewrites the streets.",
+    verb: "Reroute",
+    pressureLoop: "Ink rain corrupts paths, patrol contracts tighten, wrong turns erase map memory.",
+    visualIdentity: "Noir rooftops, black rain, glowing map lines, cyan street signs.",
+    controls: "A/D choose alley, E mark route, Space vault, Q dry map, R restart.",
+    kitStack: ["generic-pressure-loop-kit", "generic-resource-loop-kit", "generic-action-window-kit", "generic-affordance-descriptor-kit"],
+    palette: ["#05070a", "#0fd7ff", "#f2f2df", "#612cff"],
+    smoke: ["markRoute", "vaultGap", "dryMap"]
+  },
+  {
+    id: "bone-orchard-courier",
+    title: "Bone Orchard Courier",
+    route: "./experiments/aaa-batch/bone-orchard-courier/",
+    fantasy: "Deliver royal bones to ancestral trees before skeletal crows steal them.",
+    verb: "Deliver",
+    pressureLoop: "Crows stalk exposed bones, grave wind scrambles paths, tree hunger decays.",
+    visualIdentity: "White bone groves, black crow swarms, amber spirit fruit, dusk fog.",
+    controls: "WASD move, E deliver bone, Space scare crows, Shift hide under roots, R restart.",
+    kitStack: ["generic-pressure-loop-kit", "generic-resource-loop-kit", "generic-affordance-descriptor-kit", "spatial-objective-data"],
+    palette: ["#0d0b08", "#eadfc7", "#d98f2b", "#1f1f2b"],
+    smoke: ["hideUnderRoots", "scareCrows", "deliverBone"]
+  },
+  {
+    id: "plasma-calligrapher",
+    title: "Plasma Calligrapher",
+    route: "./experiments/aaa-batch/plasma-calligrapher/",
+    fantasy: "Write unstable letters into a reactor sky to spell containment wards.",
+    verb: "Trace",
+    pressureLoop: "Plasma strokes decay, overdraw overheats the brush, malformed glyphs leak charge.",
+    visualIdentity: "Magenta plasma sky, white-hot brush trails, black containment grid.",
+    controls: "Mouse trace, Click start stroke, Space seal glyph, E cool brush, R restart.",
+    kitStack: ["generic-pressure-loop-kit", "generic-resource-loop-kit", "generic-action-window-kit", "generic-affordance-descriptor-kit"],
+    palette: ["#080212", "#ff2bd6", "#fff7f0", "#35ffc8"],
+    smoke: ["startStroke", "coolBrush", "sealGlyph"]
+  },
+  {
+    id: "iron-whale-vault",
+    title: "Iron Whale Vault",
+    route: "./experiments/aaa-batch/iron-whale-vault/",
+    fantasy: "Navigate inside a mechanical whale to unlock organ-vault chambers.",
+    verb: "Divert",
+    pressureLoop: "Steam pressure spikes, piston doors misalign, wrong valve routes flood chambers.",
+    visualIdentity: "Brass organs, whale ribs, steam vents, glowing valve veins.",
+    controls: "A/D select valve, E turn valve, Space brace piston, Q purge steam, R restart.",
+    kitStack: ["generic-pressure-loop-kit", "generic-resource-loop-kit", "generic-action-window-kit", "generic-affordance-descriptor-kit"],
+    palette: ["#120c08", "#b97932", "#d9d1bd", "#38c7ff"],
+    smoke: ["turnValve", "bracePiston", "purgeSteam"]
+  },
+  {
+    id: "velvet-parasite",
+    title: "Velvet Parasite",
+    route: "./experiments/aaa-batch/velvet-parasite/",
+    fantasy: "Pilot a tiny parasite through a royal cloak, feeding on threads without waking the tailor.",
+    verb: "Nibble",
+    pressureLoop: "Tailor awareness rises, thread tension snaps routes, greed increases needle sweeps.",
+    visualIdentity: "Macro velvet fibers, gold thread highways, silver needles, red fabric shadows.",
+    controls: "WASD crawl, E nibble thread, Space dodge needle, Shift cling, R restart.",
+    kitStack: ["generic-pressure-loop-kit", "generic-resource-loop-kit", "generic-action-window-kit", "generic-affordance-descriptor-kit"],
+    palette: ["#21020b", "#b90f3d", "#f2c86b", "#cfd2dc"],
+    smoke: ["clingFiber", "nibbleThread", "dodgeNeedle"]
+  },
+  {
+    id: "monolith-gardener",
+    title: "Monolith Gardener",
+    route: "./experiments/aaa-batch/monolith-gardener/",
+    fantasy: "Prune alien monolith vines so a sleeping black garden blooms in safe patterns.",
+    verb: "Prune",
+    pressureLoop: "Vines overgrow, forbidden blooms poison lanes, pruning too fast fractures monoliths.",
+    visualIdentity: "Black stone garden, neon vine geometry, glass flowers, low alien sun.",
+    controls: "Click vine node, Q/E choose cut type, E prune, Space pollinate, R restart.",
+    kitStack: ["generic-pressure-loop-kit", "generic-resource-loop-kit", "generic-action-window-kit", "generic-affordance-descriptor-kit"],
+    palette: ["#030505", "#39ff88", "#d76bff", "#f0b85a"],
+    smoke: ["selectVine", "pruneNode", "pollinateBloom"]
+  },
+  {
+    id: "ashen-sommelier",
+    title: "Ashen Sommelier",
+    route: "./experiments/aaa-batch/ashen-sommelier/",
+    fantasy: "Blend volcanic wines for fire nobles before the tasting hall combusts.",
+    verb: "Blend",
+    pressureLoop: "Temperature rises, volatile notes clash, impatient nobles reduce tasting time.",
+    visualIdentity: "Lava cellar, obsidian glasses, smoke ribbons, ruby wine light.",
+    controls: "A/D select cask, E pour, Q chill, Space serve, R restart.",
+    kitStack: ["generic-pressure-loop-kit", "generic-resource-loop-kit", "generic-action-window-kit", "generic-affordance-descriptor-kit"],
+    palette: ["#160604", "#ff4a1c", "#7b0d19", "#ffd7a0"],
+    smoke: ["pourCask", "chillBlend", "serveGlass"]
+  },
+  {
+    id: "halo-mason",
+    title: "Halo Mason",
+    route: "./experiments/aaa-batch/halo-mason/",
+    fantasy: "Rebuild shattered angel halos by socketing orbiting stone arcs under divine inspection.",
+    verb: "Socket",
+    pressureLoop: "Inspection gaze sweeps the arena, arc alignment drifts, wrong sockets crack the halo.",
+    visualIdentity: "Marble void, golden halo fragments, white gaze beams, floating chisels.",
+    controls: "A/D rotate arc, E socket piece, Space polish, Q reject piece, R restart.",
+    kitStack: ["generic-pressure-loop-kit", "generic-resource-loop-kit", "generic-action-window-kit", "generic-affordance-descriptor-kit"],
+    palette: ["#f8f4e6", "#e2ae34", "#5a6cff", "#20202a"],
+    smoke: ["rotateArc", "polishPiece", "socketPiece"]
   }
 ];
 
@@ -319,7 +424,11 @@ export const aaaBatchGames = Object.freeze(aaaBatchGameSpecs.map((game) => Objec
   ...game,
   routePath: game.route,
   smokeActions: Object.freeze([...game.smoke]),
-  actions: Object.freeze(createActionContract(game).actions.slice(0, game.smoke.length))
+  actions: Object.freeze(createActionContract(game).actions.slice(0, game.smoke.length)),
+  affordances: createAffordanceContract({
+    ...game,
+    actions: createActionContract(game).actions.slice(0, game.smoke.length)
+  }).affordances
 })));
 
 export const aaaBatchGalleryGames = Object.freeze(aaaBatchGames.map((game) => ({

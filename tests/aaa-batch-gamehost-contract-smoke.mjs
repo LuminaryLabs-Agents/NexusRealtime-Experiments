@@ -22,6 +22,7 @@ for (const game of aaaBatchGames) {
   assert.ok(game.palette.length >= 4, `${game.id} should expose a usable palette`);
   assert.ok(game.smokeActions.length === 3, `${game.id} should expose three smoke actions`);
   assert.ok(game.actions.length >= 3, `${game.id} should expose declared actions`);
+  assert.ok(game.affordances.length >= 3, `${game.id} should expose declared affordances`);
 
   const host = createAaaBatchGameHost(game);
   assert.equal(typeof host.getState, "function", `${game.id} should expose getState`);
@@ -36,11 +37,16 @@ for (const game of aaaBatchGames) {
   assert.equal(typeof initial.completed, "boolean", `${game.id} should expose completed flag`);
   assert.equal(typeof initial.failed, "boolean", `${game.id} should expose failed flag`);
   assert.ok(Array.isArray(initial.recentEvents), `${game.id} should expose recent events`);
+  assert.ok(initial.affordances?.available?.length >= 3, `${game.id} should expose available affordance descriptors`);
 
   host.dispatch("__invalid_contract_action__");
   const rejected = host.getState();
   assert.match(rejected.lastRejectionReason, /unknown action/, `${game.id} should reject invalid input in GameHost`);
   assert.match(rejected.lastRejectionReason, /__invalid_contract_action__/, `${game.id} should keep stable rejection reason`);
+
+  const invalidTargetHost = createAaaBatchGameHost(game);
+  invalidTargetHost.dispatch(game.smokeActions[0], { targetId: "__missing_target__" });
+  assert.match(invalidTargetHost.getState().lastRejectionReason, /affordance unavailable/, `${game.id} should reject invalid target affordance`);
 
   const first = createAaaBatchGameHost(game).runSmoke();
   const second = createAaaBatchGameHost(game).runSmoke();
