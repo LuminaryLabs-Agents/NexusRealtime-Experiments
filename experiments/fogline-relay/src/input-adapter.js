@@ -18,7 +18,7 @@ export function createInputAdapter({ canvas }) {
   window.addEventListener("blur", () => keys.clear());
   window.addEventListener("mousemove", (event) => {
     if (document.pointerLockElement !== canvas) return;
-    turn += event.movementX * 0.0026;
+    turn -= event.movementX * 0.0026;
     pitch -= event.movementY * 0.0021;
   });
   canvas.addEventListener("click", () => {
@@ -27,10 +27,10 @@ export function createInputAdapter({ canvas }) {
 
   return {
     flush(engine) {
-      const keyboardTurn = (keys.has("ArrowRight") ? 1 : 0) - (keys.has("ArrowLeft") ? 1 : 0);
+      const keyboardTurn = (keys.has("ArrowLeft") ? 1 : 0) - (keys.has("ArrowRight") ? 1 : 0);
       const keyboardPitch = (keys.has("ArrowUp") ? 1 : 0) - (keys.has("ArrowDown") ? 1 : 0);
       const payload = {
-        moveX: (keys.has("d") ? 1 : 0) - (keys.has("a") ? 1 : 0),
+        moveX: (keys.has("a") ? 1 : 0) - (keys.has("d") ? 1 : 0),
         moveZ: (keys.has("w") ? 1 : 0) - (keys.has("s") ? 1 : 0),
         turn: turn + keyboardTurn * 0.045,
         pitch: pitch + keyboardPitch * 0.038,
