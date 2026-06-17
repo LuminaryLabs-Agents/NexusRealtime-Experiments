@@ -52,10 +52,10 @@
       "id": "signal-bastion",
       "kind": "game",
       "canonicalPath": "games/signal-bastion/",
-      "status": "consolidated-aaa-dsk-host-split",
+      "status": "aaa-full-content-pass",
       "domainCutover": ["generic-defense-aaa-kits", "generic-defense-foundation-kit", "generic-defense-world-kit", "generic-defense-build-kit", "generic-defense-combat-kit", "generic-defense-agent-kit", "generic-defense-wave-kit", "generic-defense-economy-kit", "generic-defense-ability-kit", "generic-defense-objective-kit", "generic-defense-presentation-kit", "generic-defense-scale-kit", "generic-defense-authoring-qa-kit"],
       "bridgeNeeded": "none; generic-defense-aaa-kits expose the consolidated host-facing DSK facade",
-      "featureParity": ["click anchors to build/select", "1/2/3 blueprint selection", "U upgrade selected structure", "Backspace sell selected structure", "Space start wave", "R restart", "path/slot/vital target descriptors", "waves, agents, projectiles, damage, rewards", "modular preset/input/renderer/boot host split"]
+      "featureParity": ["3 maps", "12 towers", "12+ enemies", "3 bosses", "30 authored waves", "60-wave endless preset", "hard/debug presets", "reward pool", "campaign metadata", "click anchors to build/select", "1-5 blueprint hotkeys", "U upgrade selected structure", "Backspace sell selected structure", "Space start wave", "R restart", "modular preset/input/renderer/boot host split"]
     },
     {
       "id": "rogue-lite-hellscape-siege",
