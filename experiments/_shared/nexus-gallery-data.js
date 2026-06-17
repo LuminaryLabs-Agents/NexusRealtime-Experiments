@@ -22,6 +22,20 @@ export const games = Object.freeze([
     description: "First-person survey-pressure loop for scan targets, fog zones, timed pressure, hazard state, and renderer-only visual buckets."
   },
   {
+    id: "signal-bastion",
+    title: "Signal Bastion",
+    route: "./games/signal-bastion/",
+    kind: "game",
+    visual: "hell",
+    playLabel: "Play game",
+    tags: [
+      { label: "Generic DSK", tone: "gold" },
+      { label: "Defense", tone: "green" },
+      { label: "Canvas", tone: "blue" }
+    ],
+    description: "Playable 2.5D defense game composed from the generic-defense ProtoKit bundle: paths, build slots, structures, waves, agents, projectiles, currency, and descriptors."
+  },
+  {
     id: "next-ledge",
     title: "Next Ledge",
     route: "./experiments/next-ledge/",
