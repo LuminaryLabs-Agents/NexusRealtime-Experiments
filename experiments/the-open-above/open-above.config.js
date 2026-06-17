@@ -5,7 +5,7 @@ export const OPEN_ABOVE_CONFIG = Object.freeze({
   runtime: {
     threeUrl: "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
     nexusUrl: "https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@main/src/index.js",
-    protoKitBaseUrl: "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@main/protokits"
+    protoKitBaseUrl: "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.1/protokits"
   },
   quality: {
     pixelRatioMax: 1.75,
@@ -35,31 +35,52 @@ export const OPEN_ABOVE_CONFIG = Object.freeze({
     biomeSize: 620
   },
   physics: {
+    controlMode: "assisted",
     gravity: 0.13,
     drag: 0.022,
     lift: 1.22,
     maxSpeed: 148,
     boostImpulse: 44,
     boostCooldown: 1.35,
-    pitchSpeed: 1.56,
-    rollSpeed: 2.05,
-    yawFromRoll: 1.42,
+    pitchSpeed: 1.12,
+    rollSpeed: 1.42,
+    yawFromRoll: 1.18,
     groundClearance: 15,
     stallSpeed: 10,
-    minForwardSpeed: 42
+    minForwardSpeed: 42,
+    minimumAirspeed: 52,
+    targetPitch: 0.045,
+    targetRoll: 0,
+    maxPitch: 0.62,
+    maxRoll: 0.68,
+    pitchResponse: 4.2,
+    rollResponse: 5.4,
+    autoLevel: 5.2,
+    pitchDamping: 2.8,
+    rollDamping: 4.8,
+    stallRecoveryPitch: 0.16,
+    stallRecoveryLift: 12,
+    terrainAvoidance: true,
+    safeClearance: 120,
+    criticalClearance: 58,
+    terrainPitchBias: 0.22,
+    terrainLift: 24,
+    terrainSpeedBias: 9,
+    sinkRateLimit: -30
   },
   flightStart: {
     clearance: 230,
-    speed: 74,
+    speed: 82,
     pitch: 0.04,
     yaw: 0
   },
   heuristic: {
+    mode: "debug-autopilot-only",
     targetClearance: 185,
-    lowClearance: 125,
-    highClearance: 280,
-    minAirSpeed: 48,
-    boostBelowSpeed: 72
+    lowClearance: -999,
+    highClearance: 9999,
+    minAirSpeed: 999,
+    boostBelowSpeed: -1
   },
   sky: {
     preset: "noon",
