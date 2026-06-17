@@ -20,6 +20,7 @@ Core target kits include:
 
 ```txt
 action-input-kit
+generic-defense-kits
 timed-pressure-director-kit
 zone-field-kit
 scan-survey-kit
@@ -76,6 +77,16 @@ Open `experiments/zombie-orchard/index.html` in a browser or serve the repositor
 Controls: WASD/arrows move, Shift sprint, Space dodge, E collect or pick up, mouse/J use equipped gear, 1/2/3 swap, R force next round, P pause.
 
 Cutover target: preserve survival controls and wave pacing while aligning rounds, horde pressure, resources, pickups, weapons, orchard content, and debug state with domain-kit architecture.
+
+## Signal Bastion
+
+`experiments/signal-bastion/` is a playable 2.5D generic defense slice. It imports the real NexusRealtime runtime, composes the `generic-defense-kits` ProtoKit bundle, maps browser input into `engine.genericDefense` APIs, ticks the runtime, and renders only descriptor snapshots with Canvas.
+
+Open `experiments/signal-bastion/index.html` in a browser or serve the repository with any static file server.
+
+Controls: Click anchors to build/select, 1/2/3 select blueprint, U upgrade selected structure, Space start wave, R restart.
+
+Cutover target: prove a generic defense DSK spine for paths, build slots, vital targets, structures, waves, agents, projectiles, currency, and renderer-only descriptors before splitting the bundle into smaller atomic DSKs.
 
 ## Rogue-Lite Hellscape Siege
 
