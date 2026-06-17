@@ -1,6 +1,6 @@
 # AAA 100 Game Backlog
 
-Status: Batch 06 implemented from `gpt-it`-started workflow.
+Status: Batch 07 implemented from `gpt-it` output.
 
 ## Batch 01
 
@@ -82,4 +82,17 @@ Status: Batch 06 implemented from `gpt-it`-started workflow.
 | `comet-forge-runner` | Comet Forge Runner | Catch | Heat climb, missed comets, cooled weapon | Forge platforms, comet trails, star machinery | pressure, resource, action window, affordance | implemented |
 | `ivory-wolf-court` | Ivory Wolf Court | Command | Morale decay, late commands, duel tempo | Snow arena, ivory banners, crimson court marks | pressure, resource, action window, affordance | implemented |
 
-52 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.
+## Batch 07
+
+| Slug | Title | Verb | Pressure Loop | Visual Identity | Kits | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `stormglass-vanguard` | Stormglass Vanguard | Brace | Storm-lances, safe plates, charged pylons | Black glass, white cracks, shield arcs | pressure, resource, action window, affordance | implemented |
+| `velvet-siege-orchestra` | Velvet Siege Orchestra | Conduct | Lane defense, crescendo charge, overrun risk | Gothic theater, brass engines, spectral music | pressure, resource, action window, affordance | implemented |
+| `ashfall-star-miner` | Ashfall Star Miner | Drill | Core overheat, ash rise, timed extraction | Molten crater, meteor ore, drill silhouette | pressure, resource, action window, affordance | implemented |
+| `mirrorgrave-duelist` | Mirrorgrave Duelist | Parry | Delayed echoes, parry windows, punish timing | Marble crypt, mirrors, afterimages | pressure, resource, action window, affordance | implemented |
+| `sunken-crown-dispatch` | Sunken Crown Dispatch | Deliver | Canal current, docking timing, route flood | Flooded palace, buoys, sinking towers | pressure, resource, action window, affordance | implemented |
+| `ironroot-colossus` | Ironroot Colossus | Grapple | Moving boss, anchor roots, weak nodes | Iron tree-machine, glowing sap, valley scale | pressure, resource, action window, affordance | implemented |
+| `lumen-reef-cartographer` | Lumen Reef Cartographer | Scan | Exploration fog, beacon routes, darkness pressure | Reef caves, scan rings, glowing map lines | pressure, resource, action window, affordance | implemented |
+| `crimson-orbit-foundry` | Crimson Orbit Foundry | Launch | Conveyor routing, debris hazards, integrity meter | Orbital foundry, red conveyors, moon debris | pressure, resource, action window, affordance | implemented |
+
+44 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.

@@ -313,6 +313,54 @@
       "path": "./experiments/aaa-batch/ivory-wolf-court/",
       "kind": ["experiment", "aaa-seed"],
       "tags": ["Command", "Court", "Morale"]
+    },
+    {
+      "title": "Stormglass Vanguard",
+      "path": "./experiments/aaa-batch/stormglass-vanguard/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Brace", "Glass", "Storm"]
+    },
+    {
+      "title": "Velvet Siege Orchestra",
+      "path": "./experiments/aaa-batch/velvet-siege-orchestra/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Conduct", "Siege", "Crescendo"]
+    },
+    {
+      "title": "Ashfall Star Miner",
+      "path": "./experiments/aaa-batch/ashfall-star-miner/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Drill", "Ashfall", "Extraction"]
+    },
+    {
+      "title": "Mirrorgrave Duelist",
+      "path": "./experiments/aaa-batch/mirrorgrave-duelist/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Parry", "Mirror", "Echo"]
+    },
+    {
+      "title": "Sunken Crown Dispatch",
+      "path": "./experiments/aaa-batch/sunken-crown-dispatch/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Deliver", "Canal", "Crown"]
+    },
+    {
+      "title": "Ironroot Colossus",
+      "path": "./experiments/aaa-batch/ironroot-colossus/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Grapple", "Colossus", "Weak points"]
+    },
+    {
+      "title": "Lumen Reef Cartographer",
+      "path": "./experiments/aaa-batch/lumen-reef-cartographer/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Scan", "Reef", "Map"]
+    },
+    {
+      "title": "Crimson Orbit Foundry",
+      "path": "./experiments/aaa-batch/crimson-orbit-foundry/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Launch", "Orbit", "Foundry"]
     }
   ]
 }

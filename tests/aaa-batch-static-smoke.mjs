@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { aaaBatchGames, aaaBatchGalleryGames } from "../experiments/aaa-batch/host/game-registry.js";
 import { createAaaBatchGameHost } from "../experiments/aaa-batch/host/game-host.js";
 
-assert.equal(aaaBatchGames.length, 48, "AAA batch should contain forty-eight GPT-specified games after Batch 06");
+assert.equal(aaaBatchGames.length, 56, "AAA batch should contain fifty-six GPT-specified games after Batch 07");
 assert.equal(aaaBatchGalleryGames.length, aaaBatchGames.length, "gallery entries should match batch games");
 
 const signatures = new Set();
