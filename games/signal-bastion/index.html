@@ -3,33 +3,35 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="Signal Bastion is a generic NexusRealtime defense game composed from consolidated ProtoKit DSKs." />
-  <title>Signal Bastion · NexusRealtime AAA Defense DSKs</title>
+  <meta name="description" content="Signal Bastion is a 2.5D cel-shaded generic defense game composed from consolidated ProtoKit DSKs." />
+  <title>Signal Bastion · NexusRealtime 2.5D Defense</title>
   <style>
-    html,body{margin:0;height:100%;overflow:hidden;background:#05080b;color:#ecfbff;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    html,body{margin:0;height:100%;overflow:hidden;background:#05080b;color:#ecfbff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     #app,#game,#hud{position:fixed;inset:0}
     #game{display:block;width:100vw;height:100vh;background:#05080b;cursor:crosshair}
-    #hud{pointer-events:none}
-    #status,#controls{position:fixed;left:14px;z-index:2;padding:7px 10px;border:1px solid rgba(138,220,255,.20);border-radius:999px;background:rgba(1,6,11,.34);color:rgba(236,251,255,.9);font-size:12px;letter-spacing:.02em;text-shadow:0 1px 8px #000;backdrop-filter:blur(8px)}
-    #status{top:12px}
-    #controls{bottom:12px;color:rgba(236,251,255,.68)}
-    #errorPanel{position:fixed;inset:28px;z-index:5;overflow:auto;padding:22px;border:1px solid #ff6b7d;border-radius:18px;background:#270911e6;color:#ffdce2;box-shadow:0 20px 90px rgba(0,0,0,.45)}
-    #errorPanel[hidden]{display:none}
-    #errorText{white-space:pre-wrap}
+    #hud{pointer-events:none;z-index:2}
+    .stat-strip{position:fixed;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid rgba(139,211,255,.22);border-radius:999px;background:linear-gradient(180deg,rgba(6,16,24,.72),rgba(3,7,11,.52));box-shadow:0 18px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(14px)}
+    .stat{min-width:74px;text-align:center;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.045)}
+    .stat b{display:block;color:#ffe36d;font-size:13px;line-height:1}.stat span{display:block;color:rgba(236,251,255,.66);font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+    .tower-panel{pointer-events:auto;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:8px;max-width:min(92vw,980px);padding:10px;border:1px solid rgba(139,211,255,.18);border-radius:24px;background:linear-gradient(180deg,rgba(6,16,24,.70),rgba(3,7,11,.56));box-shadow:0 20px 70px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(14px);overflow-x:auto;scrollbar-width:none}.tower-panel::-webkit-scrollbar{display:none}
+    .tower-card{width:72px;min-width:72px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.055);color:#ecfbff;padding:8px 6px;text-align:left;cursor:pointer;transition:transform .14s ease,border-color .14s ease,background .14s ease}.tower-card:hover{transform:translateY(-3px);border-color:rgba(139,211,255,.72)}.tower-card.selected{border-color:#ffe36d;background:rgba(255,227,109,.12);box-shadow:0 0 24px rgba(255,227,109,.18)}.tower-card.locked{opacity:.42}.tower-icon{width:28px;height:28px;border-radius:10px;margin-bottom:5px;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 8px 22px rgba(0,0,0,.28)}.tower-card strong{display:block;font-size:10px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tower-card span{display:block;font-size:9px;color:rgba(236,251,255,.62);margin-top:3px}
+    .context-panel{pointer-events:auto;position:fixed;top:76px;right:16px;width:min(320px,calc(100vw - 32px));min-height:120px;border:1px solid rgba(139,211,255,.18);border-radius:24px;background:linear-gradient(180deg,rgba(6,16,24,.72),rgba(3,7,11,.56));box-shadow:0 20px 70px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(14px);padding:14px;display:none}.context-panel.visible{display:block}.context-panel h2{font-size:15px;margin:0 0 10px;color:#ffe36d}.context-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.context-grid div{border-radius:14px;background:rgba(255,255,255,.05);padding:8px}.context-grid b{display:block;font-size:13px}.context-grid span{display:block;font-size:9px;color:rgba(236,251,255,.62);letter-spacing:.1em;text-transform:uppercase}.upgrade-list{margin-top:10px;display:grid;gap:7px}.upgrade-node{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:8px;background:rgba(255,255,255,.045)}.upgrade-node.affordable{border-color:rgba(107,240,184,.38)}.upgrade-node strong{display:block;font-size:11px}.upgrade-node span{font-size:10px;color:rgba(236,251,255,.66)}
+    #errorPanel{position:fixed;inset:28px;z-index:5;overflow:auto;padding:22px;border:1px solid #ff6b7d;border-radius:18px;background:#270911e6;color:#ffdce2;box-shadow:0 20px 90px rgba(0,0,0,.45)}#errorPanel[hidden]{display:none}#errorText{white-space:pre-wrap}
   </style>
 </head>
 <body>
   <main id="app">
-    <canvas id="game" role="application" aria-label="Signal Bastion generic defense canvas"></canvas>
-    <aside id="hud" aria-label="Game HUD">
-      <header id="status" aria-live="polite">Loading NexusRealtime…</header>
-      <footer id="controls">Click anchors build/select · 1-5 blueprint · U upgrade · Backspace sell · Space wave · R restart · ?preset=hard/endless/debug</footer>
+    <canvas id="game" role="application" aria-label="Signal Bastion 2.5D defense canvas"></canvas>
+    <aside id="hud" aria-label="Gameplay HUD">
+      <section id="statStrip" class="stat-strip" aria-live="polite"></section>
+      <section id="towerPanel" class="tower-panel" aria-label="Tower selection"></section>
+      <section id="contextPanel" class="context-panel" aria-label="Selection and upgrades"></section>
     </aside>
     <section id="errorPanel" role="alert" hidden>
       <h1>Could not start Signal Bastion</h1>
       <pre id="errorText"></pre>
     </section>
   </main>
-  <script type="module" src="./src/boot.js?v=aaa-content-pass"></script>
+  <script type="module" src="./src/boot.js?v=presentation-stack-phase"></script>
 </body>
 </html>
