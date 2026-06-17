@@ -3,8 +3,11 @@ name: Deploy static site to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - "0.0.1"
   workflow_dispatch:
+
+env:
+  DEPLOY_REF: "0.0.1"
 
 permissions:
   contents: read
@@ -22,8 +25,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout deployment branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_REF }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
