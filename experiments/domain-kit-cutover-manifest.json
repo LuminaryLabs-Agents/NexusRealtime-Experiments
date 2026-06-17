@@ -1,7 +1,7 @@
 {
   "version": 1,
   "policy": "one canonical base route per experiment or game",
-  "protokitsCommit": "6841cfeacddf918b18813ccb9c213189788fc7bb",
+  "protokitsCommit": "cc9eda32623d5f45edc3d6f6257546dc01ee919a",
   "canonicalRoutes": [
     {
       "id": "next-ledge",
@@ -103,22 +103,33 @@
       "id": "signal-bastion",
       "kind": "game",
       "canonicalPath": "games/signal-bastion/",
-      "status": "playable-protokit-game",
+      "status": "consolidated-aaa-dsk-host-split",
       "domainCutover": [
-        "generic-defense-kits",
-        "gamehost-standard-kit",
-        "scenario-qa-harness",
-        "deterministic-replay-harness"
+        "generic-defense-aaa-kits",
+        "generic-defense-foundation-kit",
+        "generic-defense-world-kit",
+        "generic-defense-build-kit",
+        "generic-defense-combat-kit",
+        "generic-defense-agent-kit",
+        "generic-defense-wave-kit",
+        "generic-defense-economy-kit",
+        "generic-defense-ability-kit",
+        "generic-defense-objective-kit",
+        "generic-defense-presentation-kit",
+        "generic-defense-scale-kit",
+        "generic-defense-authoring-qa-kit"
       ],
-      "bridgeNeeded": "none; generic-defense-kits expose the host-facing facade",
+      "bridgeNeeded": "none; generic-defense-aaa-kits expose the consolidated host-facing DSK facade",
       "featureParity": [
         "click anchors to build/select",
         "1/2/3 blueprint selection",
         "U upgrade selected structure",
+        "Backspace sell selected structure",
         "Space start wave",
         "R restart",
         "path/slot/vital target descriptors",
-        "waves, agents, projectiles, damage, rewards"
+        "waves, agents, projectiles, damage, rewards",
+        "modular preset/input/renderer/boot host split"
       ]
     },
     {
