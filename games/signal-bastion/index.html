@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Signal Bastion is a generic NexusRealtime defense game composed from ProtoKits." />
+  <title>Signal Bastion · NexusRealtime Generic Defense</title>
+  <style>
+    html, body { margin:0; height:100%; overflow:hidden; background:#05080b; color:#ecfbff; font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    #app, #game, #hud { position:fixed; inset:0; }
+    #game { display:block; width:100vw; height:100vh; background:#05080b; cursor:crosshair; }
+    #hud { pointer-events:none; }
+    #status, #controls {
+      position:fixed;
+      left:14px;
+      z-index:2;
+      padding:7px 10px;
+      border:1px solid rgba(138,220,255,.20);
+      border-radius:999px;
+      background:rgba(1,6,11,.34);
+      color:rgba(236,251,255,.9);
+      font-size:12px;
+      letter-spacing:.02em;
+      text-shadow:0 1px 8px #000;
+      backdrop-filter:blur(8px);
+    }
+    #status { top:12px; }
+    #controls { bottom:12px; color:rgba(236,251,255,.68); }
+    #errorPanel {
+      position:fixed;
+      inset:28px;
+      z-index:5;
+      overflow:auto;
+      padding:22px;
+      border:1px solid #ff6b7d;
+      border-radius:18px;
+      background:#270911e6;
+      color:#ffdce2;
+      box-shadow:0 20px 90px rgba(0,0,0,.45);
+    }
+    #errorPanel[hidden] { display:none; }
+    #errorText { white-space:pre-wrap; }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <canvas id="game" role="application" aria-label="Signal Bastion generic defense canvas"></canvas>
+    <aside id="hud" aria-label="Game HUD">
+      <header id="status" aria-live="polite">Loading NexusRealtime…</header>
+      <footer id="controls">Click anchors build/select · 1/2/3 blueprint · U upgrade · Space wave · R restart</footer>
+    </aside>
+    <section id="errorPanel" role="alert" hidden>
+      <h1>Could not start Signal Bastion</h1>
+      <pre id="errorText"></pre>
+    </section>
+  </main>
+
+  <script type="module">
+    const NEXUS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@main/src/index.js";
+    const DEFENSE_KITS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@6841cfeacddf918b18813ccb9c213189788fc7bb/protokits/generic-defense-kits/index.js";
+
+    const canvas = document.querySelector("#game");
+    const statusEl = document.querySelector("#status");
+    const errorPanel = document.querySelector("#errorPanel");
+    const errorText = document.querySelector("#errorText");
+    const ctx = canvas.getContext("2d", { alpha: false });
+
+    const BLUEPRINTS = ["bolt", "ember", "slow"];
+    let activeBlueprint = "bolt";
+    let engine = null;
+    let running = true;
+    let last = performance.now();
+    let hover = null;
+    let view = { scale: 1, offsetX: 0, offsetY: 0, width: 960, height: 540 };
+
+    function showFatal(error) {
+      errorPanel.hidden = false;
+      errorText.textContent = String(error?.stack ?? error?.message ?? error);
+      console.error(error);
+    }
+
+    function resize() {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(innerWidth * dpr);
+      canvas.height = Math.floor(innerHeight * dpr);
+      canvas.style.width = `${innerWidth}px`;
+      canvas.style.height = `${innerHeight}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const worldWidth = 960;
+      const worldHeight = 540;
+      const scale = Math.min(innerWidth / worldWidth, innerHeight / worldHeight);
+      view = {
+        scale,
+        offsetX: (innerWidth - worldWidth * scale) * 0.5,
+        offsetY: (innerHeight - worldHeight * scale) * 0.5,
+        width: worldWidth,
+        height: worldHeight
+      };
+    }
+
+    function screenToWorld(event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (event.clientX - rect.left - view.offsetX) / view.scale,
+        y: (event.clientY - rect.top - view.offsetY) / view.scale
+      };
+    }
+
+    function worldToScreen(point) {
+      return {
+        x: view.offsetX + point.x * view.scale,
+        y: view.offsetY + point.y * view.scale
+      };
+    }
+
+    function color(hex, alpha = 1) {
+      if (!hex || !hex.startsWith("#")) return `rgba(255,255,255,${alpha})`;
+      const value = hex.slice(1);
+      const bigint = parseInt(value.length === 3 ? value.split("").map((c) => c + c).join("") : value, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    function drawPolyline(points, width, stroke, glow = 0) {
+      if (!points?.length) return;
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = width * view.scale;
+      ctx.strokeStyle = stroke;
+      ctx.shadowBlur = glow;
+      ctx.shadowColor = stroke;
+      ctx.beginPath();
+      for (const [index, point] of points.entries()) {
+        const p = worldToScreen(point);
+        if (index === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function circle(point, radius, fill, stroke = null, lineWidth = 1, glow = 0) {
+      const p = worldToScreen(point);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, radius * view.scale, 0, Math.PI * 2);
+      ctx.shadowBlur = glow;
+      ctx.shadowColor = stroke || fill;
+      ctx.fillStyle = fill;
+      ctx.fill();
+      if (stroke) {
+        ctx.lineWidth = lineWidth * view.scale;
+        ctx.strokeStyle = stroke;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function label(text, point, fill = "rgba(236,251,255,.9)", size = 12, align = "center") {
+      const p = worldToScreen(point);
+      ctx.save();
+      ctx.font = `${Math.max(10, size * view.scale)}px system-ui, sans-serif`;
+      ctx.textAlign = align;
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = fill;
+      ctx.shadowColor = "rgba(0,0,0,.85)";
+      ctx.shadowBlur = 7;
+      ctx.fillText(text, p.x, p.y);
+      ctx.restore();
+    }
+
+    function findHit(worldPoint, snapshot) {
+      const structures = Object.values(snapshot?.structures?.structures ?? {});
+      for (const structure of structures) {
+        if (Math.hypot(worldPoint.x - structure.x, worldPoint.y - structure.y) <= 26) {
+          return { kind: "structure", id: structure.id };
+        }
+      }
+      const slots = Object.values(snapshot?.map?.slots ?? {});
+      for (const slot of slots) {
+        if (Math.hypot(worldPoint.x - slot.x, worldPoint.y - slot.y) <= (slot.radius ?? 26)) {
+          return { kind: "slot", id: slot.id };
+        }
+      }
+      return null;
+    }
+
+    function buildOrSelect(hit) {
+      if (!engine || !hit) return;
+      if (hit.kind === "slot") {
+        engine.genericDefense.build(hit.id, activeBlueprint, { commandId: `build:${hit.id}:${engine.clock.frame}` });
+      } else if (hit.kind === "structure") {
+        engine.genericDefense.select(hit.id, "structure", { message: "Structure selected. Press U to upgrade." });
+      }
+    }
+
+    function updateHud(snapshot) {
+      const hud = snapshot?.render?.hud ?? {};
+      const blueprint = snapshot?.level?.blueprints?.[activeBlueprint]?.label ?? activeBlueprint;
+      statusEl.textContent = `Wave ${hud.wave ?? "1/5"} · Core ${hud.core ?? "--"} · ${hud.currency ?? 0}cr · ${blueprint}`;
+    }
+
+    function draw(snapshot) {
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+      const gradient = ctx.createLinearGradient(0, 0, innerWidth, innerHeight);
+      gradient.addColorStop(0, "#071017");
+      gradient.addColorStop(0.55, "#0d1620");
+      gradient.addColorStop(1, "#030609");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, innerWidth, innerHeight);
+
+      const path = snapshot?.map?.path ?? [];
+      drawPolyline(path, 32, "rgba(38,58,68,.9)", 0);
+      drawPolyline(path, 9, "rgba(118,231,255,.25)", 18);
+      drawPolyline(path, 3, "rgba(255,227,109,.45)", 10);
+
+      const session = snapshot?.session ?? {};
+      const selectedId = session.selectedId;
+      const slots = Object.values(snapshot?.map?.slots ?? {});
+      const structures = Object.values(snapshot?.structures?.structures ?? {});
+      const agents = Object.values(snapshot?.agents?.active ?? {});
+      const projectiles = Object.values(snapshot?.combat?.projectiles ?? {});
+      const effects = snapshot?.combat?.effects ?? [];
+      const occupied = new Set(structures.map((structure) => structure.slotId));
+
+      for (const slot of slots) {
+        const isHover = hover?.kind === "slot" && hover.id === slot.id;
+        const isSelected = selectedId === slot.id;
+        const fill = occupied.has(slot.id) ? "rgba(255,255,255,.04)" : "rgba(102,240,184,.08)";
+        const stroke = isSelected ? "rgba(255,227,109,.95)" : isHover ? "rgba(139,211,255,.95)" : occupied.has(slot.id) ? "rgba(255,255,255,.12)" : "rgba(102,240,184,.48)";
+        circle(slot, slot.radius ?? 26, fill, stroke, 1.5, isHover || isSelected ? 18 : 3);
+      }
+
+      const vital = snapshot?.map?.vital;
+      if (vital) {
+        const hp = Math.max(0, vital.health / Math.max(1, vital.maxHealth));
+        circle(vital, 34, "rgba(255,227,109,.10)", "rgba(255,227,109,.9)", 2, 24);
+        circle(vital, 20 + 12 * hp, `rgba(255,227,109,${0.18 + hp * 0.28})`, null, 1, 16);
+        label("CORE", { x: vital.x, y: vital.y - 52 }, "rgba(255,227,109,.9)", 12);
+      }
+
+      for (const structure of structures) {
+        const isSelected = selectedId === structure.id;
+        if (isSelected) circle(structure, structure.range, "rgba(139,211,255,.035)", "rgba(139,211,255,.22)", 1, 4);
+        circle(structure, 20 + structure.level * 2, color(structure.color, 0.25), color(structure.color, isSelected ? 1 : 0.72), 2, isSelected ? 22 : 10);
+        label(String(structure.level), { x: structure.x, y: structure.y }, "rgba(4,8,12,.95)", 12);
+      }
+
+      for (const agent of agents) {
+        const hp = Math.max(0, agent.health / Math.max(1, agent.maxHealth));
+        circle(agent, agent.radius + (agent.boss ? 4 : 0), color(agent.color, agent.boss ? 0.42 : 0.34), color(agent.color, 0.9), 1.5, agent.boss ? 20 : 8);
+        const p = worldToScreen({ x: agent.x, y: agent.y - agent.radius - 8 });
+        ctx.fillStyle = "rgba(0,0,0,.58)";
+        ctx.fillRect(p.x - 14 * view.scale, p.y, 28 * view.scale, 3 * view.scale);
+        ctx.fillStyle = agent.boss ? "rgba(255,227,109,.92)" : "rgba(132,240,164,.9)";
+        ctx.fillRect(p.x - 14 * view.scale, p.y, 28 * hp * view.scale, 3 * view.scale);
+      }
+
+      for (const projectile of projectiles) {
+        circle(projectile, 4.5, color(projectile.color, 0.9), null, 1, 10);
+      }
+
+      for (const effect of effects) {
+        const t = Math.max(0, 1 - (effect.age ?? 0) / Math.max(0.001, effect.life ?? 1));
+        const radius = (effect.radius ?? (effect.type === "death" ? 24 : 14)) * (1 + (1 - t) * 0.8);
+        circle(effect, radius, color(effect.color, 0.05 * t), color(effect.color, 0.45 * t), 1, 18 * t);
+      }
+
+      const message = snapshot?.render?.hud?.message ?? "";
+      if (message) {
+        label(message, { x: 480, y: 502 }, "rgba(236,251,255,.82)", 12);
+      }
+
+      if (snapshot?.session?.status === "planning") {
+        label("SPACE: start wave", { x: 480, y: 38 }, "rgba(255,227,109,.82)", 13);
+      } else if (snapshot?.session?.status === "won") {
+        label("BASTION SECURE", { x: 480, y: 38 }, "rgba(102,240,184,.95)", 18);
+      } else if (snapshot?.session?.status === "lost") {
+        label("CORE BREACHED · R to restart", { x: 480, y: 38 }, "rgba(255,118,132,.95)", 18);
+      }
+
+      updateHud(snapshot);
+    }
+
+    function frame(now) {
+      if (!running || !engine) return;
+      const dt = Math.min(1 / 30, (now - last) / 1000 || 1 / 60);
+      last = now;
+      engine.tick(dt);
+      draw(engine.genericDefense.getSnapshot());
+      requestAnimationFrame(frame);
+    }
+
+    async function boot() {
+      resize();
+      const [NexusRealtime, DefenseKits] = await Promise.all([
+        import(NEXUS_URL),
+        import(DEFENSE_KITS_URL)
+      ]);
+      engine = NexusRealtime.createRealtimeGame({
+        kits: DefenseKits.createGenericDefenseKits(NexusRealtime, {
+          level: {
+            id: "signal-bastion",
+            label: "Signal Bastion",
+            startingCurrency: 145,
+            vital: { maxHealth: 20 }
+          }
+        })
+      });
+      engine.tick(0);
+      globalThis.GameHost = {
+        engine,
+        getState: () => engine.genericDefense.getSnapshot(),
+        startWave: () => engine.genericDefense.startWave({ commandId: `host-wave:${engine.clock.frame}` }),
+        restart: () => engine.genericDefense.restart({ commandId: `host-restart:${engine.clock.frame}` }),
+        build: (slotId, blueprintId = activeBlueprint) => engine.genericDefense.build(slotId, blueprintId, { commandId: `host-build:${slotId}:${engine.clock.frame}` })
+      };
+      statusEl.textContent = "Ready · Build anchors";
+      requestAnimationFrame(frame);
+    }
+
+    addEventListener("resize", resize);
+
+    canvas.addEventListener("mousemove", (event) => {
+      if (!engine) return;
+      hover = findHit(screenToWorld(event), engine.genericDefense.getSnapshot());
+    });
+
+    canvas.addEventListener("mouseleave", () => {
+      hover = null;
+    });
+
+    canvas.addEventListener("click", (event) => {
+      if (!engine) return;
+      const hit = findHit(screenToWorld(event), engine.genericDefense.getSnapshot());
+      buildOrSelect(hit);
+    });
+
+    addEventListener("keydown", (event) => {
+      if (!engine || event.repeat) return;
+      const key = event.key.toLowerCase();
+      if (key === " " || key === "enter") {
+        event.preventDefault();
+        engine.genericDefense.startWave({ commandId: `wave:${engine.clock.frame}` });
+      } else if (key === "r") {
+        engine.genericDefense.restart({ commandId: `restart:${engine.clock.frame}` });
+      } else if (key === "u") {
+        engine.genericDefense.upgrade(null, { commandId: `upgrade:${engine.clock.frame}` });
+      } else if (key === "tab" || key === "q" || key === "e") {
+        event.preventDefault();
+        const dir = key === "q" ? -1 : 1;
+        const current = BLUEPRINTS.indexOf(activeBlueprint);
+        activeBlueprint = BLUEPRINTS[(current + dir + BLUEPRINTS.length) % BLUEPRINTS.length];
+      } else if (["1", "2", "3"].includes(key)) {
+        activeBlueprint = BLUEPRINTS[Number(key) - 1] ?? activeBlueprint;
+      }
+    });
+
+    boot().catch(showFatal);
+  </script>
+</body>
+</html>
