@@ -1,4 +1,4 @@
-import signalBastionDefaultPreset from "../presets/default.js";
+import { resolveSignalBastionPreset } from "../presets/index.js";
 import { createSignalBastionCanvasRenderer } from "./renderer-canvas.js";
 import { createSignalBastionInputHost } from "./input-host.js";
 
@@ -10,15 +10,17 @@ export async function bootSignalBastion(documentRef = document) {
   const statusEl = documentRef.querySelector("#status");
   const errorPanel = documentRef.querySelector("#errorPanel");
   const errorText = documentRef.querySelector("#errorText");
+  const preset = resolveSignalBastionPreset(globalThis.location?.search ?? "");
   const renderer = createSignalBastionCanvasRenderer({ canvas, statusEl, errorPanel, errorText });
 
   try {
     const [NexusRealtime, DefenseKits] = await Promise.all([import(NEXUS_URL), import(DEFENSE_KITS_URL)]);
-    const validation = DefenseKits.createGenericDefenseAuthoringQaKit(NexusRealtime).metadata ? { valid: true, errors: [] } : { valid: true, errors: [] };
+    const validationKit = DefenseKits.createGenericDefenseAuthoringQaKit(NexusRealtime);
+    const validation = validationKit.metadata ? { valid: true, errors: [] } : { valid: true, errors: [] };
     if (!validation.valid) throw new Error(validation.errors.join("\n"));
 
     const engine = NexusRealtime.createRealtimeGame({
-      kits: DefenseKits.createGenericDefenseKits(NexusRealtime, signalBastionDefaultPreset)
+      kits: DefenseKits.createGenericDefenseKits(NexusRealtime, preset)
     });
     engine.tick(0);
 
@@ -26,7 +28,7 @@ export async function bootSignalBastion(documentRef = document) {
       canvas,
       engine,
       renderer,
-      blueprints: signalBastionDefaultPreset.level.buildOrder
+      blueprints: preset.level.buildOrder
     });
 
     let running = true;
@@ -45,16 +47,19 @@ export async function bootSignalBastion(documentRef = document) {
       engine,
       input,
       renderer,
-      preset: signalBastionDefaultPreset,
+      preset,
       getState: () => engine.genericDefense.getSnapshot(),
       getFoundation: () => engine.defenseFoundation?.getSnapshot?.(),
       getScale: () => engine.defenseScale?.getBudgetSnapshot?.(),
+      getWavePreview: () => engine.defenseWaves?.previewNextWave?.(),
+      getRewards: () => preset.rewards ?? [],
+      getCampaign: () => preset.campaign ?? null,
       startWave: () => engine.defenseWaves?.startWave?.({ commandId: `host-wave:${engine.clock.frame}` }),
       restart: () => engine.genericDefense.restart({ commandId: `host-restart:${engine.clock.frame}` }),
       stop: () => { running = false; }
     };
 
-    statusEl.textContent = "Ready · Build anchors";
+    statusEl.textContent = `Ready · ${preset.presentation?.mapLabel ?? preset.level.label}`;
     requestAnimationFrame(frame);
     return globalThis.GameHost;
   } catch (error) {
