@@ -217,6 +217,54 @@
       "path": "./experiments/aaa-batch/halo-mason/",
       "kind": ["experiment", "aaa-seed"],
       "tags": ["Socket", "Halo", "Alignment"]
+    },
+    {
+      "title": "Aurora Ferromancer",
+      "path": "./experiments/aaa-batch/aurora-ferromancer/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Magnetize", "Aurora", "Rails"]
+    },
+    {
+      "title": "Glass Harbor Notary",
+      "path": "./experiments/aaa-batch/glass-harbor-notary/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Notarize", "Harbor", "Contracts"]
+    },
+    {
+      "title": "Eclipse Locksmith",
+      "path": "./experiments/aaa-batch/eclipse-locksmith/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Pick", "Eclipse", "Locks"]
+    },
+    {
+      "title": "Obsidian Luthier",
+      "path": "./experiments/aaa-batch/obsidian-luthier/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Tune", "Obsidian", "Concert"]
+    },
+    {
+      "title": "Frostwire Bailiff",
+      "path": "./experiments/aaa-batch/frostwire-bailiff/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Serve", "Tribunal", "Grid"]
+    },
+    {
+      "title": "Prism Archivist",
+      "path": "./experiments/aaa-batch/prism-archivist/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Refract", "Archive", "Memory"]
+    },
+    {
+      "title": "Null Tide Anchorite",
+      "path": "./experiments/aaa-batch/null-tide-anchorite/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Anchor", "Void", "Monastery"]
+    },
+    {
+      "title": "Signal Pyre Diplomat",
+      "path": "./experiments/aaa-batch/signal-pyre-diplomat/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Negotiate", "Pyre", "Treaty"]
     }
   ]
 }

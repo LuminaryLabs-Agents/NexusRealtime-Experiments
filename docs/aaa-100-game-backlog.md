@@ -1,6 +1,6 @@
 # AAA 100 Game Backlog
 
-Status: Batch 04 implemented from `gpt-it` output.
+Status: Batch 05 implemented from `gpt-it`-started workflow.
 
 ## Batch 01
 
@@ -56,4 +56,17 @@ Status: Batch 04 implemented from `gpt-it` output.
 | `ashen-sommelier` | Ashen Sommelier | Blend | Temperature, volatile notes, impatient nobles | Lava cellar, obsidian glasses, smoke ribbons | pressure, resource, action window, affordance | implemented |
 | `halo-mason` | Halo Mason | Socket | Inspection gaze, arc drift, cracked halo | Marble void, halo fragments, gaze beams | pressure, resource, action window, affordance | implemented |
 
-68 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.
+## Batch 05
+
+| Slug | Title | Verb | Pressure Loop | Visual Identity | Kits | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `aurora-ferromancer` | Aurora Ferromancer | Magnetize | Flux storms, cohesion loss, polarity shear | Emerald aurora, steel filings, polar rail arcs | pressure, resource, action window, affordance | implemented |
+| `glass-harbor-notary` | Glass Harbor Notary | Notarize | Clause drift, harbor fracture, hostile cargo | Crystal docks, ink seals, refracted skyline | pressure, resource, action window, affordance | implemented |
+| `eclipse-locksmith` | Eclipse Locksmith | Pick | Umbra pressure, cracked picks, shrinking moonlight | Black-silver gatework, corona sparks, lock shadows | pressure, resource, action window, affordance | implemented |
+| `obsidian-luthier` | Obsidian Luthier | Tune | Overheat, harmony windows, stage ignition | Black glass instruments, lava footlights, sound rings | pressure, resource, action window, affordance | implemented |
+| `frostwire-bailiff` | Frostwire Bailiff | Serve | Ice latency, warrant expiry, authority reversal | Tribunal grid, copper frost cables, static snow | pressure, resource, action window, affordance | implemented |
+| `prism-archivist` | Prism Archivist | Refract | Memory glare, shelf desync, history bleaching | Rainbow archive aisles, prisms, catalog beams | pressure, resource, action window, affordance | implemented |
+| `null-tide-anchorite` | Null Tide Anchorite | Anchor | Null current, chain stress, room detachment | Ink-black tide, monastery slabs, silver chains | pressure, resource, action window, affordance | implemented |
+| `signal-pyre-diplomat` | Signal Pyre Diplomat | Negotiate | Trust decay, smoke drift, tower retaliation | Night ridgelines, colored pyres, treaty glyphs | pressure, resource, action window, affordance | implemented |
+
+60 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.
