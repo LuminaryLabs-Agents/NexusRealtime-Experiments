@@ -170,11 +170,13 @@ function createRenderer(THREE, engine, config) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, config.quality.pixelRatioMax));
   renderer.setSize(innerWidth, innerHeight);
+  renderer.setClearColor(new THREE.Color(config.sky.sky.horizon), 1);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = config.lighting.exposure;
   const scene = new THREE.Scene();
+  scene.background = new THREE.Color(config.sky.sky.horizon);
   const camera = new THREE.PerspectiveCamera(config.camera.baseFov, innerWidth / innerHeight, 0.1, 5200);
   const hemi = new THREE.HemisphereLight(0xbdeaff, 0x253a22, 0.72);
   const sun = new THREE.DirectionalLight(0xfff3c4, 3.8);
@@ -190,16 +192,20 @@ function createRenderer(THREE, engine, config) {
   const skyMat = new THREE.ShaderMaterial({
     side: THREE.BackSide,
     depthWrite: false,
+    depthTest: false,
     uniforms: {
       topColor: { value: new THREE.Color(config.sky.sky.zenith) },
       bottomColor: { value: new THREE.Color(config.sky.sky.horizon) },
       sunColor: { value: new THREE.Color(config.sky.sky.sun.color) },
       sunDir: { value: new THREE.Vector3(-0.35, 0.62, 0.54).normalize() }
     },
-    vertexShader: "varying vec3 v;void main(){vec4 w=modelMatrix*vec4(position,1.);v=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}",
+    vertexShader: "varying vec3 v;void main(){v=position;gl_Position=projectionMatrix*viewMatrix*modelMatrix*vec4(position,1.);}",
     fragmentShader: "varying vec3 v;uniform vec3 topColor,bottomColor,sunColor,sunDir;void main(){vec3 d=normalize(v);float h=max(0.,d.y);vec3 sky=mix(bottomColor,topColor,smoothstep(-.12,.76,h));float sd=max(0.,dot(d,sunDir));gl_FragColor=vec4(sky+sunColor*(pow(sd,96.)*.38+pow(sd,7.)*.18),1.);}"
   });
-  scene.add(new THREE.Mesh(new THREE.SphereGeometry(4200, 40, 20), skyMat));
+  const skyDome = new THREE.Mesh(new THREE.SphereGeometry(4200, 40, 20), skyMat);
+  skyDome.frustumCulled = false;
+  skyDome.renderOrder = -1000;
+  scene.add(skyDome);
   const terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0.01 });
   const treeMat = new THREE.MeshStandardMaterial({ color: 0x1f6531, roughness: 0.86 });
   const rockMat = new THREE.MeshStandardMaterial({ color: 0x717a76, roughness: 0.88 });
@@ -326,6 +332,7 @@ function createRenderer(THREE, engine, config) {
     bird.userData.rightWing.rotation.z = flap + roll * (0.42 + carveIntensity * 0.18);
     bird.userData.tail.rotation.x = -body.rotation.pitch * 0.34 + num(body.stability?.sinkRate, 0) * -0.002;
     camera.position.lerp(new THREE.Vector3(state.camera.position.x, state.camera.position.y, state.camera.position.z), config.camera.smoothing);
+    skyDome.position.copy(camera.position);
     camera.lookAt(state.camera.lookAt.x, state.camera.lookAt.y, state.camera.lookAt.z);
     camera.fov += (state.camera.fov - camera.fov) * 0.12;
     camera.updateProjectionMatrix();
@@ -418,7 +425,8 @@ function composeState(engine, frame, elapsed, input, config) {
       terrainStreaming: patches.length > 0,
       clearOfGround: clearance > 0,
       carveStatePresent: Boolean(motion.carve),
-      cameraUsesVelocityBlend: true
+      cameraUsesVelocityBlend: true,
+      skyboxCameraRelative: true
     }
   };
 }
