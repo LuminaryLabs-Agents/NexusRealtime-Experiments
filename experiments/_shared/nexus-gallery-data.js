@@ -1,3 +1,5 @@
+import { aaaBatchGalleryGames } from "../aaa-batch/host/game-registry.js";
+
 export const galleryConfig = Object.freeze({
   title: "Experiments",
   subtitle: "NexusRealtime playable routes",
@@ -118,7 +120,8 @@ export const games = Object.freeze([
       { label: "Defense", tone: "red" }
     ],
     description: "Unified high-fidelity base route for the kit-shaped realm, inventory, harvesting, building, wave-defense, FX, and renderer-only presentation loop."
-  }
+  },
+  ...aaaBatchGalleryGames
 ]);
 
 export function getFeaturedGame() {

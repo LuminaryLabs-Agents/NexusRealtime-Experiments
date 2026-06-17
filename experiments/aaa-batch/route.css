@@ -1,0 +1,9 @@
+html,body{margin:0;height:100%;overflow:hidden;background:#05070b;color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
+main,canvas{position:fixed;inset:0;width:100vw;height:100vh}
+canvas{display:block}
+#hud{position:fixed;inset:0;pointer-events:none}
+#hud h1{position:fixed;left:16px;top:12px;margin:0;font-size:clamp(26px,5vw,64px);letter-spacing:0;text-shadow:0 18px 50px rgba(0,0,0,.6)}
+#status{position:fixed;left:18px;top:88px;max-width:min(760px,calc(100vw - 36px));margin:0;padding:9px 11px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(5,8,13,.56);backdrop-filter:blur(10px);font-weight:800}
+#readout{position:fixed;left:18px;right:18px;bottom:14px;margin:0;padding:10px 12px;border:1px solid rgba(255,255,255,.14);border-radius:8px;background:rgba(5,8,13,.62);color:#d8eaff;font-size:12px}
+#err{position:fixed;left:16px;right:16px;bottom:64px;white-space:pre-wrap;background:rgba(38,5,4,.94);border:1px solid rgba(255,150,100,.55);border-radius:8px;padding:12px;font:12px ui-monospace,Menlo,monospace}
+#err[hidden]{display:none}

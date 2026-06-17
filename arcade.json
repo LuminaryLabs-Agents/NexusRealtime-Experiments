@@ -21,16 +21,58 @@
       "tags": ["Survival", "Combat", "Canvas"]
     },
     {
-      "title": "Rogue-Lite Hellscape Siege V2",
-      "path": "./games/rogue-lite-hellscape-siege-v2/",
-      "kind": ["game"],
-      "tags": ["V2", "Local kits", "Defense"]
-    },
-    {
       "title": "Rogue-Lite Hellscape Siege",
       "path": "./games/rogue-lite-hellscape-siege/",
       "kind": ["game"],
       "tags": ["Canvas", "Rogue-lite", "Base defense"]
+    },
+    {
+      "title": "Ember Rail",
+      "path": "./experiments/aaa-batch/ember-rail/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Rail", "Heat", "Action input"]
+    },
+    {
+      "title": "Tideglass Salvage",
+      "path": "./experiments/aaa-batch/tideglass-salvage/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Salvage", "Water", "Cargo"]
+    },
+    {
+      "title": "Echo Lock",
+      "path": "./experiments/aaa-batch/echo-lock/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Resonance", "Stealth", "Audio"]
+    },
+    {
+      "title": "Hollow Warden",
+      "path": "./experiments/aaa-batch/hollow-warden/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Wards", "Defense", "Hazards"]
+    },
+    {
+      "title": "Skyrig Suture",
+      "path": "./experiments/aaa-batch/skyrig-suture/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Tether", "Repair", "Sky"]
+    },
+    {
+      "title": "Mirage Stalker",
+      "path": "./experiments/aaa-batch/mirage-stalker/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Stealth", "Shadow", "Agents"]
+    },
+    {
+      "title": "Core Diver",
+      "path": "./experiments/aaa-batch/core-diver/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Dive", "Oxygen", "Reactor"]
+    },
+    {
+      "title": "Starwell Cartographer",
+      "path": "./experiments/aaa-batch/starwell-cartographer/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Survey", "Anchors", "Replay"]
     }
   ]
 }

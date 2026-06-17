@@ -15,3 +15,4 @@ NexusRealtime-Experiments hosts playable browser experiments that compose NexusR
 - The Open Above should not use wind/updraft gameplay forces, checkpoint rings, ring challenges, or terrain ring objectives.
 - Ambient clouds, lighting, and atmosphere are allowed only as presentation descriptors.
 - Keep validation state explicit enough for NexusSimulator to prove airborne motion, terrain streaming, and no console errors.
+- For the 100-game AAA experiment track, every batch must start with `gpt-it` in the NexusRealtime/Experiments ChatGPT project, then local implementation must verify GPT advice against repo files before editing. Future batch additions should preserve unique fantasy, verb, pressure loop, visual identity, kit/DSK composition, GameHost smoke coverage, and renderer-as-presentation boundaries.
