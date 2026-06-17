@@ -24,3 +24,5 @@ NexusRealtime-Experiments hosts playable browser experiments that compose NexusR
 - Batch 07 brings the shared AAA route set to 56 seeds from `gpt-it` output; GitHub connector review confirmed it cannot push local-only commits because the commit objects are not present remotely, so local `gh auth` remains the push blocker.
 - Batch 08 brings the shared AAA route set to 64 seeds from `gpt-it` output; future route batches should keep using compact GPT lists, then map each idea into the same registry-driven GameHost affordance smoke path.
 - Batch 09 brings the shared AAA route set to 72 seeds from `gpt-it` output; when GPT truncates a route line, preserve the returned slug/title/fantasy/verb and complete only the missing operational details conservatively inside the existing registry schema.
+
+- Batch 10 brings the shared AAA route set to 80 seeds using GPT-sourced route ideas plus the existing registry-driven route shell pattern.

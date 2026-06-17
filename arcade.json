@@ -457,6 +457,54 @@
       "path": "./experiments/aaa-batch/solar-mirror-bastion/",
       "kind": ["experiment", "aaa-seed"],
       "tags": ["Redirect", "Mirror", "Bastion"]
+    },
+    {
+      "title": "Void Harbor Pilot",
+      "path": "./experiments/aaa-batch/void-harbor-pilot/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Dock", "Void", "Harbor"]
+    },
+    {
+      "title": "Magma Choir Smith",
+      "path": "./experiments/aaa-batch/magma-choir-smith/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Conduct", "Magma", "Forge"]
+    },
+    {
+      "title": "Frost Lantern Reclaimer",
+      "path": "./experiments/aaa-batch/frost-lantern-reclaimer/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Reclaim", "Frost", "Lantern"]
+    },
+    {
+      "title": "Chrome Basilisk Garden",
+      "path": "./experiments/aaa-batch/chrome-basilisk-garden/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Prune", "Chrome", "Gaze"]
+    },
+    {
+      "title": "Orbit Suture Runner",
+      "path": "./experiments/aaa-batch/orbit-suture-runner/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Suture", "Orbit", "Repair"]
+    },
+    {
+      "title": "Dusk Cannon Cartographer",
+      "path": "./experiments/aaa-batch/dusk-cannon-cartographer/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Chart", "Dusk", "Cannon"]
+    },
+    {
+      "title": "Palladium Reef Harvester",
+      "path": "./experiments/aaa-batch/palladium-reef-harvester/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Harvest", "Reef", "Metal"]
+    },
+    {
+      "title": "Ghostline Bellwright",
+      "path": "./experiments/aaa-batch/ghostline-bellwright/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Cast", "Ghostline", "Bell"]
     }
   ]
 }

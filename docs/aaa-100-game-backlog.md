@@ -1,6 +1,6 @@
 # AAA 100 Game Backlog
 
-Status: Batch 09 implemented from `gpt-it` output.
+Status: Batch 10 implemented from `gpt-it` output.
 
 ## Batch 01
 
@@ -121,4 +121,17 @@ Status: Batch 09 implemented from `gpt-it` output.
 | `gravemark-cartographer` | Gravemark Cartographer | Triangulate | Beacon decay, broken survey lines, patrol pressure | Topographic ruins, glowing contour scars | pressure, resource, action window, affordance | implemented |
 | `solar-mirror-bastion` | Solar Mirror Bastion | Redirect | Mirror heat, enemy waves, beam fracture | Gold-glass fortress, hard shadows, lens beams | pressure, resource, action window, affordance | implemented |
 
-28 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.
+## Batch 10
+
+| Slug | Title | Verb | Pressure Loop | Visual Identity | Kits | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `void-harbor-pilot` | Void Harbor Pilot | Dock | Tide debt rises while beacon windows close and eclipse surges erase safe lanes. | Black-ocean port maze, liquid constellations, skeletal cranes, violet harbor lamps. | pressure, resource, action window, affordance | implemented |
+| `magma-choir-smith` | Magma Choir Smith | Conduct | Forge heat spikes while flawed notes crack the blade and bellows drift out of rhythm. | Lava choir pit, black anvils, ember sheet music, bellows glowing like organs. | pressure, resource, action window, affordance | implemented |
+| `frost-lantern-reclaimer` | Frost Lantern Reclaimer | Reclaim | Lantern warmth decays, frost doors seal, and whiteout gusts hide return paths. | Blue-white alleys, amber lantern cores, ice doors, aurora frost halos. | pressure, resource, action window, affordance | implemented |
+| `chrome-basilisk-garden` | Chrome Basilisk Garden | Prune | Gaze pressure rises, mirror vines regrow, and wrong pruning wakes the basilisk chorus. | Chrome hedges, mirrored statues, emerald warning eyes, surgical garden tools. | pressure, resource, action window, affordance | implemented |
+| `orbit-suture-runner` | Orbit Suture Runner | Suture | Hull tear spreads, tether slack drains, and debris windows interrupt repair lines. | Orbital ring curve, red tear seams, white repair thread, planet glow below. | pressure, resource, action window, affordance | implemented |
+| `dusk-cannon-cartographer` | Dusk Cannon Cartographer | Chart | Cannon arcs rotate, dusk visibility drops, and wrong charts route convoys into fire. | Purple battlefield dusk, red shell arcs, paper-map overlays, lantern convoy dots. | pressure, resource, action window, affordance | implemented |
+| `palladium-reef-harvester` | Palladium Reef Harvester | Harvest | Tide toxin rises, reef song desyncs, and overharvest collapses coral branches. | Silver coral, turquoise surf, industrial fog, gold harvesting drones. | pressure, resource, action window, affordance | implemented |
+| `ghostline-bellwright` | Ghostline Bellwright | Cast | Ghost trains accelerate, bell metal cools, and mist switches hide broken track. | Fog rails, translucent locomotives, molten bell molds, brass spectral sparks. | pressure, resource, action window, affordance | implemented |
+
+20 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.
