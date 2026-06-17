@@ -1,6 +1,6 @@
 # AAA 100 Game Backlog
 
-Status: Batch 08 implemented from `gpt-it` output.
+Status: Batch 09 implemented from `gpt-it` output.
 
 ## Batch 01
 
@@ -108,4 +108,17 @@ Status: Batch 08 implemented from `gpt-it` output.
 | `graveyard-satellite-choir` | Graveyard Satellite Choir | Tune | Signal sync, debris storms, orbital decay | Orbital cathedral, satellite halos, wave ribbons | pressure, resource, action window, affordance | implemented |
 | `marble-wasp-catacomb` | Marble Wasp Catacomb | Swarm | Swarm loss, sealed chambers, predator patrols | Marble insects, gold tunnels, living stone organs | pressure, resource, action window, affordance | implemented |
 
-36 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.
+## Batch 09
+
+| Slug | Title | Verb | Pressure Loop | Visual Identity | Kits | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `starforge-salvager` | Starforge Salvager | Salvage | Flare timer, oxygen leak, debris collisions | Orbit forge ruins, molten silhouettes, helmet glare | pressure, resource, action window, affordance | implemented |
+| `thunder-rail-outrider` | Thunder Rail Outrider | Boost | Rail collapse, lightning windows, rivals | Sky rail canyon, electric rain, sparking wheels | pressure, resource, action window, affordance | implemented |
+| `glass-dune-excavator` | Glass Dune Excavator | Excavate | Heat, tremors, timed dig windows | Glass dunes, buried ribs, scan mirage | pressure, resource, action window, affordance | implemented |
+| `neon-abbey-exorcist` | Neon Abbey Exorcist | Purify | Rhythm corruption, shield breaks, lockdowns | Neon abbey, hologlyph windows, static ghosts | pressure, resource, action window, affordance | implemented |
+| `abyssal-lift-diver` | Abyssal Lift Diver | Repair | Oxygen, crush depth, sonar patrols | Vertical shaft, cables, giant shadows | pressure, resource, action window, affordance | implemented |
+| `ember-crown-duelist` | Ember Crown Duelist | Counter | Stamina, guard posture, crown heat | Ash arena, ember armor, crown halos | pressure, resource, action window, affordance | implemented |
+| `gravemark-cartographer` | Gravemark Cartographer | Triangulate | Beacon decay, broken survey lines, patrol pressure | Topographic ruins, glowing contour scars | pressure, resource, action window, affordance | implemented |
+| `solar-mirror-bastion` | Solar Mirror Bastion | Redirect | Mirror heat, enemy waves, beam fracture | Gold-glass fortress, hard shadows, lens beams | pressure, resource, action window, affordance | implemented |
+
+28 additional unique games remain. Future batches must continue through `gpt-it` first, then repo-verified implementation.

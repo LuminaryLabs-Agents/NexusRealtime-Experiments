@@ -409,6 +409,54 @@
       "path": "./experiments/aaa-batch/marble-wasp-catacomb/",
       "kind": ["experiment", "aaa-seed"],
       "tags": ["Swarm", "Catacomb", "Maze"]
+    },
+    {
+      "title": "Starforge Salvager",
+      "path": "./experiments/aaa-batch/starforge-salvager/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Salvage", "Orbit", "Flare"]
+    },
+    {
+      "title": "Thunder Rail Outrider",
+      "path": "./experiments/aaa-batch/thunder-rail-outrider/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Boost", "Rail", "Storm"]
+    },
+    {
+      "title": "Glass Dune Excavator",
+      "path": "./experiments/aaa-batch/glass-dune-excavator/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Excavate", "Dune", "Tremor"]
+    },
+    {
+      "title": "Neon Abbey Exorcist",
+      "path": "./experiments/aaa-batch/neon-abbey-exorcist/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Purify", "Abbey", "Rhythm"]
+    },
+    {
+      "title": "Abyssal Lift Diver",
+      "path": "./experiments/aaa-batch/abyssal-lift-diver/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Repair", "Abyss", "Lift"]
+    },
+    {
+      "title": "Ember Crown Duelist",
+      "path": "./experiments/aaa-batch/ember-crown-duelist/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Counter", "Duel", "Crown"]
+    },
+    {
+      "title": "Gravemark Cartographer",
+      "path": "./experiments/aaa-batch/gravemark-cartographer/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Triangulate", "Survey", "Patrol"]
+    },
+    {
+      "title": "Solar Mirror Bastion",
+      "path": "./experiments/aaa-batch/solar-mirror-bastion/",
+      "kind": ["experiment", "aaa-seed"],
+      "tags": ["Redirect", "Mirror", "Bastion"]
     }
   ]
 }
