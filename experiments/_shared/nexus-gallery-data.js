@@ -36,6 +36,20 @@ export const games = Object.freeze([
     description: "First-person survey-pressure loop for scan targets, fog zones, timed pressure, hazard state, and renderer-only visual buckets."
   },
   {
+    id: "nexus-frontier-signal-isles",
+    title: "Nexus Frontier: Signal Isles",
+    route: "./experiments/nexus-frontier-signal-isles/",
+    kind: "experiment",
+    visual: "fogline",
+    playLabel: "Play experiment",
+    tags: [
+      { label: "Kit Showcase", tone: "gold" },
+      { label: "Signal Isles", tone: "green" },
+      { label: "3D", tone: "blue" }
+    ],
+    description: "3D field-engineer slice built to exercise the broad NexusRealtime kit graph: scan, harvest, build, pressure, gates, route, cargo, beacon, feedback, and debug/replay surfaces."
+  },
+  {
     id: "signal-bastion",
     title: "Signal Bastion",
     route: "./games/signal-bastion/",
