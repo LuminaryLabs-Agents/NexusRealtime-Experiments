@@ -1,4 +1,4 @@
-import { galleryConfig, games, getFeaturedGame } from "./nexus-gallery-data.js?v=signal-bastion-20260617";
+import { galleryConfig, games, getFeaturedGame } from "./nexus-gallery-data.js?v=onnx-chat-lab-20260618";
 import { startNexusGalleryShader } from "./nexus-gallery-shader.js";
 
 const STYLE_ID = "nexus-experiments-shell-style";
@@ -232,241 +232,132 @@ function injectStyles(documentRef) {
     .nexus-game-tile.is-selected h2 { font-size:clamp(1.75rem,2.5vw,2.35rem); }
     .nexus-game-tile p { margin:0; color:var(--muted); line-height:1.5; flex:1; overflow:hidden; }
     .nexus-play { color:var(--gold); font-weight:950; letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; }
-    .nexus-game-tile.is-selected .nexus-play::before { content:"Selected · "; color:var(--green); }
-    .nexus-noscript { position:relative; z-index:2; color:var(--text); padding:24px; }
-    @media (max-width:760px) {
-      :root { --selected-scale:1.04; }
-      .nexus-shell { width:min(100% - 20px,1680px); padding-top:12px; }
-      .nexus-topbar { align-items:flex-start; flex-direction:column; }
-      .nexus-top-actions { width:100%; flex-direction:column; align-items:stretch; }
-      .nexus-repo-button,.nexus-launch-button { width:100%; text-align:center; }
-      .nexus-gallery-help { align-items:flex-start; flex-direction:column; }
-      .nexus-game-tile { flex-basis:82vw; width:82vw; aspect-ratio:4/5.35; transform:translateY(0) scale(.97); }
-      .nexus-game-tile.is-selected { transform:translateY(-6px) scale(var(--selected-scale)); }
-      .nexus-game-tile.is-selected h2 { font-size:1.9rem; }
+    .nexus-game-tile.is-selected .nexus-play::before { content:"Launch "; color:var(--green); }
+    @media (max-width:720px) {
+      .nexus-shell { width:min(100% - 16px,1680px); padding-top:10px; }
+      .nexus-topbar { align-items:flex-start; flex-direction:column; border-radius:18px; }
+      .nexus-gallery-help { flex-direction:column; align-items:flex-start; gap:8px; }
+      .nexus-gallery-row { min-height:68svh; padding-top:22px; }
+      .nexus-game-tile { min-height:390px; }
     }
   `;
   documentRef.head.append(style);
 }
 
-function renderTag(tag) {
-  const tone = escapeHtml(tag.tone ?? "blue");
-  return `<span class="nexus-tag ${tone}">${escapeHtml(tag.label)}</span>`;
-}
-
-function renderTile(game, selectedId) {
-  const selected = game.id === selectedId ? " is-selected" : "";
+function createTile(game, index) {
+  const tags = game.tags.map((tag) => `<span class="nexus-tag ${escapeHtml(tag.tone ?? "")}">${escapeHtml(tag.label)}</span>`).join("");
   return `
-    <article class="nexus-game-tile${selected}" role="button" tabindex="0" aria-current="${game.id === selectedId ? "true" : "false"}" aria-label="Select ${escapeHtml(game.title)}" data-game-id="${escapeHtml(game.id)}">
-      <div class="nexus-game-art ${escapeHtml(game.visual)}" aria-hidden="true"></div>
+    <a class="nexus-game-tile" href="${escapeHtml(game.route)}" data-index="${index}" data-game-id="${escapeHtml(game.id)}">
+      <div class="nexus-game-art ${escapeHtml(game.visual ?? "next")}" aria-hidden="true"></div>
       <div class="nexus-game-info">
-        <div class="nexus-tags">${game.tags.map(renderTag).join("")}</div>
+        <div class="nexus-tags">${tags}</div>
         <h2>${escapeHtml(game.title)}</h2>
         <p>${escapeHtml(game.description)}</p>
-        <span class="nexus-play">${escapeHtml(game.playLabel)} →</span>
+        <span class="nexus-play">${escapeHtml(game.playLabel ?? "Play")}</span>
       </div>
-    </article>
+    </a>
   `;
 }
 
-function renderShell(root) {
-  const selected = getFeaturedGame();
+function nearestTile(row) {
+  const tiles = [...row.querySelectorAll(".nexus-game-tile")];
+  const center = row.scrollLeft + row.clientWidth / 2;
+  let best = tiles[0] ?? null;
+  let bestDistance = Infinity;
+  for (const tile of tiles) {
+    const tileCenter = tile.offsetLeft + tile.clientWidth / 2;
+    const distance = Math.abs(tileCenter - center);
+    if (distance < bestDistance) {
+      best = tile;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
+function updateSelected(row, title, countLabel) {
+  const tile = nearestTile(row);
+  if (!tile) return;
+  for (const other of row.querySelectorAll(".nexus-game-tile")) other.classList.toggle("is-selected", other === tile);
+  const index = Number(tile.dataset.index ?? 0);
+  const game = games[index];
+  title.textContent = game?.title ?? "";
+  countLabel.textContent = `${index + 1} / ${games.length}`;
+}
+
+function scrollByCard(row, direction) {
+  const tile = row.querySelector(".nexus-game-tile");
+  const amount = tile ? tile.clientWidth + 26 : row.clientWidth * 0.8;
+  row.scrollBy({ left: direction * amount, behavior: "smooth" });
+}
+
+export function mountNexusExperimentsGallery({ documentRef = document, root = documentRef.querySelector("#app") } = {}) {
+  if (!root) throw new Error("Nexus gallery root #app was not found.");
+  injectStyles(documentRef);
   root.innerHTML = `
-    <section class="nexus-shell" aria-label="NexusRealtime experiments arcade">
-      <header class="nexus-topbar" aria-label="Experiments navigation">
-        <div class="nexus-brand"><strong>${escapeHtml(galleryConfig.title)}</strong><span>${escapeHtml(galleryConfig.subtitle)}</span></div>
-        <div class="nexus-top-actions">
-          <a class="nexus-launch-button" href="${escapeHtml(selected?.route ?? "#")}" target="_blank" rel="noopener" data-launch-selected>Launch selected</a>
-          <a class="nexus-repo-button" href="${escapeHtml(galleryConfig.repoUrl)}">Open repo</a>
+    <canvas class="nexus-gallery-background" aria-hidden="true"></canvas>
+    <section class="nexus-shell">
+      <header class="nexus-topbar">
+        <div class="nexus-brand">
+          <strong>NexusRealtime ${escapeHtml(galleryConfig.title)}</strong>
+          <span>${escapeHtml(galleryConfig.subtitle)}</span>
         </div>
+        <nav class="nexus-top-actions" aria-label="Gallery actions">
+          <a class="nexus-repo-button" href="${escapeHtml(galleryConfig.repoUrl)}">Repo</a>
+          <a class="nexus-launch-button" href="${escapeHtml(getFeaturedGame()?.route ?? "#")}">Featured</a>
+        </nav>
       </header>
-      <section class="nexus-gallery-help" aria-label="Gallery controls">
-        <span>${escapeHtml(galleryConfig.hint)} <span class="nexus-selected-title"></span></span>
-        <div class="nexus-gallery-controls">
-          <button class="nexus-scroll-button" type="button" data-scroll="previous" aria-label="Previous experiment">‹</button>
-          <span class="nexus-count" aria-live="polite">1 / ${games.length}</span>
-          <button class="nexus-scroll-button" type="button" data-scroll="next" aria-label="Next experiment">›</button>
-        </div>
+      <section class="nexus-gallery-help" aria-label="Gallery status">
+        <span>${escapeHtml(galleryConfig.hint)}</span>
+        <span><strong class="nexus-count">1 / ${games.length}</strong> <span class="nexus-selected-title">${escapeHtml(games[0]?.title ?? "")}</span></span>
+        <span class="nexus-gallery-controls">
+          <button class="nexus-scroll-button" type="button" data-direction="-1" aria-label="Previous experiment">‹</button>
+          <button class="nexus-scroll-button" type="button" data-direction="1" aria-label="Next experiment">›</button>
+        </span>
       </section>
-      <section class="nexus-gallery-row" aria-label="Playable experiments" tabindex="0">
-        ${games.map((game) => renderTile(game, selected?.id)).join("")}
+      <section class="nexus-gallery-row" aria-label="Playable experiment cards">
+        ${games.map(createTile).join("")}
       </section>
     </section>
   `;
-  return {
-    row: root.querySelector(".nexus-gallery-row"),
-    count: root.querySelector(".nexus-count"),
-    selectedTitle: root.querySelector(".nexus-selected-title"),
-    launch: root.querySelector("[data-launch-selected]"),
-    previous: root.querySelector('[data-scroll="previous"]'),
-    next: root.querySelector('[data-scroll="next"]'),
-    tiles: Array.from(root.querySelectorAll(".nexus-game-tile"))
-  };
-}
 
-function getNearestTile(row, tiles) {
-  const center = row.scrollLeft + row.clientWidth / 2;
-  let nearest = tiles[0];
-  let best = Infinity;
-  for (const tile of tiles) {
-    const tileCenter = tile.offsetLeft + tile.offsetWidth / 2;
-    const distance = Math.abs(tileCenter - center);
-    if (distance < best) {
-      best = distance;
-      nearest = tile;
-    }
-  }
-  return nearest;
-}
+  const row = root.querySelector(".nexus-gallery-row");
+  const title = root.querySelector(".nexus-selected-title");
+  const countLabel = root.querySelector(".nexus-count");
+  const buttons = [...root.querySelectorAll(".nexus-scroll-button")];
 
-function selectedGameForTile(tile) {
-  return games.find((game) => game.id === tile?.dataset?.gameId) ?? games[0];
-}
+  let raf = null;
+  row.addEventListener("scroll", () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => updateSelected(row, title, countLabel));
+  }, { passive:true });
 
-function centerTile(row, tile, behavior = "smooth") {
-  if (!tile) return;
-  const left = tile.offsetLeft - row.clientWidth / 2 + tile.offsetWidth / 2;
-  row.scrollTo({ left, behavior });
-}
+  buttons.forEach((button) => button.addEventListener("click", () => scrollByCard(row, Number(button.dataset.direction ?? 1))));
 
-function wireScrolling(parts) {
-  const { row, count, selectedTitle, launch, previous, next, tiles } = parts;
-  let pointerDown = false;
+  let dragging = false;
   let startX = 0;
-  let startScroll = 0;
-  let dragged = false;
-  let selectedTile = tiles.find((tile) => tile.classList.contains("is-selected")) ?? tiles[0];
-  let scrollRaf = 0;
-
-  function setSelected(tile, options = {}) {
-    if (!tile || tile === selectedTile && !options.force) return;
-    selectedTile = tile;
-    const selectedGame = selectedGameForTile(tile);
-    for (const candidate of tiles) {
-      const active = candidate === tile;
-      candidate.classList.toggle("is-selected", active);
-      candidate.setAttribute("aria-current", String(active));
-      candidate.setAttribute("aria-label", `${active ? "Selected" : "Select"} ${selectedGameForTile(candidate).title}`);
-    }
-    const index = Math.max(0, tiles.indexOf(tile));
-    count.textContent = `${index + 1} / ${tiles.length}`;
-    selectedTitle.textContent = `Selected: ${selectedGame.title}`;
-    launch.href = selectedGame.route;
-    launch.setAttribute("aria-label", `Launch ${selectedGame.title} in a new tab`);
-    previous.disabled = index <= 0;
-    next.disabled = index >= tiles.length - 1;
-  }
-
-  function updateFromScroll() {
-    scrollRaf = 0;
-    setSelected(getNearestTile(row, tiles));
-  }
-
-  function scheduleScrollUpdate() {
-    if (scrollRaf) return;
-    scrollRaf = requestAnimationFrame(updateFromScroll);
-  }
-
-  function scrollToIndex(index, behavior = "smooth") {
-    const clamped = Math.max(0, Math.min(tiles.length - 1, index));
-    const tile = tiles[clamped];
-    setSelected(tile);
-    centerTile(row, tile, behavior);
-  }
-
-  function scrollByCard(direction) {
-    const index = Math.max(0, tiles.indexOf(selectedTile));
-    scrollToIndex(index + direction);
-  }
-
-  previous.addEventListener("click", () => scrollByCard(-1));
-  next.addEventListener("click", () => scrollByCard(1));
-
-  row.addEventListener("wheel", (event) => {
-    const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
-    event.preventDefault();
-    row.scrollLeft += horizontal ? event.deltaX : event.deltaY;
-    scheduleScrollUpdate();
-  }, { passive: false });
-
+  let startLeft = 0;
   row.addEventListener("pointerdown", (event) => {
-    pointerDown = true;
-    dragged = false;
+    dragging = true;
     startX = event.clientX;
-    startScroll = row.scrollLeft;
+    startLeft = row.scrollLeft;
     row.classList.add("is-dragging");
     row.setPointerCapture?.(event.pointerId);
   });
-
   row.addEventListener("pointermove", (event) => {
-    if (!pointerDown) return;
-    const dx = event.clientX - startX;
-    if (Math.abs(dx) > 5) dragged = true;
-    row.scrollLeft = startScroll - dx;
-    scheduleScrollUpdate();
+    if (!dragging) return;
+    row.scrollLeft = startLeft - (event.clientX - startX);
   });
-
-  function releasePointer(event) {
-    if (!pointerDown) return;
-    pointerDown = false;
-    row.classList.remove("is-dragging");
-    row.releasePointerCapture?.(event.pointerId);
-    scheduleScrollUpdate();
-    setTimeout(() => { dragged = false; }, 80);
-  }
-
-  row.addEventListener("pointerup", releasePointer);
-  row.addEventListener("pointercancel", releasePointer);
-  row.addEventListener("scroll", scheduleScrollUpdate, { passive: true });
-
-  for (const tile of tiles) {
-    tile.addEventListener("click", () => {
-      if (dragged) return;
-      setSelected(tile);
-      centerTile(row, tile);
-    });
-    tile.addEventListener("dblclick", () => {
-      setSelected(tile);
-      launch.click();
-    });
-    tile.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      if (tile === selectedTile && event.key === "Enter") launch.click();
-      else {
-        setSelected(tile);
-        centerTile(row, tile);
-      }
+  for (const type of ["pointerup", "pointercancel", "mouseleave"]) {
+    row.addEventListener(type, () => {
+      dragging = false;
+      row.classList.remove("is-dragging");
     });
   }
 
-  globalThis.addEventListener("keydown", (event) => {
-    if (event.defaultPrevented) return;
-    if (event.key === "ArrowRight") {
-      event.preventDefault();
-      scrollByCard(1);
-    } else if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      scrollByCard(-1);
-    } else if (event.key === "Enter" && document.activeElement === row) {
-      event.preventDefault();
-      launch.click();
-    }
-  });
-
-  setSelected(selectedTile, { force: true });
-  requestAnimationFrame(() => centerTile(row, selectedTile, "auto"));
+  updateSelected(row, title, countLabel);
+  const canvas = root.querySelector(".nexus-gallery-background");
+  startNexusGalleryShader({ canvas });
 }
 
-export function renderNexusExperimentsShell(options = {}) {
-  const documentRef = options.document ?? globalThis.document;
-  const root = options.root ?? documentRef.querySelector("#app");
-  if (!root) throw new Error("Nexus experiments shell needs a root element.");
-  injectStyles(documentRef);
-  startNexusGalleryShader({ document: documentRef });
-  const parts = renderShell(root);
-  wireScrolling(parts);
-  return parts;
-}
-
-renderNexusExperimentsShell();
+mountNexusExperimentsGallery();
