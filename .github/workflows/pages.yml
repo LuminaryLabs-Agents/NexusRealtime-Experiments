@@ -3,11 +3,11 @@ name: Deploy static site to GitHub Pages
 on:
   push:
     branches:
-      - "0.0.1"
+      - "0.0.2"
   workflow_dispatch:
 
 env:
-  DEPLOY_REF: "0.0.1"
+  DEPLOY_REF: "0.0.2"
 
 permissions:
   contents: read
