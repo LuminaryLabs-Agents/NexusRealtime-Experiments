@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="Procedural high fidelity WebGL meadow with cottage, sheep, grass, shaders, and VFX generated from NexusRealtime ProtoKits." />
+  <meta name="description" content="Procedural high fidelity WebGL meadow with cottage, sheep, grass, shaders, VFX, high clouds, post-processing, and procedural countryside audio generated from NexusRealtime DSKs." />
   <title>High Fidelity Meadow — NexusRealtime</title>
   <style>
     :root{color-scheme:dark;--gold:#ffe6a3;--text:#f7fbf3;--muted:#bfd2c0}
@@ -12,7 +12,7 @@
     #hud{position:fixed;inset:18px auto auto 18px;z-index:3;display:grid;gap:8px;pointer-events:none;text-shadow:0 2px 14px #000}
     #title{max-width:min(560px,calc(100vw - 36px));padding:10px 13px;border:1px solid rgba(255,230,163,.24);border-radius:16px;background:linear-gradient(180deg,rgba(13,22,16,.58),rgba(5,10,7,.28));box-shadow:0 18px 60px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(16px);font-weight:900;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem}
     #title strong{color:var(--gold)}
-    #status{max-width:min(720px,calc(100vw - 36px));padding:8px 12px;border-radius:999px;background:rgba(5,10,7,.28);color:var(--muted);font-size:.78rem}
+    #status{max-width:min(760px,calc(100vw - 36px));padding:8px 12px;border-radius:999px;background:rgba(5,10,7,.28);color:var(--muted);font-size:.78rem}
     #errorPanel{position:fixed;z-index:5;inset:auto 18px 18px 18px;max-height:45vh;overflow:auto;white-space:pre-wrap;padding:14px;border:1px solid rgba(255,120,90,.55);border-radius:18px;color:#ffe9e4;background:rgba(35,8,4,.86);box-shadow:0 20px 80px rgba(0,0,0,.48)}
     #errorPanel[hidden]{display:none}
   </style>
@@ -26,6 +26,6 @@
     </aside>
     <section id="errorPanel" role="alert" hidden></section>
   </main>
-  <script type="module" src="./src/main-aaa.js?v=0.0.2-aaa-dsk-1"></script>
+  <script type="module" src="./src/main-aaa.js?v=0.0.2-aaa-clouds-post-audio-1"></script>
 </body>
 </html>
