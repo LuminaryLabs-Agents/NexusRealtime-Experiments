@@ -9,6 +9,7 @@ on:
 
 env:
   DEPLOY_REF: "0.0.2"
+  DEPLOY_LABEL: "aaa-meadow-dsk-1"
 
 permissions:
   contents: read
