@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Living Agent Lab</title>
+  <style>
+    html,body{margin:0;height:100%;overflow:hidden;background:#07110f;color:#f7f3df;font-family:system-ui,sans-serif}canvas{display:block;width:100vw;height:100vh}#hud{position:fixed;inset:0;pointer-events:none}#objective,#controls{position:absolute;left:16px;padding:8px 10px;border:1px solid rgba(255,227,109,.35);border-radius:999px;background:rgba(5,8,7,.55);font-size:12px;letter-spacing:.04em}#objective{top:14px;color:#ffe36d}#controls{bottom:14px;color:#9ee8cf}#error{position:fixed;right:14px;bottom:14px;max-width:min(520px,90vw);white-space:pre-wrap;color:#ffd5cd;background:#3b0c08;border:1px solid #ff8b7b;border-radius:14px;padding:12px;font-size:12px}#error[hidden]{display:none}
+  </style>
+</head>
+<body>
+  <main id="app">
+    <canvas id="game" role="application" aria-label="Living Agent Lab"></canvas>
+    <aside id="hud" aria-label="Game HUD"><header id="objective">Objective: steal or return the apple</header><footer id="controls">Click apple/guard/merchant/gate</footer></aside>
+    <section id="error" role="alert" hidden></section>
+  </main>
+  <script type="module">
+    const canvas=document.querySelector('#game');const ctx=canvas.getContext('2d');const objective=document.querySelector('#objective');const errorPanel=document.querySelector('#error');
+    const entities={player:{x:170,y:300,label:'Player'},guard:{x:480,y:250,label:'Guard',bubble:'Watching the square.'},merchant:{x:300,y:230,label:'Merchant',bubble:'Fresh apples.'},apple:{x:310,y:330,label:'Apple',stolen:false},gate:{x:650,y:290,label:'Gate',locked:true}};
+    const state={mode:'dry-run',facts:[],trace:[],intent:null,dialogue:'',objective:'Steal the apple or talk to the guard.'};
+    function remember(fact){if(!state.facts.includes(fact))state.facts.unshift(fact);state.trace.unshift('memory:'+fact)}
+    function fakeHarness(){if(state.facts.includes('player.stole.apple'))return{intent:'accuse',targetId:'player',reason:'player.stole.apple',actions:[{type:'dialogue.intent',act:'accuse'}]};return{intent:'warn',targetId:'player',reason:'guard duty'}}
+    function validate(proposal){if(!['warn','accuse','observe'].includes(proposal.intent))return{ok:false,reason:'intent-not-allowed'};if(proposal.targetId&&!['player','guard','merchant','gate'].includes(proposal.targetId))return{ok:false,reason:'unknown-target'};return{ok:true,reason:'accepted'}}
+    function requestGuardDecision(){const proposal=fakeHarness();const validation=validate(proposal);state.trace.unshift((validation.ok?'accepted:':'rejected:')+proposal.intent);if(validation.ok){state.intent=proposal;state.dialogue=proposal.intent==='accuse'?'Guard: Why were you near that apple?':'Guard: Keep the market calm.';state.objective=proposal.intent==='accuse'?'Explain yourself to the guard.':'Try a village action.'}}
+    function click(x,y){const hit=Object.entries(entities).find(([,e])=>Math.hypot(x-e.x,y-e.y)<42);if(!hit)return;const[id,e]=hit;if(id==='apple'&&!e.stolen){e.stolen=true;remember('player.stole.apple');state.objective='Guard noticed. Decision requested.';requestGuardDecision()}else if(id==='guard'){requestGuardDecision()}else if(id==='merchant'){state.dialogue='Merchant: The guard remembers what happens here.';state.objective='Agent memory is visible in GameHost.'}else if(id==='gate'){state.dialogue=state.intent?.intent==='accuse'?'Guard blocks the gate.':'Gate is locked.';state.trace.unshift('gate.checked')}}
+    canvas.addEventListener('click',ev=>{const r=canvas.getBoundingClientRect();click(ev.clientX-r.left,ev.clientY-r.top)});
+    function resize(){const dpr=Math.min(devicePixelRatio||1,2);canvas.width=innerWidth*dpr;canvas.height=innerHeight*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+    function draw(){ctx.clearRect(0,0,innerWidth,innerHeight);ctx.fillStyle='#0b1714';ctx.fillRect(0,0,innerWidth,innerHeight);ctx.strokeStyle='rgba(255,227,109,.12)';for(let i=0;i<18;i++){ctx.beginPath();ctx.arc(innerWidth/2,innerHeight/2,90+i*34,0,Math.PI*2);ctx.stroke()}for(const[id,e]of Object.entries(entities)){ctx.beginPath();ctx.fillStyle=id==='apple'?(e.stolen?'#5d312f':'#ff5f53'):id==='guard'?'#ffe36d':id==='merchant'?'#9ee8cf':id==='gate'?'#b9c7ff':'#f7f3df';ctx.arc(e.x,e.y,26,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f7f3df';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText(e.label,e.x,e.y+44)}if(state.dialogue){ctx.fillStyle='rgba(4,7,6,.72)';ctx.strokeStyle='rgba(255,227,109,.45)';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(380,145,300,54,14);ctx.fill();ctx.stroke();ctx.fillStyle='#ffe36d';ctx.textAlign='left';ctx.font='14px system-ui';ctx.fillText(state.dialogue,396,178)}objective.textContent='Objective: '+state.objective;requestAnimationFrame(draw)}draw();
+    window.GameHost={getState:()=>JSON.parse(JSON.stringify(state)),entities,requestGuardDecision,remember};
+  </script>
+</body>
+</html>
