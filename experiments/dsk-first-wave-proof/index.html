@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NexusRealtime DSK First-Wave Proof</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "nexusrealtime": "../../../NexusRealtime/src/index.js"
+        }
+      }
+    </script>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #0c1917, #12392e 55%, #d4a63d);
+        color: #f7f0d5;
+        font: 16px/1.5 Georgia, serif;
+      }
+
+      main {
+        width: min(760px, calc(100vw - 32px));
+        padding: 32px;
+        border: 1px solid rgb(247 240 213 / 0.28);
+        border-radius: 24px;
+        background: rgb(4 12 11 / 0.62);
+        box-shadow: 0 24px 80px rgb(0 0 0 / 0.35);
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 5vw, 4rem);
+        line-height: 0.95;
+      }
+
+      pre {
+        overflow: auto;
+        padding: 16px;
+        border-radius: 16px;
+        background: rgb(0 0 0 / 0.35);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>DSK first-wave proof</h1>
+      <p>Direct-import ProtoKits install through the NexusRealtime DSK contract and expose promoted APIs under <code>engine.n</code>.</p>
+      <pre id="proof-status">Booting...</pre>
+    </main>
+    <script type="module" src="./src/proof.js"></script>
+  </body>
+</html>
