@@ -28,7 +28,8 @@ assert.ok(!shell.includes("is-featured"), "shell should not keep static featured
 
 assert.equal(galleryConfig.title, "Experiments", "gallery config should expose the product title");
 assert.ok(galleryConfig.repoUrl.includes("NexusRealtime-Experiments"), "gallery config should expose the repo URL");
-assert.equal(games.length, 20, "gallery data should expose exactly 20 canonical games");
+assert.equal(games.length, 21, "gallery data should expose the 20 canonical games plus the High Fidelity Meadow rendering route");
+assert.ok(games.some((game) => game.id === "high-fidelity-meadow"), "gallery should include the High Fidelity Meadow rendering route");
 assert.equal(games.filter((game) => game.featured).length, 1, "gallery should have exactly one initial featured route");
 
 const galleryData = readFileSync("experiments/_shared/nexus-gallery-data.js", "utf8");
