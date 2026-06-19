@@ -28,8 +28,8 @@ assert.ok(files.scene.includes("createCreatureDomainServiceKit"));
 assert.ok(files.scene.includes("createFurWoolHairDomainServiceKit"));
 assert.ok(files.main.includes("createExperimentMeadowKit"));
 
-assert.ok(games.length > 20, `gallery should expose more than the old 20-entry cap, got ${games.length}`);
-assert.ok(games.some((game) => game.id === "high-fidelity-meadow"));
-assert.ok(games.some((game) => game.id.startsWith("aaa-")), "gallery should include AAA registry entries");
+assert.equal(games.length, 21, "gallery should preserve the canonical 21-route contract");
+assert.ok(games.some((game) => game.id === "high-fidelity-meadow"), "gallery should include the High Fidelity Meadow rendering route");
+assert.ok(games.every((game) => !game.id.startsWith("aaa-")), "canonical gallery should not expose generated AAA registry ids directly");
 
-console.log(`High Fidelity Meadow cutover smoke passed with ${games.length} gallery entries.`);
+console.log(`High Fidelity Meadow cutover smoke passed with ${games.length} canonical gallery entries.`);
