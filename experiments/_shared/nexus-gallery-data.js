@@ -30,6 +30,16 @@ const featuredGames = Object.freeze([
     description: "Experiment-owned procedural WebGL meadow scene composed from current terrain, wind, vegetation, creature, fur, sky, VFX, and visual-target ProtoKit domains."
   },
   {
+    id: "fluid-water-lab",
+    title: "Fluid Water Lab",
+    route: "./experiments/fluid-water-lab/",
+    kind: "experiment",
+    visual: "sora",
+    playLabel: "Play experiment",
+    tags: [{ label: "Fluid", tone: "gold" }, { label: "Water", tone: "blue" }, { label: "DSK", tone: "green" }],
+    description: "Composable fluid/water domain slice proving flat ProtoKits for data, streaming, surface sampling, mesh descriptors, shading, physics, behavior, effects, audio, and mode composition."
+  },
+  {
     id: "fogline-relay",
     title: "Fogline Relay",
     route: "./experiments/fogline-relay/",
