@@ -1,25 +1,32 @@
-# AAA Batch 01
+# AAA Batch Support Harness
 
-Eight GPT-specified playable vertical-slice seeds for the 100-game NexusRealtime Experiments track.
+This directory is no longer the public route structure for playable experiments.
 
-Each route uses a shared host while keeping the game-specific truth in manifest data plus `GameHost` state. The Canvas renderer consumes snapshots only.
+Public experiment routes should use:
 
-## Routes
+```txt
+experiments/<slug>/index.html
+```
 
-- `ember-rail`
-- `tideglass-salvage`
-- `echo-lock`
-- `hollow-warden`
-- `skyrig-suture`
-- `mirage-stalker`
-- `core-diver`
-- `starwell-cartographer`
+The code under `experiments/aaa-batch/host/` remains as shared support infrastructure for generated seed experiments:
 
-## GameHost Contract
+- `game-registry.js` stores reusable seed metadata.
+- `batch-host.js` boots one seed by slug.
+- `game-host.js` owns deterministic host behavior for the seed harness.
+- `canvas-renderer.js` presents the seed state.
 
-- `GameHost.getState()`
-- `GameHost.getValidationState()`
-- `GameHost.tick(dt)`
-- `GameHost.dispatch(action, payload)`
-- `GameHost.runSmoke()`
-- `GameHost.restart()`
+Generated flat route wrappers are created by:
+
+```txt
+scripts/generate-flat-experiment-routes.mjs
+```
+
+That script creates `experiments/<slug>/index.html` for every registered AAA seed before checks and deploy.
+
+Do not add new playable public routes under:
+
+```txt
+experiments/aaa-batch/<slug>/
+```
+
+Use `experiments/<slug>/index.html` instead.
