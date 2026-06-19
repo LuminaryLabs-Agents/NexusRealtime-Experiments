@@ -121,11 +121,19 @@ const featuredGames = Object.freeze([
   }
 ]);
 
+function flattenAaaRoute(game) {
+  const slug = String(game.id).replace(/^aaa-/, "");
+  return Object.freeze({
+    ...game,
+    route: `./experiments/${slug}/`
+  });
+}
+
 const seen = new Set(featuredGames.map((game) => game.id));
 
 export const games = Object.freeze([
   ...featuredGames,
-  ...aaaBatchGalleryGames.filter((game) => !seen.has(game.id))
+  ...aaaBatchGalleryGames.map(flattenAaaRoute).filter((game) => !seen.has(game.id))
 ]);
 
 export function getFeaturedGame() {
