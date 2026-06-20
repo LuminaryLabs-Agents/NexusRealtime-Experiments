@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Catacomb Postmaster — NexusRealtime</title>
+</head>
+<body data-game-id="catacomb-postmaster">
+  <main id="app" aria-label="Catacomb Postmaster experiment">
+    <canvas id="game" role="application"></canvas>
+    <aside id="hud" aria-label="Experiment HUD">
+      <h1 id="title">Catacomb Postmaster</h1>
+      <p id="status">Loading…</p>
+      <p id="readout"></p>
+    </aside>
+    <pre id="err" role="alert" hidden></pre>
+  </main>
+  <script type="module">
+    import { startFlatAaaExperimentRoute } from "../_shared/aaa-flat-route.js";
+    startFlatAaaExperimentRoute("catacomb-postmaster");
+  </script>
+</body>
+</html>

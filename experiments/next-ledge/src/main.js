@@ -8,8 +8,8 @@ function showFatal(error) {
 
 async function boot() {
   const [sessionModule, rendererModule, inputModule, hudModule, loopModule, synthModule] = await Promise.all([
-    import("./session.js"),
-    import("./renderer-three.js"),
+    import("./session-visual-upgrade.js"),
+    import("./renderer-three-fidelity.js"),
     import("./input.js"),
     import("./hud.js"),
     import("./runtime-loop.js"),

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Saffron Skull Market — NexusRealtime</title>
+</head>
+<body data-game-id="saffron-skull-market">
+  <main id="app" aria-label="Saffron Skull Market experiment">
+    <canvas id="game" role="application"></canvas>
+    <aside id="hud" aria-label="Experiment HUD">
+      <h1 id="title">Saffron Skull Market</h1>
+      <p id="status">Loading…</p>
+      <p id="readout"></p>
+    </aside>
+    <pre id="err" role="alert" hidden></pre>
+  </main>
+  <script type="module">
+    import { startFlatAaaExperimentRoute } from "../_shared/aaa-flat-route.js";
+    startFlatAaaExperimentRoute("saffron-skull-market");
+  </script>
+</body>
+</html>

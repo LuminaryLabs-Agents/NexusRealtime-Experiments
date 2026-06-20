@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="WebGL high-fidelity cel-shaded island terrain scene composed from horizontal NexusRealtime ProtoKits." />
+  <title>Tropical Island Scene — NexusRealtime</title>
+  <style>
+    :root{color-scheme:dark;--text:#f5fff7;--muted:#b9d9cb;--gold:#ffe07b;--aqua:#84f5ff}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#041015;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+    main,canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+    #hud{position:fixed;z-index:3;inset:16px auto auto 16px;display:grid;gap:8px;pointer-events:none;text-shadow:0 2px 18px #00131a}
+    #title{max-width:min(720px,calc(100vw - 32px));padding:10px 13px;border:1px solid rgba(132,245,255,.28);border-radius:16px;background:linear-gradient(180deg,rgba(5,35,36,.58),rgba(2,11,13,.28));box-shadow:0 18px 60px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(16px);font-weight:950;letter-spacing:.08em;text-transform:uppercase;font-size:.78rem}
+    #title strong{color:var(--gold)}
+    #status{max-width:min(900px,calc(100vw - 32px));padding:8px 12px;border-radius:999px;background:rgba(2,11,13,.36);color:var(--muted);font-size:.78rem}
+    #errorPanel{position:fixed;z-index:5;inset:auto 18px 18px 18px;max-height:45vh;overflow:auto;white-space:pre-wrap;padding:14px;border:1px solid rgba(255,120,90,.55);border-radius:18px;color:#ffe9e4;background:rgba(35,8,4,.86);box-shadow:0 20px 80px rgba(0,0,0,.48)}
+    #errorPanel[hidden]{display:none}
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/island-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/palm-tree-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/coconut-prop-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/timer-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/fall-motion-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/fish-school-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/fish-motion-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/float-prop-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/float-motion-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/orbit-camera-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/cel-shading-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/outline-sobel-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/normal-style-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/reflect-probe-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/fluid-field-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/fluid-motion-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/fluid-shading-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/fluid-effects-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/water-mode-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/water-data-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/water-stream-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/water-surface-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/water-mesh-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/water-shading-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/water-physics-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js",
+        "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.2/protokits/water-effects-kit/index.js?v=tropical-island-scene-20260619": "./src/local-kits.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main id="app" aria-label="Tropical Island Scene">
+    <canvas id="game" role="application" aria-label="WebGL cel shaded island with palm tree, falling coconuts, fish, reflective ocean props, and horizon water"></canvas>
+    <aside id="hud" aria-label="Minimal scene HUD">
+      <div id="title"><strong>Tropical Island Scene</strong> · horizontal domain kit composition</div>
+      <div id="status">loading WebGL island composition…</div>
+    </aside>
+    <section id="errorPanel" role="alert" hidden></section>
+  </main>
+  <script type="module" src="./src/main.js?v=tropical-island-scene-20260619-r2"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nerve Forge — NexusRealtime</title>
+</head>
+<body data-game-id="nerve-forge">
+  <main id="app" aria-label="Nerve Forge experiment">
+    <canvas id="game" role="application"></canvas>
+    <aside id="hud" aria-label="Experiment HUD">
+      <h1 id="title">Nerve Forge</h1>
+      <p id="status">Loading…</p>
+      <p id="readout"></p>
+    </aside>
+    <pre id="err" role="alert" hidden></pre>
+  </main>
+  <script type="module">
+    import { startFlatAaaExperimentRoute } from "../_shared/aaa-flat-route.js";
+    startFlatAaaExperimentRoute("nerve-forge");
+  </script>
+</body>
+</html>

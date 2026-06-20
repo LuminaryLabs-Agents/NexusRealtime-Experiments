@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nocturne Lock Diviner — NexusRealtime</title>
+</head>
+<body data-game-id="nocturne-lock-diviner">
+  <main id="app" aria-label="Nocturne Lock Diviner experiment">
+    <canvas id="game" role="application"></canvas>
+    <aside id="hud" aria-label="Experiment HUD">
+      <h1 id="title">Nocturne Lock Diviner</h1>
+      <p id="status">Loading…</p>
+      <p id="readout"></p>
+    </aside>
+    <pre id="err" role="alert" hidden></pre>
+  </main>
+  <script type="module">
+    import { startFlatAaaExperimentRoute } from "../_shared/aaa-flat-route.js";
+    startFlatAaaExperimentRoute("nocturne-lock-diviner");
+  </script>
+</body>
+</html>

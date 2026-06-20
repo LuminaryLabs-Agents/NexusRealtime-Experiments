@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ONNX Companion Workshop</title>
+  <style>
+    :root{color-scheme:dark;--gold:#ffe18a;--cyan:#83dcff;--green:#9fffc8;--red:#ff8e7d;--panel:rgba(8,12,20,.58);--line:rgba(255,255,255,.14)}*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#05070b;color:#eef8ff;font-family:Inter,ui-sans-serif,system-ui,sans-serif}#app,#view{position:fixed;inset:0}#view{display:block}.hud{position:fixed;left:16px;right:16px;top:14px;display:flex;justify-content:space-between;gap:14px;pointer-events:none}.card{border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 18px 90px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);padding:12px 14px}.brand strong{display:block;color:var(--gold);letter-spacing:.12em;text-transform:uppercase}.brand span{display:block;color:#a8bbc9;font-size:.82rem;margin-top:4px}.status{min-width:250px;text-align:right}.pill{display:inline-block;border:1px solid rgba(131,220,255,.32);border-radius:999px;padding:6px 9px;color:var(--cyan);font-size:.72rem;font-weight:800;text-transform:uppercase;margin-left:6px}.bottom{position:fixed;left:16px;right:16px;bottom:14px;display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center}.bottom input{border:1px solid rgba(255,255,255,.17);border-radius:999px;background:rgba(0,0,0,.38);color:#fff;padding:12px 15px;font:inherit}.bottom button{border:1px solid rgba(255,225,138,.42);border-radius:999px;background:linear-gradient(90deg,var(--gold),var(--green));color:#07110a;font-weight:950;padding:11px 14px;cursor:pointer}.bottom button.secondary{background:rgba(131,220,255,.1);color:var(--cyan);border-color:rgba(131,220,255,.3)}.help{position:fixed;left:16px;bottom:82px;width:min(420px,45vw);color:#b9cad5;font-size:.84rem;line-height:1.35;pointer-events:none}.answer{position:fixed;right:16px;bottom:82px;width:min(420px,42vw);max-height:34vh;overflow:auto}.answer h2{margin:0 0 6px;color:var(--gold);font-size:.84rem;text-transform:uppercase;letter-spacing:.1em}.answer p{margin:.35rem 0 0;color:#eaf7ff;line-height:1.38;font-size:.92rem}.answer[hidden]{display:none}.err{position:fixed;left:16px;right:16px;bottom:146px;white-space:pre-wrap;color:#ffd8d2;background:#3b0d09;border:1px solid var(--red);border-radius:14px;padding:12px;font-size:12px;z-index:5}.err[hidden]{display:none}@media(max-width:760px){.hud{flex-direction:column}.status{text-align:left}.help,.answer{left:16px;right:16px;width:auto}.bottom{grid-template-columns:1fr}.bottom button{width:100%}}
+  </style>
+</head>
+<body>
+  <main id="app" aria-label="ONNX Companion Workshop">
+    <canvas id="view"></canvas>
+    <header class="hud">
+      <div class="card brand"><strong>ONNX Companion Workshop</strong><span>Walk the physical lab. Click objects for ONNX review. Click away to return them to spawn.</span></div>
+      <div class="card status"><span class="pill" id="modelPill">onnx-community/Qwen2.5-0.5B-Instruct</span><span class="pill" id="statusPill">booting</span></div>
+    </header>
+    <div class="help card">WASD to walk. Mouse move to look after clicking the scene. Click a tool or physics prop to pull it into review. Click physical tokens around it to ask the companion. Click empty space to return it.</div>
+    <section class="answer card" id="answerCard" hidden><h2 id="answerTitle">Companion</h2><p id="answerText"></p></section>
+    <footer class="bottom card">
+      <input id="goalInput" value="Help me understand this workshop object and how to use it in an ONNX graph." aria-label="Workshop goal" />
+      <button id="askBtn">Ask selected</button>
+      <button id="resetBtn" class="secondary">Return object</button>
+    </footer>
+    <section class="err" id="error" role="alert" hidden></section>
+  </main>
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+    import { createOnnxWorkshopThreeJsKits } from "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@d8b353bd4a5922f863b56d3de6f365b8d792c427/protokits/onnx-workshop-threejs-kits/index.js";
+
+    const MODEL_ID="onnx-community/Qwen2.5-0.5B-Instruct";
+    const canvas=document.querySelector("#view"),statusPill=document.querySelector("#statusPill"),answerCard=document.querySelector("#answerCard"),answerTitle=document.querySelector("#answerTitle"),answerText=document.querySelector("#answerText"),goalInput=document.querySelector("#goalInput"),askBtn=document.querySelector("#askBtn"),resetBtn=document.querySelector("#resetBtn"),errorPanel=document.querySelector("#error");
+    const clock=new THREE.Clock();
+    let engine,world,kits,scene,camera,renderer,raycaster,mouse,selected=null,hovered=null,yaw=0,pitch=0,lookActive=false;
+    const keyState=new Set(), objectMeshes=new Map(), tokenMeshes=[], flowMeshes=[];
+
+    function showError(error){errorPanel.hidden=false;errorPanel.textContent=String(error?.stack||error?.message||error)}
+    function setStatus(value){statusPill.textContent=value}
+    function nexusStub(){return{defineResource(name){return{kind:"resource",name}},defineEvent(name){return{kind:"event",name}},defineRuntimeKit(definition){return definition}}}
+    function install(k){const resources=new Map(),events=[];world={__nexusClock:{frame:0,elapsed:0,delta:1/60},getResource(r){return resources.get(r)},setResource(r,v){resources.set(r,v)},emit(e,p){events.push({event:e.name,payload:p})},readEvents(e){return events.filter(x=>x.event===e.name).map(x=>x.payload)}};engine={};for(const kit of k)kit.initWorld?.({world,engine});for(const kit of k)kit.install?.({world,engine});return{world,engine,events}}
+
+    function mat(color, opts={}){return new THREE.MeshStandardMaterial({color,roughness:opts.roughness??.48,metalness:opts.metalness??.08,transparent:opts.transparent??false,opacity:opts.opacity??1,emissive:opts.emissive??0x000000,emissiveIntensity:opts.emissiveIntensity??0});}
+    const materials={wood:mat(0x8b5e34,{roughness:.7}),darkWood:mat(0x402818,{roughness:.8}),metal:mat(0xa7b1b8,{metalness:.65,roughness:.28}),brass:mat(0xffd36e,{metalness:.55,roughness:.25}),glass:mat(0x92ddff,{transparent:true,opacity:.28,roughness:.05,metalness:.1,emissive:0x1d5875,emissiveIntensity:.1}),rubber:mat(0x171b20,{roughness:.8}),paper:mat(0xf4ead0,{roughness:.75}),greenGlow:mat(0x94ffc3,{emissive:0x1eff9b,emissiveIntensity:.9}),blueGlow:mat(0x82dcff,{emissive:0x28a6ff,emissiveIntensity:.7}),goldGlow:mat(0xffe18a,{emissive:0xffb000,emissiveIntensity:.85}),redGlow:mat(0xff8e7d,{emissive:0xff311f,emissiveIntensity:.9})};
+
+    function geometryFrom(vertices, indices){const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(vertices.flat(),3));g.setIndex(indices);g.computeVertexNormals();return g}
+    function boxGeo(w=1,h=1,d=1){const x=w/2,y=h/2,z=d/2;return geometryFrom([[-x,-y,-z],[x,-y,-z],[x,y,-z],[-x,y,-z],[-x,-y,z],[x,-y,z],[x,y,z],[-x,y,z]],[0,2,1,0,3,2,4,5,6,4,6,7,0,1,5,0,5,4,1,2,6,1,6,5,2,3,7,2,7,6,3,0,4,3,4,7])}
+    function tubeGeo(length=1,radius=.05,radial=14,segments=5){const v=[],idx=[];for(let i=0;i<=segments;i++){const x=-length/2+length*i/segments;for(let j=0;j<radial;j++){const a=Math.PI*2*j/radial;v.push([x,Math.cos(a)*radius,Math.sin(a)*radius])}}for(let i=0;i<segments;i++)for(let j=0;j<radial;j++){const a=i*radial+j,b=i*radial+(j+1)%radial,c=(i+1)*radial+j,d=(i+1)*radial+(j+1)%radial;idx.push(a,c,b,b,c,d)}return geometryFrom(v,idx)}
+    function helixGeo(turns=6,r=.16,pitch=.055,width=.035,segments=120){const v=[],idx=[];for(let i=0;i<=segments;i++){const t=Math.PI*2*turns*i/segments;v.push([Math.cos(t)*r,pitch*t/(Math.PI*2),Math.sin(t)*r],[Math.cos(t)*(r+width),pitch*t/(Math.PI*2),Math.sin(t)*(r+width)])}for(let i=0;i<segments;i++){const a=i*2,b=a+1,c=a+2,d=a+3;idx.push(a,c,b,b,c,d)}return geometryFrom(v,idx)}
+    function gearGeo(teeth=18,root=.24,outer=.34,width=.08){const rings=teeth*2,v=[],idx=[];for(const y of[-width/2,width/2])for(let i=0;i<rings;i++){const rr=i%2?outer:root,a=Math.PI*2*i/rings;v.push([Math.cos(a)*rr,y,Math.sin(a)*rr])}for(let i=0;i<rings;i++){const n=(i+1)%rings,a=i,b=n,c=rings+i,d=rings+n;idx.push(a,c,b,b,c,d)}return geometryFrom(v,idx)}
+    function planeGeo(w=1,h=1){const x=w/2,y=h/2;return geometryFrom([[-x,-y,0],[x,-y,0],[x,y,0],[-x,y,0]],[0,1,2,0,2,3])}
+
+    function groupAt(desc){const g=new THREE.Group();g.position.copy(toV(desc.transform.position));g.rotation.set(desc.transform.rotation.x,desc.transform.rotation.y,desc.transform.rotation.z);g.scale.copy(toV(desc.transform.scale));g.userData.objectId=desc.id;return g}
+    function toV(v){return new THREE.Vector3(v?.x??0,v?.y??0,v?.z??0)}
+    function addMesh(parent,geo,material,pos={},rot={},scale={x:1,y:1,z:1}){const m=new THREE.Mesh(geo,material);m.position.set(pos.x??0,pos.y??0,pos.z??0);m.rotation.set(rot.x??0,rot.y??0,rot.z??0);m.scale.set(scale.x??1,scale.y??1,scale.z??1);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+
+    function makeObject(desc){const g=groupAt(desc),type=desc.type;
+      if(type==="hammer"){addMesh(g,tubeGeo(.78,.045),materials.wood,{x:-.08},{z:.1});addMesh(g,boxGeo(.28,.16,.16),materials.metal,{x:.28});addMesh(g,boxGeo(.09,.22,.18),materials.metal,{x:.43});}
+      else if(type==="screwdriver"){addMesh(g,tubeGeo(.62,.03),materials.metal,{x:.12});addMesh(g,tubeGeo(.28,.075),materials.rubber,{x:-.36});addMesh(g,boxGeo(.08,.018,.018),materials.metal,{x:.48});}
+      else if(type==="screw"){addMesh(g,tubeGeo(.38,.035),materials.metal,{x:0},{z:Math.PI/2});const h=new THREE.Mesh(helixGeo(7,.04,.018,.018,100),materials.brass);h.rotation.z=Math.PI/2;h.position.x=-.19;g.add(h);}
+      else if(type==="wrench"){addMesh(g,tubeGeo(.55,.035),materials.metal,{x:0});addMesh(g,gearGeo(10,.09,.16,.045),materials.metal,{x:.34},{z:Math.PI/2});addMesh(g,boxGeo(.18,.06,.045),materials.metal,{x:-.34});}
+      else if(type==="lever"){addMesh(g,boxGeo(.9,.06,.08),materials.wood);addMesh(g,boxGeo(.12,.2,.16),materials.brass,{y:-.12});}
+      else if(type==="spring"){const s=new THREE.Mesh(helixGeo(8,.15,.045,.022,160),materials.blueGlow);s.rotation.z=Math.PI/2;g.add(s);}
+      else if(type==="pulley"){addMesh(g,gearGeo(24,.2,.32,.12),materials.metal,{},{z:Math.PI/2});addMesh(g,tubeGeo(.42,.018),materials.rubber,{y:-.33},{z:Math.PI/2});}
+      else if(type==="mass-block"||type==="goal-block"){addMesh(g,boxGeo(.42,.28,.32),type==="goal-block"?materials.brass:materials.metal);}
+      else if(type==="force-gauge"){addMesh(g,boxGeo(.38,.38,.08),materials.paper);addMesh(g,tubeGeo(.28,.01),materials.redGlow,{},{z:.85});}
+      else if(type==="prompt-card"){addMesh(g,boxGeo(.46,.3,.025),materials.paper);}
+      else if(type==="output-tray"){addMesh(g,boxGeo(.7,.08,.42),materials.darkWood);addMesh(g,boxGeo(.64,.02,.36),materials.paper,{y:.06});}
+      else if(type==="onnx-core"){addMesh(g,boxGeo(.55,.38,.42),materials.glass);addMesh(g,gearGeo(18,.16,.25,.08),materials.blueGlow,{y:.04},{x:Math.PI/2});}
+      else addMesh(g,boxGeo(.3,.3,.3),materials.wood);
+      g.traverse(o=>{if(o.isMesh)o.userData.objectId=desc.id});scene.add(g);objectMeshes.set(desc.id,g);return g}
+
+    function makeTextSprite(text,color="#ffe18a"){const c=document.createElement("canvas");c.width=512;c.height=128;const x=c.getContext("2d");x.fillStyle="rgba(12,15,24,.78)";roundRect2d(x,8,8,496,112,32);x.fill();x.strokeStyle=color;x.lineWidth=4;x.stroke();x.fillStyle="#eef8ff";x.font="700 34px system-ui";x.textAlign="center";x.textBaseline="middle";x.fillText(text.slice(0,28),256,64);const tex=new THREE.CanvasTexture(c);tex.anisotropy=8;const mesh=new THREE.Mesh(planeGeo(1.25,.32),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));mesh.userData.tokenText=text;return mesh}
+    function roundRect2d(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+
+    function buildRoom(){scene.background=new THREE.Color(0x070a10);scene.fog=new THREE.Fog(0x070a10,5.5,13);const hemi=new THREE.HemisphereLight(0xb7d9ff,0x2b190d,1.2);scene.add(hemi);const key=new THREE.DirectionalLight(0xffe0ac,3.2);key.position.set(-3,5,2);key.castShadow=true;key.shadow.mapSize.set(2048,2048);scene.add(key);const lamp=new THREE.PointLight(0x83dcff,2.4,6);lamp.position.set(0,2.2,-1.3);scene.add(lamp);addMesh(scene,boxGeo(7,.08,6),materials.darkWood,{y:-.04,z:-.6});addMesh(scene,boxGeo(7,3.2,.08),materials.wood,{y:1.55,z:-3.05});addMesh(scene,boxGeo(.08,3.2,6),materials.wood,{x:-3.5,y:1.55,z:-.6});addMesh(scene,boxGeo(.08,3.2,6),materials.wood,{x:3.5,y:1.55,z:-.6});addMesh(scene,boxGeo(3.4,.12,1.15),materials.wood,{y:.72,z:-1.22});addMesh(scene,boxGeo(.18,1.35,.18),materials.darkWood,{x:-1.55,y:.05,z:-1.0});addMesh(scene,boxGeo(.18,1.35,.18),materials.darkWood,{x:1.55,y:.05,z:-1.0});addMesh(scene,boxGeo(5.6,1.65,.08),materials.darkWood,{y:1.95,z:-2.98});for(let x=-2.6;x<=2.6;x+=.28)for(let y=1.35;y<=2.62;y+=.28)addMesh(scene,tubeGeo(.025,.012,8,1),materials.metal,{x,y,z:-2.91},{x:Math.PI/2});}
+
+    function syncObjects(){for(const desc of engine.onnxWorkshopScene.getDescriptors()){let g=objectMeshes.get(desc.id);if(!g)g=makeObject(desc);g.position.copy(toV(desc.transform.position));g.rotation.set(desc.transform.rotation.x,desc.transform.rotation.y,desc.transform.rotation.z);g.scale.copy(toV(desc.transform.scale));const glow=desc.state==="reviewing"||desc.state==="returning"||desc.id===hovered;g.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(desc.state==="reviewing")o.material.emissive?.setHex?.(0x7a5d16),o.material.emissiveIntensity=.22;else if(desc.id===hovered)o.material.emissive?.setHex?.(0x115777),o.material.emissiveIntensity=.18}});}
+    }
+
+    function clearTokens(){for(const t of tokenMeshes){scene.remove(t);t.material.map?.dispose?.();t.material.dispose();}tokenMeshes.length=0;}
+    function spawnTokens(){clearTokens();const obj=engine.workshopReview.getSelectedObject();if(!obj)return;const tokens=engine.workshopReview.getReviewTokens();const center=toV(obj.currentTransform.position);tokens.slice(0,6).forEach((token,i)=>{const a=Math.PI*2*i/Math.min(6,tokens.length);const m=makeTextSprite(token.label,"#ffe18a");m.position.set(center.x+Math.cos(a)*1.15,center.y+.2+Math.sin(a)*.64,center.z+.05);m.lookAt(camera.position);m.userData.tokenAction=token.action;m.userData.objectId=obj.id;scene.add(m);tokenMeshes.push(m);});}
+
+    function updateTokenFacing(){for(const t of tokenMeshes)t.lookAt(camera.position)}
+    function enterReview(id){engine.workshopReview.enter(id);selected=id;const result=engine.companionVision.inspectSelected("what is this?");showAnswer(result?.answer?.text??"Object selected for ONNX review.",engine.onnxWorkshopScene.getObject(id)?.label??"Companion");spawnTokens();setStatus("reviewing")}
+    function exitReview(){engine.workshopReview.exit({reason:"click-away"});selected=null;clearTokens();answerCard.hidden=true;setStatus("walking")}
+    function showAnswer(text,title="Companion"){answerTitle.textContent=title;answerText.textContent=text;answerCard.hidden=false;}
+    function requestToken(action){const result=engine.companionVision.inspectSelected(action,{text:customAnswer(action)});engine.workshopReview.requestAction(action);showAnswer(result?.answer?.text??customAnswer(action),engine.workshopReview.getSelectedObject()?.label??"Companion");}
+    function customAnswer(action){const obj=engine.workshopReview.getSelectedObject();if(!obj)return"Select an object first.";if(action.includes("connect"))return `${obj.label} can connect to ${obj.compatibleTypes.join(", ") || "compatible workshop outputs"}. Compatible objects will glow in a full routing pass.`;if(action.includes("impact"))return `${obj.label} demonstrates impact: impulse is mass times change in velocity, and force depends on contact time.`;if(action.includes("torque"))return `${obj.label} demonstrates torque: force times lever arm distance.`;if(action.includes("stiffness"))return `${obj.label} demonstrates spring force: stiffness times displacement.`;return `${obj.label} is a physical ONNX workshop object. It can be inspected, connected, and used in the prompt/physics graph.`;}
+
+    function onPointerDown(event){const rect=canvas.getBoundingClientRect();mouse.x=((event.clientX-rect.left)/rect.width)*2-1;mouse.y=-((event.clientY-rect.top)/rect.height)*2+1;raycaster.setFromCamera(mouse,camera);const hits=raycaster.intersectObjects([...tokenMeshes,...Array.from(objectMeshes.values())],true);if(hits.length){let target=hits[0].object;while(target.parent && !target.userData.objectId && !target.userData.tokenAction)target=target.parent;if(target.userData.tokenAction){requestToken(target.userData.tokenAction);return;}const oid=target.userData.objectId;if(oid){enterReview(oid);return;}}else if(selected)exitReview();lookActive=true;}
+    function onPointerMove(event){if(!lookActive)return; yaw-=event.movementX*.0024; pitch=Math.max(-.9,Math.min(.9,pitch-event.movementY*.002));}
+    function onWheel(event){camera.position.y=Math.max(.9,Math.min(2.1,camera.position.y+event.deltaY*.001));}
+
+    function updateCamera(dt){const dir=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));let move=new THREE.Vector3();if(keyState.has("KeyW"))move.add(dir.multiplyScalar(-1));if(keyState.has("KeyS"))move.add(new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)));if(keyState.has("KeyA"))move.add(right.multiplyScalar(-1));if(keyState.has("KeyD"))move.add(new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)));if(move.lengthSq()>0){move.normalize().multiplyScalar(dt*2.1);camera.position.add(move);camera.position.x=Math.max(-2.9,Math.min(2.9,camera.position.x));camera.position.z=Math.max(-2.6,Math.min(1.9,camera.position.z));}camera.rotation.set(pitch,yaw,0,"YXZ");}
+
+    function build(){scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.05,80);camera.position.set(0,1.55,2.25);renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;raycaster=new THREE.Raycaster();mouse=new THREE.Vector2();buildRoom();syncObjects();}
+
+    function animate(){requestAnimationFrame(animate);const dt=Math.min(.04,clock.getDelta());world.__nexusClock.frame++;world.__nexusClock.elapsed+=dt;world.__nexusClock.delta=dt;engine.workshopReview.updateMotion(dt);engine.workshopSignalFlow.updatePackets(dt);updateCamera(dt);syncObjects();if(selected)spawnTokens();updateTokenFacing();renderer.render(scene,camera);}
+
+    function boot(){try{kits=createOnnxWorkshopThreeJsKits(nexusStub(),{});({engine,world}=install(kits));build();setStatus("walking");window.GameHost={engine,world,kits,getState:()=>({scene:engine.onnxWorkshopScene.getState(),review:engine.workshopReview.getState(),companion:engine.companionVision.getState(),flow:engine.workshopSignalFlow.getState(),plan:engine.workshopThreePlan.buildPlan({camera:{mode:"first-person",position:camera.position,yaw,pitch}})} };animate();}catch(error){showError(error);setStatus("boot failed")}}
+
+    askBtn.addEventListener("click",()=>selected?requestToken("ask-companion"):showAnswer("Click a physical workshop object first.","Companion"));resetBtn.addEventListener("click",exitReview);canvas.addEventListener("pointerdown",onPointerDown);canvas.addEventListener("pointermove",onPointerMove);canvas.addEventListener("wheel",onWheel,{passive:true});addEventListener("keydown",e=>keyState.add(e.code));addEventListener("keyup",e=>keyState.delete(e.code));addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+    boot();
+  </script>
+</body>
+</html>

@@ -38,6 +38,10 @@ deterministic-replay-harness
 gamehost-standard-kit
 ```
 
+## DSK First-Wave Proof
+
+`experiments/dsk-first-wave-proof/` is the smallest direct-import proof for the `0.0.2` DSK contract. It uses a browser import map for bare `nexusrealtime`, imports first-wave ProtoKit `createN...Kit()` aliases, composes them through `createRealtimeGame()`, and validates promoted APIs under `engine.n.*`.
+
 ## Next Ledge
 
 `experiments/next-ledge/` is a cinematic grapple-climb validation demo. It imports the real NexusRealtime runtime, composes the Next Ledge cinematic ascent ProtoKit, maps browser input into `engine.nextLedge` APIs, ticks the runtime, and renders `engine.nextLedge.getSnapshot()` with Three.js.

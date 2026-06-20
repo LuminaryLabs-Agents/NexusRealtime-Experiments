@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rust Moon Sapper — NexusRealtime</title>
+</head>
+<body data-game-id="rust-moon-sapper">
+  <main id="app" aria-label="Rust Moon Sapper experiment">
+    <canvas id="game" role="application"></canvas>
+    <aside id="hud" aria-label="Experiment HUD">
+      <h1 id="title">Rust Moon Sapper</h1>
+      <p id="status">Loading…</p>
+      <p id="readout"></p>
+    </aside>
+    <pre id="err" role="alert" hidden></pre>
+  </main>
+  <script type="module">
+    import { startFlatAaaExperimentRoute } from "../_shared/aaa-flat-route.js";
+    startFlatAaaExperimentRoute("rust-moon-sapper");
+  </script>
+</body>
+</html>

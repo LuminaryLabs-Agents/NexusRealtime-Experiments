@@ -5,17 +5,19 @@ import {
   createCottage,
   createGrass,
   createPollen,
+  createSheep as createSheepRenderer,
   createSky,
   createTerrain,
   createUniformRegistry,
   installControls,
   terrainHeight
-} from "./procedural-renderers.js";
+} from "./procedural-renderers.js?v=sheep-fix-1";
 
 const canvas = document.querySelector("#game");
 const statusEl = document.querySelector("#status");
 const errorPanel = document.querySelector("#errorPanel");
 const clock = new THREE.Clock();
+const BUILD_ID = "0.0.2-sheep-fix-1";
 
 function showFatal(error) {
   errorPanel.hidden = false;
@@ -76,7 +78,7 @@ async function boot() {
   world.add(createTerrain(sceneDescriptor, uniformRegistry.uniforms));
   world.add(createGrass(sceneDescriptor, uniformRegistry.uniforms));
   world.add(createCottage(sceneDescriptor, uniformRegistry.uniforms));
-  const flock = createSheep(sceneDescriptor, uniformRegistry.uniforms);
+  const flock = createSheepRenderer(sceneDescriptor, uniformRegistry.uniforms);
   world.add(flock);
   world.add(createPollen(sceneDescriptor, uniformRegistry.uniforms));
 
@@ -100,7 +102,9 @@ async function boot() {
     camera,
     meadowKit,
     sceneDescriptor,
+    build: BUILD_ID,
     getState: () => ({
+      build: BUILD_ID,
       assetPolicy: sceneDescriptor.assetPolicy,
       grassBlades: sceneDescriptor.grass.bladeCount,
       sheep: sceneDescriptor.sheep.count,
@@ -116,7 +120,7 @@ async function boot() {
     animateSheep(flock, time);
     pathGlow.material.opacity = 0.12 + Math.sin(time * 1.7) * 0.035;
     renderer.render(world, camera);
-    statusEl.textContent = `${sceneDescriptor.grass.bladeCount.toLocaleString()} shader grass blades · ${sceneDescriptor.sheep.count} procedural sheep · ${sceneDescriptor.shaders.length} custom shaders · no assets`;
+    statusEl.textContent = `${sceneDescriptor.grass.bladeCount.toLocaleString()} shader grass blades · ${sceneDescriptor.sheep.count} procedural sheep · ${sceneDescriptor.shaders.length} custom shaders · no assets · ${BUILD_ID}`;
     requestAnimationFrame(frame);
   }
 

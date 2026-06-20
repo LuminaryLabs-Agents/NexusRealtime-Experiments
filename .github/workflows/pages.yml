@@ -3,13 +3,11 @@ name: Deploy static site to GitHub Pages
 on:
   push:
     branches:
-      - "main"
       - "0.0.2"
   workflow_dispatch:
 
 env:
   DEPLOY_REF: "0.0.2"
-  DEPLOY_LABEL: "aaa-meadow-clouds-post-audio-1"
 
 permissions:
   contents: read
@@ -37,8 +35,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Run deploy smoke tests
-        run: npm run check:deploy
+      - name: Run smoke tests
+        run: npm run check
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

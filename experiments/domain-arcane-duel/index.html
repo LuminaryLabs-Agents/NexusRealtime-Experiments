@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Domain Arcane Duel · NexusRealtime</title>
+  <style>html,body{margin:0;height:100%;overflow:hidden;background:#07050d;color:#f8f4e6;font-family:system-ui,sans-serif}main,canvas{position:fixed;inset:0;width:100%;height:100%;display:block}#hud{position:fixed;left:18px;top:16px;max-width:720px;padding:12px 14px;border:1px solid #ffe36d55;border-radius:18px;background:#09070dcc;box-shadow:0 24px 80px #0008;text-shadow:0 1px 10px #000}#hud strong{color:#ffe36d}#status{font-size:13px;color:#cfe8ff}</style>
+</head>
+<body data-mode="arena">
+<main aria-label="Domain Arcane Duel experiment"><canvas id="game"></canvas><aside id="hud"><strong>Domain Arcane Duel</strong><div id="status">loading scoped domain kits…</div></aside></main>
+<script type="module">
+  import { startScopedDomainThreeExperiment } from "../_shared/scoped-domain-three-composer.js";
+  startScopedDomainThreeExperiment({ title:"Domain Arcane Duel", mode:"arena", floor:0x17101f, background:"#090613", fog:"#1a0c2c", enemyColor:0xff4ecb });
+</script>
+</body>
+</html>
