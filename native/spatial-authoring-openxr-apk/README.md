@@ -6,7 +6,7 @@ This replaces the earlier SeedSpatial-specific naming with a reusable Spatial Au
 
 ## Current milestone
 
-This is now beyond a bare OpenXR color-clear shell.
+The native APK is now a right-controller guided demo for headsets that do not support hand tracking.
 
 It includes a lightweight native DSK bridge that owns:
 
@@ -18,9 +18,36 @@ transform-style scale/move methods
 widget creation method
 snapshot counter
 native render descriptors
+right-controller click progression
+right-controller aim cursor when available
+inverse 3DOF head-pose cursor fallback
 ```
 
-The OpenXR renderer reads that bridge state and draws panel-like colored objects into the stereo swapchains.
+The OpenXR renderer reads bridge state and draws panel-like colored objects, a controller/gaze cursor, progress pips, and a save-state indicator into stereo swapchains.
+
+## What the headset demo shows
+
+This is a guided spatial-authoring proof, not full freeform authoring yet.
+
+The user only needs the right-hand controller:
+
+```txt
+Aim with right controller.
+Press trigger/select to advance each authoring step.
+```
+
+The guided loop is:
+
+```txt
+1. Select an existing panel/object.
+2. Move a note using controller aim.
+3. Create a new widget at the cursor.
+4. Resize the timer widget.
+5. Capture a persistence snapshot.
+6. Press again to reset for the next viewer.
+```
+
+If controller aim pose is not available, the cursor falls back to inverse 3DOF head orientation so the demo still communicates the guided build flow.
 
 ## Included
 
@@ -29,6 +56,7 @@ The OpenXR renderer reads that bridge state and draws panel-like colored objects
 - OpenXR loader + OpenGL ES CMake build
 - OpenXR Android loader init
 - OpenXR instance, system, session, local reference space
+- right-hand OpenXR action set for select/click and aim pose
 - stereo swapchains
 - frame wait/begin/end loop
 - native DSK bridge state
@@ -36,16 +64,15 @@ The OpenXR renderer reads that bridge state and draws panel-like colored objects
 - staged `spatial-authoring-runtime-contract.json`
 - build script
 - PICO ADB-over-TCP install script
-- GitHub Actions APK build workflow
-- GitHub Actions PICO deployment workflow for a self-hosted runner
+- manual GitHub Actions APK/deploy workflow for a self-hosted runner
 
 ## Deferred
 
-- native hand-joint gesture routing into the bridge
 - full world-space panel mesh rendering
 - embedded JavaScript engine for NexusRealtime JS execution
 - native persistence backend
 - release signing
+- full hand-tracking mode for devices that support it
 
 ## Build locally
 
@@ -73,12 +100,12 @@ Output:
 native/spatial-authoring-openxr-apk/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## Build with GitHub Actions
+## Build and deploy with GitHub Actions
 
-Run:
+Run manually:
 
 ```txt
-Build Spatial Authoring OpenXR APK
+Actions → Make PICO APK → Run workflow
 ```
 
 Artifact:
@@ -87,15 +114,7 @@ Artifact:
 spatial-authoring-openxr-debug-apk
 ```
 
-## Deploy to PICO with GitHub Actions
-
-Use:
-
-```txt
-Deploy Spatial Authoring APK to PICO
-```
-
-This workflow builds the APK on a GitHub-hosted runner, uploads the APK artifact, then installs it from a self-hosted runner labeled:
+The workflow builds the APK on a GitHub-hosted runner, uploads the APK artifact, then installs it from a self-hosted runner labeled:
 
 ```txt
 self-hosted
@@ -164,14 +183,40 @@ adb devices
 adb -s <device-ip>:5555 logcat | grep SpatialAuthoringOpenXR
 ```
 
-## Next milestone
+## Demo script
 
-Route native OpenXR hand joints into the native bridge:
+Say:
 
 ```txt
-XR_EXT_hand_tracking
-→ openxr-hand-adapter-dsk equivalent
-→ hand gesture classifier
-→ selection / transform / widget / interaction bridge commands
-→ OpenXR-rendered spatial object state
+This is the Spatial Authoring Workbench running as a native OpenXR APK on PICO.
+This device does not support hand tracking, so this demo uses a single right controller.
+The point is to prove the authoring pipeline: controller input enters the runtime, the DSK bridge owns the meaning, and OpenXR renders the result.
+```
+
+Then perform:
+
+```txt
+1. Aim at the workbench and press trigger.
+   The selected object highlights.
+
+2. Aim somewhere else and press trigger.
+   The note moves, demonstrating transform-dsk behavior.
+
+3. Aim at an empty area and press trigger.
+   A new widget appears, demonstrating widget-dsk creation.
+
+4. Press trigger again.
+   The timer resizes, demonstrating another transform patch.
+
+5. Press trigger again.
+   The lower save indicator turns green/pulses, demonstrating persistence snapshot.
+
+6. Press trigger once more.
+   The demo resets for the next person.
+```
+
+Close with:
+
+```txt
+This is not the final authoring UI. It validates the headset pipeline, native OpenXR runtime, controller input route, DSK-owned state changes, and deploy loop. The next step is replacing the guided controller steps with real object-level editing commands.
 ```
