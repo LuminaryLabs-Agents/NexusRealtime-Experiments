@@ -1,0 +1,180 @@
+name: Make PICO APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      device_ip:
+        description: 'Optional PICO headset IP address. Leave empty to discover over USB on the self-hosted runner.'
+        required: false
+        type: string
+      adb_serial:
+        description: 'Optional adb serial, e.g. 192.168.1.25:5555 or USB serial. Overrides discovery.'
+        required: false
+        type: string
+      adb_port:
+        description: 'ADB TCP port.'
+        required: false
+        default: '5555'
+        type: string
+      launch_after_install:
+        description: 'Launch the app after install.'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: make-pico-apk
+  cancel-in-progress: false
+
+env:
+  PACKAGE_NAME: dev.luminarylabs.spatialauthoring.openxr
+
+jobs:
+  build-apk:
+    name: Build Spatial Authoring OpenXR APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager --install "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+
+      - name: Install Gradle
+        run: |
+          curl -L -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.10.2-bin.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          echo "/tmp/gradle-8.10.2/bin" >> "$GITHUB_PATH"
+
+      - name: Build APK
+        working-directory: native/spatial-authoring-openxr-apk
+        run: gradle :app:assembleDebug --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spatial-authoring-openxr-debug-apk
+          path: native/spatial-authoring-openxr-apk/app/build/outputs/apk/debug/app-debug.apk
+
+  deploy-to-pico:
+    name: Install APK on PICO headset
+    needs: build-apk
+    runs-on: [self-hosted, pico]
+    timeout-minutes: 20
+    env:
+      ADB_PORT: ${{ inputs.adb_port || '5555' }}
+      INPUT_DEVICE_IP: ${{ inputs.device_ip }}
+      INPUT_ADB_SERIAL: ${{ inputs.adb_serial }}
+      LAUNCH_AFTER_INSTALL: ${{ inputs.launch_after_install }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: spatial-authoring-openxr-debug-apk
+          path: ./apk
+
+      - name: Persist APK on runner
+        id: persist_apk
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=$(find ./apk -name '*.apk' -type f | head -n 1)
+          if [[ -z "${APK}" ]]; then
+            echo "No APK artifact found."
+            exit 1
+          fi
+          OUT_DIR="${HOME}/pico-apks"
+          mkdir -p "${OUT_DIR}"
+          OUT_APK="${OUT_DIR}/spatial-authoring-openxr-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}.apk"
+          cp "${APK}" "${OUT_APK}"
+          echo "apk=${APK}" >> "$GITHUB_OUTPUT"
+          echo "persisted_apk=${OUT_APK}" >> "$GITHUB_OUTPUT"
+          echo "APK artifact path in workflow workspace: ${APK}"
+          echo "APK persisted on runner at: ${OUT_APK}"
+
+      - name: Verify adb is available
+        run: |
+          set -euo pipefail
+          command -v adb
+          adb version
+
+      - name: Resolve PICO adb target
+        id: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          adb start-server >/dev/null
+
+          if [[ -n "${INPUT_ADB_SERIAL}" ]]; then
+            echo "serial=${INPUT_ADB_SERIAL}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -n "${INPUT_DEVICE_IP}" ]]; then
+            adb connect "${INPUT_DEVICE_IP}:${ADB_PORT}"
+            echo "serial=${INPUT_DEVICE_IP}:${ADB_PORT}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          USB_DEVICE=$(adb devices | awk 'NR > 1 && $2 == "device" && $1 !~ /:/ { print $1; exit }')
+          if [[ -z "${USB_DEVICE}" ]]; then
+            echo "No authorized USB PICO/Android device found on the self-hosted runner."
+            echo "Connect the headset by USB, enable USB debugging, and accept the RSA prompt."
+            exit 1
+          fi
+
+          DEVICE_IP=$(adb -s "${USB_DEVICE}" shell ip route 2>/dev/null | awk '/wlan|scope/ { for (i=1;i<=NF;i++) if ($i=="src") { print $(i+1); exit } }')
+          if [[ -z "${DEVICE_IP}" ]]; then
+            DEVICE_IP=$(adb -s "${USB_DEVICE}" shell ip addr show wlan0 2>/dev/null | awk '/inet / { split($2,a,"/"); print a[1]; exit }')
+          fi
+          if [[ -z "${DEVICE_IP}" ]]; then
+            echo "Could not detect headset Wi-Fi IP from USB device ${USB_DEVICE}."
+            exit 1
+          fi
+
+          adb -s "${USB_DEVICE}" tcpip "${ADB_PORT}" >/dev/null
+          sleep 2
+          adb connect "${DEVICE_IP}:${ADB_PORT}"
+          echo "serial=${DEVICE_IP}:${ADB_PORT}" >> "$GITHUB_OUTPUT"
+
+      - name: Install APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="${{ steps.persist_apk.outputs.apk }}"
+          adb -s "${{ steps.target.outputs.serial }}" install -r "${APK}"
+
+      - name: Verify installed package
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Local runner APK path: ${{ steps.persist_apk.outputs.persisted_apk }}"
+          adb -s "${{ steps.target.outputs.serial }}" shell pm list packages | grep "${PACKAGE_NAME}"
+          adb -s "${{ steps.target.outputs.serial }}" shell pm path "${PACKAGE_NAME}" || true
+          adb -s "${{ steps.target.outputs.serial }}" shell cmd package resolve-activity --brief "${PACKAGE_NAME}" || true
+
+      - name: Launch app
+        if: ${{ inputs.launch_after_install }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          adb -s "${{ steps.target.outputs.serial }}" shell monkey -p "${PACKAGE_NAME}" -c android.intent.category.LAUNCHER 1
+
+      - name: Capture launch logs
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          echo "APK should also be available from this GitHub Actions run artifact: spatial-authoring-openxr-debug-apk"
+          echo "Runner copy path, if persist step ran: ${{ steps.persist_apk.outputs.persisted_apk }}"
+          adb -s "${{ steps.target.outputs.serial }}" logcat -d -t 250 | grep -E 'SpatialAuthoringOpenXR|AndroidRuntime|OpenXR|FATAL EXCEPTION' || true

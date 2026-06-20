@@ -1,0 +1,33 @@
+{
+  "appId": "spatial-authoring-openxr-shell",
+  "version": "0.2.0",
+  "runtime": "native-openxr",
+  "bridge": {
+    "status": "native-dsk-bridge-stage-1",
+    "requiredDsks": [
+      "openxr-hand-adapter-dsk",
+      "hand-gesture-dsk",
+      "spatial-scene-graph-dsk",
+      "selection-dsk",
+      "transform-dsk",
+      "widget-dsk",
+      "interaction-dsk",
+      "persistence-dsk"
+    ],
+    "nativeBridgeOwns": [
+      "plain object state",
+      "command queue",
+      "selection state",
+      "transform patches",
+      "snapshot counter",
+      "render descriptors"
+    ]
+  },
+  "scene": {
+    "objects": [
+      { "id": "panel-dashboard", "type": "widget.panel", "position": [-0.72, 1.42, -1.7], "scale": [0.72, 0.42, 0.04] },
+      { "id": "note-alpha", "type": "widget.note", "position": [0.02, 1.22, -1.45], "scale": [0.48, 0.34, 0.04] },
+      { "id": "timer-focus", "type": "widget.timer", "position": [0.66, 1.38, -1.62], "scale": [0.42, 0.28, 0.04] }
+    ]
+  }
+}
