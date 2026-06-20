@@ -12,13 +12,13 @@ assert.match(living, /visibleState/);
 assert.match(living, /window\.GameHost/);
 assert.match(living, /Dispose/);
 
-assert.match(onnx, /ONNX Agent Workspace/);
+assert.match(onnx, /ONNX Companion Workshop/);
 assert.match(onnx, /onnx-community\/Qwen2\.5-0\.5B-Instruct/);
-assert.match(onnx, /createOnnxWorkspaceKits/);
-assert.match(onnx, /self-talk-loop-domain-kit/);
-assert.match(onnx, /threeRenderAdapter/);
-assert.match(onnx, /Load Qwen/);
-assert.match(onnx, /Run self-talk/);
+assert.match(onnx, /createOnnxWorkshopThreeJsKits/);
+assert.match(onnx, /three\.module\.js/);
+assert.match(onnx, /WASD to walk/);
+assert.match(onnx, /Click objects for ONNX review/);
+assert.match(onnx, /Click away to return/);
 assert.match(onnx, /window\.GameHost/);
 
 console.log("agent-labs-static-smoke.mjs passed");
