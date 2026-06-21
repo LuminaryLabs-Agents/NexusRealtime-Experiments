@@ -1,4 +1,5 @@
 const STYLE_ID = "nexus-arcade-performance-overrides";
+const CENTER_SELECTION_MARKER = "nexus-centered-selection-wired";
 
 function injectArcadePerformanceOverrides(documentRef = document) {
   if (documentRef.getElementById(STYLE_ID)) return;
@@ -125,4 +126,110 @@ function injectArcadePerformanceOverrides(documentRef = document) {
   documentRef.head.append(style);
 }
 
+function getArcadeRows(documentRef = document) {
+  return Array.from(documentRef.querySelectorAll(".nexus-route-row"));
+}
+
+function getCenteredArcadeRow(documentRef = document) {
+  const rows = getArcadeRows(documentRef);
+  if (!rows.length) return null;
+  const viewportCenter = window.innerHeight * 0.5;
+  let best = null;
+  let bestScore = Infinity;
+  for (const row of rows) {
+    const rect = row.getBoundingClientRect();
+    if (!rect.height) continue;
+    const rowCenter = rect.top + rect.height * 0.5;
+    const visible = rect.bottom >= 0 && rect.top <= window.innerHeight;
+    const distance = Math.abs(rowCenter - viewportCenter);
+    const offscreenPenalty = visible ? 0 : window.innerHeight;
+    const score = distance + offscreenPenalty;
+    if (score < bestScore) {
+      best = row;
+      bestScore = score;
+    }
+  }
+  return best ?? rows[0];
+}
+
+function applyCenteredArcadeSelection(documentRef = document) {
+  const centered = getCenteredArcadeRow(documentRef);
+  const rows = getArcadeRows(documentRef);
+  for (const row of rows) {
+    const active = row === centered;
+    row.classList.toggle("is-selected", active);
+    row.setAttribute("aria-selected", String(active));
+    row.tabIndex = active ? 0 : -1;
+  }
+  return centered;
+}
+
+function scrollArcadeRowToCenter(row, behavior = "smooth") {
+  if (!row) return;
+  const rect = row.getBoundingClientRect();
+  const top = window.scrollY + rect.top - window.innerHeight * 0.5 + rect.height * 0.5;
+  window.scrollTo({ top: Math.max(0, top), behavior });
+}
+
+function wireCenteredArcadeSelection(documentRef = document) {
+  if (window[CENTER_SELECTION_MARKER]) return;
+  window[CENTER_SELECTION_MARKER] = true;
+  let frame = 0;
+  const scheduleSelection = () => {
+    if (frame) return;
+    frame = window.requestAnimationFrame(() => {
+      frame = 0;
+      applyCenteredArcadeSelection(documentRef);
+    });
+  };
+
+  const moveCenteredSelection = (direction) => {
+    const rows = getArcadeRows(documentRef);
+    if (!rows.length) return;
+    const centered = getCenteredArcadeRow(documentRef);
+    const current = Math.max(0, rows.indexOf(centered));
+    const next = Math.max(0, Math.min(rows.length - 1, current + direction));
+    scrollArcadeRowToCenter(rows[next]);
+  };
+
+  window.addEventListener("scroll", scheduleSelection, { passive: true });
+  window.addEventListener("resize", scheduleSelection, { passive: true });
+  window.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      moveCenteredSelection(event.key === "ArrowDown" ? 1 : -1);
+      return;
+    }
+    if (event.key === "Enter") {
+      const row = getCenteredArcadeRow(documentRef);
+      const route = row?.dataset?.route;
+      if (!route) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      window.open(route, "_blank", "noopener");
+    }
+  }, true);
+
+  documentRef.addEventListener("click", (event) => {
+    const row = event.target.closest?.(".nexus-route-row");
+    if (!row) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    scrollArcadeRowToCenter(row);
+  }, true);
+
+  const observer = new MutationObserver(scheduleSelection);
+  const observe = () => {
+    const list = documentRef.querySelector(".nexus-route-list");
+    if (list) observer.observe(list, { childList: true });
+    scheduleSelection();
+  };
+  observe();
+  window.setTimeout(observe, 60);
+  window.setTimeout(scheduleSelection, 220);
+}
+
 injectArcadePerformanceOverrides();
+wireCenteredArcadeSelection();
