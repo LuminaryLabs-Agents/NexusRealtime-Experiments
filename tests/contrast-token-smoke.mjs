@@ -52,6 +52,11 @@ assertIncludes(perfOverridePath, "contain: layout style paint", "row containment
 assertIncludes(perfOverridePath, "backdrop-filter: none !important", "removed frosted glass backdrop filters");
 assertIncludes(perfOverridePath, "background: var(--candy-chip)", "bright non-dark text chips");
 assertIncludes(perfOverridePath, "--candy-panel", "bright candy panel styling");
+assertIncludes(perfOverridePath, "getCenteredArcadeRow", "center-most row selection helper");
+assertIncludes(perfOverridePath, "applyCenteredArcadeSelection", "center selection applier");
+assertIncludes(perfOverridePath, "scrollArcadeRowToCenter", "center scroll helper");
+assertIncludes(perfOverridePath, "stopImmediatePropagation", "arrow key override for center-based navigation");
+assertIncludes(perfOverridePath, "window.innerHeight * 0.5", "viewport center selection math");
 assertNotIncludes(perfOverridePath, "filter: blur", "blur filters in performance override");
 assertNotIncludes(perfOverridePath, "mix-blend-mode: screen", "screen blend mode in performance override");
 
@@ -73,4 +78,4 @@ assertIncludes(meadowPath, "--muted:#f2e7bd", "high-contrast meadow muted text")
 assertIncludes(openAbovePath, "color:#10202a", "dark Open Above body fallback text");
 assertIncludes(openAbovePath, "background:rgba(3,10,16,.82)", "high-contrast Open Above HUD background");
 
-console.log("Contrast, arcade zipper, and performance smoke checks passed.");
+console.log("Contrast, arcade zipper, performance, and centered selection smoke checks passed.");
