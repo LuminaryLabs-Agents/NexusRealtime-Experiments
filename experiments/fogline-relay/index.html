@@ -5,17 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Fogline Relay · NexusRealtime Experiment</title>
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #04070a; color: #dff7ff; font-family: system-ui, sans-serif; }
+    :root{color-scheme:dark;--panel:rgba(4,3,12,.84);--text:#fffaf0;--muted:#ffe3a3;--cyan:#9deaff}
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #04070a; color: var(--text); font-family: system-ui, sans-serif; }
     #app, #game, #hud { position: fixed; inset: 0; }
     #game { display: block; width: 100vw; height: 100vh; }
-    #hud { pointer-events: none; }
-    #status { position: fixed; left: 16px; top: 14px; font-size: 13px; letter-spacing: .02em; color: #dff7ff; text-shadow: 0 1px 10px #000; }
-    #prompt { position: fixed; left: 50%; bottom: 54px; transform: translateX(-50%); padding: 7px 11px; border: 1px solid rgba(126,232,255,.22); border-radius: 999px; background: rgba(4, 10, 14, .38); color: #eaffff; font-size: 13px; text-shadow: 0 1px 8px #000; }
-    #controls { position: fixed; left: 14px; bottom: 10px; font-size: 12px; color: rgba(210,246,255,.72); text-shadow: 0 1px 8px #000; }
-    #errorPanel { position: fixed; inset: 32px; z-index: 5; padding: 22px; border: 1px solid #ff5068; border-radius: 18px; background: #22070dcc; color: #ffd7dc; overflow: auto; }
+    #hud { pointer-events: none; color:var(--text); text-shadow:0 2px 14px rgba(0,0,0,.82); }
+    #status { position: fixed; left: 16px; top: 14px; padding:8px 11px; border-radius:999px; background:var(--panel); box-shadow:0 18px 60px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,255,255,.18); -webkit-backdrop-filter:blur(16px) saturate(1.25); backdrop-filter:blur(16px) saturate(1.25); font-size: 13px; font-weight:850; letter-spacing: .02em; color: var(--text); }
+    #prompt { position: fixed; left: 50%; bottom: 54px; transform: translateX(-50%); padding: 8px 12px; border:0; border-radius: 999px; background: rgba(4,3,12,.86); color: #ffffff; font-size: 13px; font-weight:750; box-shadow:0 18px 60px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,255,255,.18); -webkit-backdrop-filter:blur(16px) saturate(1.25); backdrop-filter:blur(16px) saturate(1.25); }
+    #controls { position: fixed; left: 14px; bottom: 10px; padding:7px 10px; border-radius:999px; background:rgba(4,3,12,.78); font-size: 12px; font-weight:700; color: var(--muted); box-shadow:0 12px 42px rgba(0,0,0,.34),inset 0 0 0 1px rgba(255,255,255,.14); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
+    #errorPanel { position: fixed; inset: 32px; z-index: 5; padding: 22px; border:0; border-radius: 18px; background: rgba(42,4,2,.94); color:#fff1ea; overflow: auto; box-shadow:0 22px 80px rgba(0,0,0,.54),inset 0 0 0 1px rgba(255,210,190,.22); }
     #errorPanel[hidden] { display: none; }
     #errorPanel h2 { margin-top: 0; }
     #errorText { white-space: pre-wrap; }
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
   </style>
 </head>
 <body>
