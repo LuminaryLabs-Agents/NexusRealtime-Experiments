@@ -19,8 +19,24 @@ function createProgram(gl, vertexSource, fragmentSource) {
   return program;
 }
 
+function styleCanvas(canvas) {
+  canvas.className = "nexus-gallery-background";
+  canvas.setAttribute("aria-hidden", "true");
+  Object.assign(canvas.style, {
+    position: "fixed",
+    inset: "0",
+    zIndex: "0",
+    width: "100vw",
+    height: "100vh",
+    display: "block",
+    pointerEvents: "none",
+    background: "radial-gradient(circle at 50% 35%, rgba(255,199,68,.42), transparent 32rem), linear-gradient(145deg,#180802,#7a3406 58%,#120703)"
+  });
+}
+
 function createFallback(canvas) {
   canvas.classList.add("is-fallback");
+  styleCanvas(canvas);
   return {
     canvas,
     stop() {},
@@ -33,10 +49,9 @@ export function startNexusGalleryShader(options = {}) {
   if (!documentRef?.createElement) return null;
 
   const reducedMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
-  const canvas = documentRef.createElement("canvas");
-  canvas.className = "nexus-gallery-background";
-  canvas.setAttribute("aria-hidden", "true");
-  (options.parent ?? documentRef.body).prepend(canvas);
+  const canvas = options.canvas ?? documentRef.createElement("canvas");
+  styleCanvas(canvas);
+  if (!canvas.parentNode) (options.parent ?? documentRef.body).prepend(canvas);
 
   const gl = canvas.getContext("webgl", {
     antialias: false,
@@ -46,53 +61,39 @@ export function startNexusGalleryShader(options = {}) {
   if (!gl) return createFallback(canvas);
 
   const vertex = `attribute vec2 p;void main(){gl_Position=vec4(p,0.0,1.0);}`;
-  const fragment = `precision highp float;uniform vec2 r;uniform float t;
+  const fragment = `precision highp float;uniform vec2 r;uniform vec2 m;uniform float t;uniform float scroll;
     float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
     float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);float a=hash(i),b=hash(i+vec2(1.,0.)),c=hash(i+vec2(0.,1.)),d=hash(i+vec2(1.,1.));return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);} 
-    float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p=mat2(1.62,1.17,-1.17,1.62)*p+vec2(4.1,2.7);a*=.52;}return v;}
-    float particleLayer(vec2 uv,float time,float scale,float seed,float size,float sparse,vec2 drift){
-      vec2 p=uv*scale+drift*time;
-      vec2 cell=floor(p);
-      vec2 local=fract(p)-.5;
-      float h=hash(cell+seed);
-      vec2 off=vec2(hash(cell+seed+17.7),hash(cell+seed+43.1))-.5;
-      float d=length(local-off*.72);
-      float keep=smoothstep(sparse,1.0,h);
-      float core=smoothstep(size,0.0,d);
-      float halo=smoothstep(size*3.4,0.0,d)*.22;
-      float tw=.42+.58*sin(time*(.8+h*2.6)+h*6.2831);
-      return (core+halo)*keep*tw;
-    }
-    vec3 particles(vec2 uv,float time,float vign){
-      vec3 gold=vec3(1.0,.86,.34);
-      vec3 blue=vec3(.34,.78,1.0);
-      vec3 chalk=vec3(.76,.80,.74);
-      float near=particleLayer(uv,time,16.5,11.0,.038,.72,vec2(.08,-.035));
-      float depth=particleLayer(uv,time,25.0,29.0,.026,.66,vec2(-.035,.055));
-      float spark=particleLayer(uv,time,10.0,47.0,.018,.82,vec2(.02,.08));
-      float shimmer=particleLayer(uv+vec2(sin(time*.05)*.08,0.),time,36.0,83.0,.012,.88,vec2(.005,.025));
-      return (gold*near*.42+blue*depth*.26+chalk*spark*.34+vec3(.7,.9,1.)*shimmer*.18)*vign;
-    }
+    float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<6;i++){v+=a*noise(p);p=mat2(1.62,1.17,-1.17,1.62)*p+vec2(4.1,2.7);a*=.52;}return v;}
+    float spark(vec2 uv,float time,float scale,float size,float sparse,vec2 drift){vec2 p=uv*scale+drift*time;vec2 cell=floor(p);vec2 local=fract(p)-.5;float h=hash(cell);vec2 off=vec2(hash(cell+17.7),hash(cell+43.1))-.5;float d=length(local-off*.72);float keep=smoothstep(sparse,1.0,h);float core=smoothstep(size,0.0,d);float halo=smoothstep(size*5.2,0.0,d)*.16;float tw=.45+.55*sin(time*(.8+h*2.6)+h*6.2831);return (core+halo)*keep*tw;}
     void main(){
-      vec2 uv=(gl_FragCoord.xy-.5*r)/min(r.x,r.y);
-      float time=t*.06;
-      vec2 q=uv+vec2(sin(time+uv.y*1.4),cos(time+uv.x*1.1))*.055;
-      float smoke=fbm(q*2.1+vec2(time*1.0,-time*.72));
-      float chalk=fbm(q*8.0+smoke*2.0-time*.2);
-      float dust=smoothstep(.62,1.0,fbm(q*17.0+time));
-      float vign=smoothstep(1.2,.18,length(uv*vec2(.9,1.08)));
-      float center=smoothstep(.9,.08,length(uv-vec2(.02,.01)));
-      float tone=(smoke*.2+chalk*.12+dust*.07+center*.11)*vign;
-      vec3 black=vec3(.006,.007,.007);
-      vec3 blue=vec3(.02,.05,.065);
-      vec3 chalky=vec3(.68,.70,.68);
-      vec3 col=mix(black,blue,.45)+chalky*tone;
-      col+=particles(uv,time,vign);
-      col+=vec3(.03,.028,.022)*pow(vign,2.0);
+      vec2 uv=gl_FragCoord.xy/r;
+      vec2 p=(gl_FragCoord.xy-.5*r)/min(r.x,r.y);
+      float time=t*.085;
+      vec2 mouse=(m-.5)*vec2(r.x/r.y,1.0);
+      vec2 q=p+vec2(sin(time+p.y*1.3),cos(time+p.x*1.1))*.07+vec2(0.,scroll*.00012);
+      float molten=fbm(q*1.85+vec2(time*.62,-time*.37));
+      float silk=fbm(q*6.4+molten*2.6-time*.22);
+      float bands=smoothstep(.58,.06,abs(p.y+sin(p.x*2.6+time*1.8)*.14+silk*.12));
+      float mouseGlow=1.0-smoothstep(.0,.74,length(p-mouse*.64));
+      float sun=1.0-smoothstep(.05,.92,length(p-vec2(.42,.28)));
+      float vign=smoothstep(1.35,.22,length(p*vec2(.86,1.08)));
+      float dust=spark(uv,time,18.0,.024,.83,vec2(.018,.045))+spark(uv+silk*.025,time,32.0,.014,.9,vec2(-.012,.035));
+      vec3 ember=vec3(.16,.055,.008);
+      vec3 orange=vec3(.86,.29,.025);
+      vec3 gold=vec3(1.0,.68,.10);
+      vec3 cream=vec3(1.0,.92,.54);
+      vec3 col=mix(ember,orange,molten*.82);
+      col=mix(col,gold,bands*.35+silk*.16);
+      col+=cream*(mouseGlow*.22+sun*.12+dust*.32);
+      col+=gold*pow(max(0.0,1.0-length(p-vec2(-.35,-.18))),3.0)*.12;
+      col*=vign;
+      col+=vec3(.025,.01,.004);
       gl_FragColor=vec4(col,1.0);
     }`;
 
   let stopped = false;
+  const mouse = { x: 0.5, y: 0.5 };
   const program = createProgram(gl, vertex, fragment);
   gl.useProgram(program);
 
@@ -105,6 +106,8 @@ export function startNexusGalleryShader(options = {}) {
 
   const resolution = gl.getUniformLocation(program, "r");
   const time = gl.getUniformLocation(program, "t");
+  const mouseUniform = gl.getUniformLocation(program, "m");
+  const scrollUniform = gl.getUniformLocation(program, "scroll");
 
   function resize() {
     const dpr = Math.min(globalThis.devicePixelRatio || 1, 2);
@@ -120,7 +123,9 @@ export function startNexusGalleryShader(options = {}) {
   function draw(now = 0) {
     resize();
     gl.uniform2f(resolution, canvas.width, canvas.height);
+    gl.uniform2f(mouseUniform, mouse.x, mouse.y);
     gl.uniform1f(time, reducedMotion ? 0 : now * 0.001);
+    gl.uniform1f(scrollUniform, globalThis.scrollY ?? 0);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
@@ -130,7 +135,13 @@ export function startNexusGalleryShader(options = {}) {
     if (!reducedMotion) globalThis.requestAnimationFrame(frame);
   }
 
+  function onPointerMove(event) {
+    mouse.x += ((event.clientX / Math.max(1, globalThis.innerWidth)) - mouse.x) * 0.35;
+    mouse.y += (1 - (event.clientY / Math.max(1, globalThis.innerHeight)) - mouse.y) * 0.35;
+  }
+
   globalThis.addEventListener?.("resize", () => draw(performance.now()), { passive: true });
+  globalThis.addEventListener?.("pointermove", onPointerMove, { passive: true });
   globalThis.requestAnimationFrame?.(frame);
 
   return {
@@ -138,6 +149,7 @@ export function startNexusGalleryShader(options = {}) {
     draw,
     stop() {
       stopped = true;
+      globalThis.removeEventListener?.("pointermove", onPointerMove);
       canvas.remove();
     }
   };
