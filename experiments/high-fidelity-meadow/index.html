@@ -6,15 +6,16 @@
   <meta name="description" content="Procedural high fidelity WebGL meadow experiment with cottage, sheep, grass, shaders, VFX, high clouds, post-processing, and procedural countryside audio composed from current NexusRealtime ProtoKit domains." />
   <title>High Fidelity Meadow — NexusRealtime</title>
   <style>
-    :root{color-scheme:dark;--gold:#ffe6a3;--text:#f7fbf3;--muted:#bfd2c0}
+    :root{color-scheme:dark;--gold:#ffe6a3;--text:#fffaf0;--muted:#f2e7bd}
     html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#030805;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
     main,canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
-    #hud{position:fixed;inset:18px auto auto 18px;z-index:3;display:grid;gap:8px;pointer-events:none;text-shadow:0 2px 14px #000}
-    #title{max-width:min(560px,calc(100vw - 36px));padding:10px 13px;border:1px solid rgba(255,230,163,.24);border-radius:16px;background:linear-gradient(180deg,rgba(13,22,16,.58),rgba(5,10,7,.28));box-shadow:0 18px 60px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(16px);font-weight:900;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem}
+    #hud{position:fixed;inset:18px auto auto 18px;z-index:3;display:grid;gap:8px;pointer-events:none;text-shadow:0 2px 14px rgba(0,0,0,.82)}
+    #title{max-width:min(560px,calc(100vw - 36px));padding:10px 13px;border:0;border-radius:16px;background:linear-gradient(180deg,rgba(5,12,7,.88),rgba(3,7,4,.76));color:var(--text);box-shadow:0 18px 60px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,255,255,.18);-webkit-backdrop-filter:blur(16px) saturate(1.25);backdrop-filter:blur(16px) saturate(1.25);font-weight:900;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem}
     #title strong{color:var(--gold)}
-    #status{max-width:min(760px,calc(100vw - 36px));padding:8px 12px;border-radius:999px;background:rgba(5,10,7,.28);color:var(--muted);font-size:.78rem}
-    #errorPanel{position:fixed;z-index:5;inset:auto 18px 18px 18px;max-height:45vh;overflow:auto;white-space:pre-wrap;padding:14px;border:1px solid rgba(255,120,90,.55);border-radius:18px;color:#ffe9e4;background:rgba(35,8,4,.86);box-shadow:0 20px 80px rgba(0,0,0,.48)}
+    #status{max-width:min(760px,calc(100vw - 36px));padding:8px 12px;border-radius:999px;background:rgba(2,6,4,.78);color:var(--muted);font-size:.78rem;font-weight:750;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 12px 42px rgba(0,0,0,.34);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2)}
+    #errorPanel{position:fixed;z-index:5;inset:auto 18px 18px 18px;max-height:45vh;overflow:auto;white-space:pre-wrap;padding:14px;border:0;border-radius:18px;color:#fff1ea;background:rgba(42,4,2,.94);box-shadow:0 22px 80px rgba(0,0,0,.54),inset 0 0 0 1px rgba(255,210,190,.22)}
     #errorPanel[hidden]{display:none}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
   </style>
 </head>
 <body>
