@@ -5,8 +5,9 @@ const ROOT = process.cwd();
 const DATA_PATH = join(ROOT, "experiments/_shared/nexus-gallery-data.js");
 const INDEX_PATH = join(ROOT, "index.html");
 const SEARCH_ROOTS = [
-  { dir: "experiments", kind: "experiment", playLabel: "Play experiment" },
-  { dir: "games", kind: "game", playLabel: "Play game" }
+  { dir: "experiments", kind: "experiment", subtype: "experiment", tab: "experiments", tabLabel: "Experiments", playLabel: "Open experiment" },
+  { dir: "apps", kind: "app", subtype: "game", tab: "games", tabLabel: "Games", playLabel: "Open app" },
+  { dir: "games", kind: "app", subtype: "game", tab: "games", tabLabel: "Games", playLabel: "Open app", legacy: true }
 ];
 const IGNORE = new Set(["_shared", "aaa-batch", "assets"]);
 
@@ -15,39 +16,48 @@ const CURATED = {
     title: "The Open Above V2",
     featured: true,
     visual: "sora",
-    playLabel: "Play harness",
-    tags: [{ label: "Flight", tone: "gold" }, { label: "Traversal", tone: "green" }, { label: "3D", tone: "blue" }],
+    subtype: "harness",
+    tab: "experiments",
+    playLabel: "Open harness",
+    tags: [{ label: "Experiment", tone: "gold" }, { label: "Flight", tone: "green" }, { label: "3D", tone: "blue" }],
     description: "Clean high-fidelity free-flight harness for assisted bird carving, camera-relative sky, terrain patches, scatter, flocking, and validation-first composition."
   },
   "high-fidelity-meadow": {
     visual: "sora",
-    tags: [{ label: "WebGL", tone: "gold" }, { label: "Procedural", tone: "green" }, { label: "DSK Cutover", tone: "blue" }],
+    subtype: "scene",
+    tags: [{ label: "Experiment", tone: "gold" }, { label: "Procedural", tone: "green" }, { label: "Scene", tone: "blue" }],
     description: "Experiment-owned procedural WebGL meadow scene composed from terrain, wind, vegetation, creature, fur, sky, VFX, and visual-target domains."
   },
   "fogline-relay": {
     visual: "fogline",
-    tags: [{ label: "First Person", tone: "gold" }, { label: "Scan", tone: "green" }, { label: "Fog", tone: "blue" }],
+    subtype: "experiment",
+    tags: [{ label: "Experiment", tone: "gold" }, { label: "First Person", tone: "green" }, { label: "Fog", tone: "blue" }],
     description: "First-person survey-pressure loop for scan targets, fog zones, timed pressure, hazard state, and renderer-only visual buckets."
   },
   "living-agent-lab": {
     visual: "fogline",
-    tags: [{ label: "Agent Kit", tone: "gold" }, { label: "Dry Run", tone: "green" }, { label: "No LLM", tone: "blue" }],
+    subtype: "lab",
+    tags: [{ label: "Experiment", tone: "gold" }, { label: "Agent Lab", tone: "green" }, { label: "No LLM", tone: "blue" }],
     description: "Deterministic dry-run agent slice for memory, harness proposals, validation traces, and in-world dialogue without live model calls."
   },
   "onnx-agent-lab": {
     title: "ONNX Companion Workshop",
     visual: "sora",
-    tags: [{ label: "ONNX", tone: "gold" }, { label: "Workshop", tone: "green" }, { label: "Three.js", tone: "blue" }],
+    subtype: "workshop",
+    tab: "experiments",
+    tags: [{ label: "Experiment", tone: "gold" }, { label: "Workshop", tone: "green" }, { label: "ONNX", tone: "blue" }],
     description: "Walkable Three.js ONNX companion workshop where physical objects can be clicked, reviewed, questioned, and returned to their spawn positions."
   },
   "signal-bastion": {
     visual: "hell",
-    tags: [{ label: "Tower Defense", tone: "gold" }, { label: "2.5D Cel", tone: "green" }, { label: "Tactics", tone: "blue" }],
-    description: "2.5D cel-style defense game with gameplay-only HUD, tower placement, upgrades, range rings, and AAA content pass."
+    subtype: "game",
+    tags: [{ label: "App", tone: "gold" }, { label: "Game", tone: "green" }, { label: "Tactics", tone: "blue" }],
+    description: "2.5D cel-style defense application with gameplay-only HUD, tower placement, upgrades, range rings, and a high-fidelity content pass."
   },
   "rogue-lite-hellscape-siege": {
     visual: "hell",
-    tags: [{ label: "Action RPG", tone: "gold" }, { label: "Base Siege", tone: "green" }, { label: "Harvest", tone: "red" }],
+    subtype: "game",
+    tags: [{ label: "App", tone: "gold" }, { label: "Game", tone: "green" }, { label: "Siege", tone: "red" }],
     description: "Unified high-fidelity base route for realm portals, inventory, harvesting, building, wave-defense, FX, and renderer-only presentation loop."
   }
 };
@@ -65,7 +75,7 @@ function getTitleFromHtml(html, slug) {
 function getDescriptionFromHtml(html, slug, title) {
   const meta = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i)?.[1]?.trim();
   const paragraph = html.match(/<p[^>]*>([\s\S]{20,240}?)<\/p>/i)?.[1]?.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
-  return meta || paragraph || `Playable NexusRealtime route for ${title || titleCase(slug)}.`;
+  return meta || paragraph || `NexusRealtime ${title || titleCase(slug)} route.`;
 }
 
 function visualFor(slug, title) {
@@ -77,11 +87,34 @@ function visualFor(slug, title) {
   return "sora";
 }
 
-function tagsFor(slug, kind) {
+function subtypeFor(slug, root) {
+  if (root.kind === "experiment") return "experiment";
+  if (/workshop|forge|builder/.test(slug)) return "workshop";
+  if (/cartographer|sim|calibrator|physics|orbit|gyro|magnetist/.test(slug)) return "simulation";
+  if (/agent|onnx|companion/.test(slug)) return "companion";
+  return "game";
+}
+
+function tabFor(kind, subtype) {
+  if (kind === "experiment") return "experiments";
+  if (subtype === "tool" || subtype === "editor") return "tools";
+  if (subtype === "simulator" || subtype === "simulation") return "simulations";
+  if (subtype === "workshop" || subtype === "companion") return "workshops";
+  return "games";
+}
+
+function labelForTab(tab) {
+  return ({ experiments: "Experiments", games: "Games", workshops: "Workshops", simulations: "Simulations", tools: "Tools" })[tab] ?? titleCase(tab);
+}
+
+function tagsFor(slug, kind, subtype) {
   const words = slug.split("-").filter(Boolean);
-  const first = words[0] ? words[0][0].toUpperCase() + words[0].slice(1) : kind;
-  const second = words[1] ? words[1][0].toUpperCase() + words[1].slice(1) : "Realtime";
-  return [{ label: kind === "game" ? "Game" : "Experiment", tone: "gold" }, { label: first, tone: "green" }, { label: second, tone: "blue" }];
+  const first = words[0] ? words[0][0].toUpperCase() + words[0].slice(1) : subtype;
+  return [
+    { label: kind === "experiment" ? "Experiment" : "App", tone: "gold" },
+    { label: titleCase(subtype), tone: "green" },
+    { label: first, tone: "blue" }
+  ];
 }
 
 function routeExists(route) {
@@ -90,6 +123,7 @@ function routeExists(route) {
 
 function discoverRoutes() {
   const routes = [];
+  const seen = new Set();
   for (const root of SEARCH_ROOTS) {
     const absRoot = join(ROOT, root.dir);
     if (!existsSync(absRoot)) continue;
@@ -97,33 +131,58 @@ function discoverRoutes() {
       if (!entry.isDirectory() || IGNORE.has(entry.name) || entry.name.startsWith(".")) continue;
       const indexPath = join(absRoot, entry.name, "index.html");
       if (!existsSync(indexPath)) continue;
-      const html = readFileSync(indexPath, "utf8");
       const id = entry.name;
       const route = `./${posix.join(root.dir, id)}/`;
+      const key = `${root.kind}:${id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const html = readFileSync(indexPath, "utf8");
       const curated = CURATED[id] ?? {};
       const title = curated.title ?? getTitleFromHtml(html, id);
-      const game = {
+      const kind = curated.kind ?? root.kind;
+      const subtype = curated.subtype ?? subtypeFor(id, root);
+      const tab = curated.tab ?? root.tab ?? tabFor(kind, subtype);
+      const app = {
         id,
         title,
         route,
-        kind: curated.kind ?? root.kind,
+        kind,
+        subtype,
+        tab,
+        tabLabel: curated.tabLabel ?? root.tabLabel ?? labelForTab(tab),
         featured: Boolean(curated.featured),
         visual: curated.visual ?? visualFor(id, title),
         playLabel: curated.playLabel ?? root.playLabel,
-        tags: curated.tags ?? tagsFor(id, root.kind),
+        tags: curated.tags ?? tagsFor(id, kind, subtype),
         description: curated.description ?? getDescriptionFromHtml(html, id, title)
       };
-      if (!routeExists(game.route)) throw new Error(`Generated missing route: ${game.route}`);
-      routes.push(game);
+      if (!routeExists(app.route)) throw new Error(`Generated missing route: ${app.route}`);
+      routes.push(app);
     }
   }
+  const tabOrder = { experiments: 0, games: 1, workshops: 2, simulations: 3, tools: 4 };
   routes.sort((a, b) => {
     if (a.featured !== b.featured) return a.featured ? -1 : 1;
-    if (a.kind !== b.kind) return a.kind === "experiment" ? -1 : 1;
+    const tabDiff = (tabOrder[a.tab] ?? 99) - (tabOrder[b.tab] ?? 99);
+    if (tabDiff) return tabDiff;
     return a.title.localeCompare(b.title);
   });
   if (routes.length > 0 && !routes.some((route) => route.featured)) routes[0].featured = true;
   return routes;
+}
+
+function buildTabs(routes) {
+  const tabOrder = ["experiments", "games", "workshops", "simulations", "tools"];
+  const tabs = [];
+  for (const tab of tabOrder) {
+    const items = routes.filter((route) => route.tab === tab);
+    if (!items.length) continue;
+    tabs.push({ id: tab, label: labelForTab(tab), count: items.length });
+  }
+  for (const route of routes) {
+    if (!tabs.some((tab) => tab.id === route.tab)) tabs.push({ id: route.tab, label: route.tabLabel ?? labelForTab(route.tab), count: routes.filter((item) => item.tab === route.tab).length });
+  }
+  return tabs;
 }
 
 function jsString(value) {
@@ -133,16 +192,20 @@ function jsString(value) {
 }
 
 function writeGalleryData(routes) {
-  const content = `// Auto-generated by scripts/generate-gallery-data.mjs.\n// Do not hand-curate this file; add real experiments/games with index.html or update the generator metadata.\n\nexport const galleryConfig = Object.freeze({\n  title: "Experiments",\n  subtitle: "NexusRealtime playable routes",\n  repoUrl: "https://github.com/LuminaryLabs-Agents/NexusRealtime-Experiments",\n  hint: "Drag, swipe, wheel, double-click, or use arrows to browse."\n});\n\nexport const games = Object.freeze(${jsString(routes)});\n\nexport function getFeaturedGame() {\n  return games.find((game) => game.featured) ?? games[0] ?? null;\n}\n\nexport function getGameById(id) {\n  return games.find((game) => game.id === id) ?? null;\n}\n`;
+  const tabs = buildTabs(routes);
+  const content = `// Auto-generated by scripts/generate-gallery-data.mjs.\n// Do not hand-curate this file; add real experiments/apps with index.html or update the generator metadata.\n\nexport const galleryConfig = Object.freeze({\n  title: "NexusRealtime Applications",\n  subtitle: "Experiments, apps, tools, workshops, simulations, and realtime routes",\n  repoUrl: "https://github.com/LuminaryLabs-Agents/NexusRealtime-Experiments",\n  hint: "Choose a tab, then drag, swipe, wheel, double-click, or use arrows to browse."\n});\n\nexport const tabs = Object.freeze(${jsString(tabs)});\n\nexport const apps = Object.freeze(${jsString(routes)});\n\nexport const games = apps;\n\nexport function getFeaturedGame(tabId = "experiments") {\n  return apps.find((app) => app.tab === tabId && app.featured) ?? apps.find((app) => app.tab === tabId) ?? apps[0] ?? null;\n}\n\nexport function getGameById(id) {\n  return apps.find((app) => app.id === id) ?? null;\n}\n`;
   writeFileSync(DATA_PATH, content);
 }
 
 function updateIndex(routes) {
   if (!existsSync(INDEX_PATH)) return;
   const index = readFileSync(INDEX_PATH, "utf8");
-  const links = routes.map((route) => `      <p><a href="${route.route.replace(/^\.\//, "./")}">Play ${escapeHtml(route.title)}</a></p>`).join("\n");
-  const noscript = `  <noscript>\n    <section class="nexus-noscript">\n      <h1>NexusRealtime Experiments</h1>\n      <p>JavaScript is required for the interactive carousel. All generated main-branch routes are listed below.</p>\n${links}\n    </section>\n  </noscript>`;
-  const version = `main-gallery-${routes.length}`;
+  const byTab = buildTabs(routes).map((tab) => {
+    const links = routes.filter((route) => route.tab === tab.id).map((route) => `        <li><a href="${route.route.replace(/^\.\//, "./")}">${escapeHtml(route.title)}</a></li>`).join("\n");
+    return `      <h2>${escapeHtml(tab.label)} (${tab.count})</h2>\n      <ul>\n${links}\n      </ul>`;
+  }).join("\n");
+  const noscript = `  <noscript>\n    <section class="nexus-noscript">\n      <h1>NexusRealtime Applications</h1>\n      <p>JavaScript is required for the interactive tabbed gallery. All generated main-branch routes are listed below.</p>\n${byTab}\n    </section>\n  </noscript>`;
+  const version = `main-app-gallery-${routes.length}`;
   let next = index.replace(/  <noscript>[\s\S]*?  <\/noscript>/, noscript);
   next = next.replace(/nexus-experiments-shell\.js\?v=[^"']+/, `nexus-experiments-shell.js?v=${version}`);
   writeFileSync(INDEX_PATH, next);
@@ -159,4 +222,4 @@ function escapeHtml(value) {
 const routes = discoverRoutes();
 writeGalleryData(routes);
 updateIndex(routes);
-console.log(`Generated gallery data for ${routes.length} routes.`);
+console.log(`Generated gallery data for ${routes.length} routes across ${buildTabs(routes).length} tabs.`);
