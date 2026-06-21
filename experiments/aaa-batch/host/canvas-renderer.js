@@ -21,10 +21,23 @@ export function createAaaBatchRenderer({ canvas, game, host }) {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
 
+    const shade = ctx.createRadialGradient(
+      width * 0.5,
+      height * 0.45,
+      0,
+      width * 0.5,
+      height * 0.5,
+      Math.max(width, height) * 0.72
+    );
+    shade.addColorStop(0, "rgba(0,0,0,0)");
+    shade.addColorStop(1, "rgba(0,0,0,.52)");
+    ctx.fillStyle = shade;
+    ctx.fillRect(0, 0, width, height);
+
     ctx.save();
     ctx.scale(width / 900, height / 560);
-    ctx.strokeStyle = `${primary}55`;
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = `${primary}88`;
+    ctx.lineWidth = 1.5;
     for (let x = -120; x < 960; x += 54) {
       ctx.beginPath();
       ctx.moveTo(x, 40);
@@ -32,11 +45,14 @@ export function createAaaBatchRenderer({ canvas, game, host }) {
       ctx.stroke();
     }
 
+    ctx.shadowColor = "rgba(0,0,0,.55)";
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 4;
     for (const node of state.nodes) {
       ctx.beginPath();
       ctx.fillStyle = node.secured ? accent : primary;
-      ctx.strokeStyle = node.secured ? "#ffffff" : accent;
-      ctx.lineWidth = node.secured ? 5 : 2;
+      ctx.strokeStyle = node.secured ? "#ffffff" : "#fff6c7";
+      ctx.lineWidth = node.secured ? 5 : 3;
       ctx.arc(node.x, node.y, 20 + node.charge * 0.08, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
@@ -44,10 +60,15 @@ export function createAaaBatchRenderer({ canvas, game, host }) {
 
     ctx.beginPath();
     ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 5;
+    ctx.strokeStyle = "#11131a";
+    ctx.lineWidth = 7;
     ctx.arc(state.player.x, state.player.y, 19, 0, Math.PI * 2);
     ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 3;
     ctx.stroke();
     ctx.restore();
   }
