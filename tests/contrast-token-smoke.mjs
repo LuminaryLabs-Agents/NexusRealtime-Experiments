@@ -20,6 +20,7 @@ function assertMatch(path, pattern, label) {
 }
 
 const shellPath = "experiments/_shared/nexus-experiments-shell.js";
+const glossOverridePath = "experiments/_shared/arcade-gloss-overrides.js";
 const generatorPath = "scripts/generate-application-routes.mjs";
 const runtimeGeneratedPath = "apps/_shared/generated-app-route.js";
 const rendererPath = "experiments/aaa-batch/host/canvas-renderer.js";
@@ -40,6 +41,14 @@ assertIncludes(shellPath, "is-odd", "odd arcade row class");
 assertIncludes(shellPath, "--arcade-road", "arcade rainbow road token");
 assertIncludes(shellPath, "min-height:clamp(122px,16vh,168px)", "tall arcade row height");
 
+assertIncludes(glossOverridePath, "@keyframes zipperSwoopIn", "rotating swoop entrance animation");
+assertIncludes(glossOverridePath, "--gloss-card-height: clamp(244px, 32vh, 336px)", "double-height glossy card token");
+assertIncludes(glossOverridePath, "--gloss-sheen", "glossy card sheen token");
+assertIncludes(glossOverridePath, "rotateZ(var(--zipper-rotation))", "angled card entrance rotation");
+assertIncludes(glossOverridePath, "rotateX(12deg)", "3D swoop card entrance angle");
+assertIncludes(glossOverridePath, "background:", "glossy card layered background");
+assertIncludes(glossOverridePath, "inset 0 2px 0 rgba(255,255,255,.62)", "gloss highlight on cards");
+
 assertIncludes(generatorPath, "--hud-bg:rgba(4,3,12,.88)", "generated high contrast HUD token");
 assertIncludes(generatorPath, "#hud", "generated HUD style");
 assertIncludes(generatorPath, "#err", "generated error style");
@@ -58,4 +67,4 @@ assertIncludes(meadowPath, "--muted:#f2e7bd", "high-contrast meadow muted text")
 assertIncludes(openAbovePath, "color:#10202a", "dark Open Above body fallback text");
 assertIncludes(openAbovePath, "background:rgba(3,10,16,.82)", "high-contrast Open Above HUD background");
 
-console.log("Contrast and arcade zipper smoke checks passed.");
+console.log("Contrast, arcade zipper, and glossy swoop smoke checks passed.");
