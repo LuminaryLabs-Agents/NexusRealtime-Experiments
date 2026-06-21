@@ -1,6 +1,4 @@
-import { apps, tabs, galleryConfig } from "./nexus-gallery-data.js?v=main-app-grid";
-import { startNexusGalleryShader } from "./nexus-gallery-shader.js";
-import { attachNexusCardShaders } from "./nexus-card-shader.js?v=spark-cards-safe-20260621";
+import { apps, tabs, galleryConfig } from "./nexus-gallery-data.js?v=main-flat-list";
 
 const STYLE_ID = "nexus-experiments-shell-style";
 
@@ -16,6 +14,12 @@ function displayTitle(app) {
   return String(app.displayTitle ?? app.title ?? app.id).replace(/\s+—\s+NexusRealtime$/i, "");
 }
 
+function routeKind(app) {
+  const kind = app.kind === "app" ? "App" : "Experiment";
+  const subtype = String(app.subtype ?? "route").replace(/(^|-)([a-z])/g, (_, dash, letter) => `${dash ? " " : ""}${letter.toUpperCase()}`);
+  return `${kind} · ${subtype}`;
+}
+
 function description(app) {
   return app.shortDescription ?? app.description ?? "Open this NexusRealtime route.";
 }
@@ -29,9 +33,22 @@ function tabItems(tabId, query = "") {
   return apps.filter((app) => {
     if (app.tab !== tabId) return false;
     if (!needle) return true;
-    const haystack = String(app.searchText ?? [app.title, app.id, app.description, app.kind, app.subtype, app.route, ...(app.tags ?? []).map((tag) => tag.label)].join(" ")).toLowerCase();
+    const haystack = String(app.searchText ?? [app.title, app.id, app.description, app.shortDescription, app.kind, app.subtype, app.source, app.route, ...(app.tags ?? []).map((tag) => tag.label), ...(app.kitStack ?? []), app.controls, ...(app.smokeActions ?? [])].join(" ")).toLowerCase();
     return haystack.includes(needle);
   });
+}
+
+function activeTab(state) {
+  return tabs.find((tab) => tab.id === state.activeTabId) ?? tabs[0] ?? { id: "experiments", label: "Experiments", count: 0 };
+}
+
+function visibleItems(state) {
+  return tabItems(activeTab(state).id, state.query);
+}
+
+function openRoute(route) {
+  if (!route) return;
+  globalThis.open(route, "_blank", "noopener");
 }
 
 function injectStyles(documentRef) {
@@ -39,73 +56,93 @@ function injectStyles(documentRef) {
   const style = documentRef.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
-    :root { color-scheme:dark; --text:#fff8df; --muted:#e8cfa4; --line:rgba(255,231,163,.23); --blue:#ffe6a1; --gold:#ffe05c; --green:#94f0a8; --red:#ff8b54; --card-min:220px; }
+    :root { color-scheme:dark; --bg:#0f0f0d; --text:#f9edc7; --muted:#c9b88d; --muted-2:#8f8063; --line:rgba(249,237,199,.13); --accent:#ffcb35; --accent-2:#ff8f1f; --selected:rgba(255,203,53,.09); --hover:rgba(255,255,255,.045); --bar:#15130f; }
     * { box-sizing:border-box; }
-    html,body { margin:0; min-height:100%; background:#120803; color:var(--text); font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
+    html,body { margin:0; min-height:100%; background:var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
     body { overflow-y:auto; }
     a { color:inherit; }
-    .nexus-shell { position:relative; z-index:1; width:min(100% - 28px,1680px); min-height:100svh; margin:0 auto; padding:18px 0 32px; display:flex; flex-direction:column; gap:14px; }
-    .nexus-topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px 18px; border:1px solid var(--line); border-radius:24px; background:linear-gradient(180deg,rgba(65,30,6,.72),rgba(24,10,3,.76)); box-shadow:0 24px 90px rgba(34,10,0,.36), inset 0 1px 0 rgba(255,238,175,.08); backdrop-filter:blur(18px); }
-    .nexus-brand strong { display:block; color:var(--gold); font-size:1.05rem; font-weight:950; letter-spacing:.2em; text-transform:uppercase; text-shadow:0 0 26px rgba(255,197,52,.36); }
-    .nexus-brand span { display:block; margin-top:3px; color:var(--muted); font-size:.86rem; }
-    .nexus-top-actions,.nexus-tabs,.nexus-toolbar { display:flex; align-items:center; gap:8px; }
-    .nexus-repo-button,.nexus-tab { border:1px solid rgba(255,224,92,.54); border-radius:999px; color:var(--gold); background:rgba(255,224,92,.07); font-weight:950; letter-spacing:.08em; text-transform:uppercase; text-decoration:none; box-shadow:0 14px 34px rgba(0,0,0,.22); cursor:pointer; }
-    .nexus-repo-button,.nexus-tab { padding:10px 16px; font-size:.78rem; }
-    .nexus-tabs { overflow-x:auto; padding:2px; }
-    .nexus-tab { color:rgba(255,248,223,.78); border-color:rgba(255,232,172,.22); background:rgba(40,17,3,.58); white-space:nowrap; }
-    .nexus-tab.is-active { color:#170903; border-color:rgba(255,235,139,.9); background:linear-gradient(90deg,#ffe05c,#ff9d21 58%,#93f2a6); box-shadow:0 18px 50px rgba(255,152,22,.28); }
-    .nexus-tab-count { opacity:.78; margin-left:4px; }
-    .nexus-toolbar { justify-content:space-between; flex-wrap:wrap; padding:8px 2px 0; color:rgba(255,244,213,.74); }
-    .nexus-search { min-width:min(100%,420px); flex:0 1 480px; display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:999px; padding:9px 14px; background:rgba(54,22,3,.58); box-shadow:0 16px 44px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,238,175,.08); }
-    .nexus-search span { color:var(--gold); font-size:.73rem; font-weight:950; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
-    .nexus-search-input { width:100%; border:0; outline:0; background:transparent; color:var(--text); font:inherit; }
-    .nexus-search-input::placeholder { color:rgba(255,244,213,.48); }
-    .nexus-result-count { color:#ffd44d; font-weight:900; letter-spacing:.08em; text-transform:uppercase; text-shadow:0 1px 10px rgba(41,12,0,.35); }
-    .nexus-tab-heading { margin:0; color:#2a1306; font-size:clamp(1.45rem,2.6vw,2.35rem); line-height:1; text-shadow:0 1px 0 rgba(255,239,181,.28),0 0 28px rgba(255,184,42,.18); }
-    .nexus-tab-copy { margin:0; color:#6b3b13; line-height:1.45; max-width:78ch; font-weight:650; }
-    .nexus-gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(var(--card-min),1fr)); gap:14px; align-items:stretch; padding:4px 0 24px; perspective:1200px; }
-    .nexus-app-card { --tilt-x:0deg; --tilt-y:0deg; --mx:50%; --my:50%; min-height:282px; display:flex; flex-direction:column; overflow:hidden; position:relative; border:1px solid rgba(255,229,151,.28); border-radius:22px; color:inherit; text-decoration:none; background:linear-gradient(180deg,rgba(48,19,3,.72),rgba(14,6,2,.86)); box-shadow:0 24px 74px rgba(36,10,0,.32), inset 0 1px 0 rgba(255,241,183,.08); backdrop-filter:blur(18px); transform:rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) translateY(0); transform-style:preserve-3d; transition:transform 170ms ease,border-color 170ms ease,box-shadow 170ms ease,filter 170ms ease; }
-    .nexus-app-card::after { position:absolute; inset:0; content:""; pointer-events:none; opacity:.0; background:radial-gradient(circle at var(--mx) var(--my),rgba(255,247,184,.34),transparent 28%),linear-gradient(115deg,transparent 16%,rgba(255,244,174,.2) 38%,transparent 56%); transition:opacity 170ms ease; }
-    .nexus-app-card:hover,.nexus-app-card:focus-visible { transform:rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) translateY(-5px) scale(1.012); border-color:rgba(255,224,92,.88); box-shadow:0 34px 120px rgba(81,24,0,.55),0 0 72px rgba(255,154,26,.2), inset 0 1px 0 rgba(255,245,184,.14); outline:0; }
-    .nexus-app-card:hover::after,.nexus-app-card:focus-visible::after { opacity:1; }
-    .nexus-app-art { flex:0 0 168px; position:relative; overflow:hidden; background:linear-gradient(135deg,#5a2d04,#f2a51e 48%,#fff2b0); }
-    .nexus-app-art::before { position:absolute; inset:-20%; content:""; z-index:0; background:radial-gradient(circle at 64% 22%,rgba(255,244,153,.9),transparent 19%),radial-gradient(circle at 34% 44%,rgba(255,144,18,.75),transparent 36%),linear-gradient(135deg,#4b2103,#e68410 46%,#fff0a4); animation:nexusFallbackGlow 12s ease-in-out infinite alternate; }
-    .nexus-app-art::after { position:absolute; inset:-25%; content:""; z-index:1; opacity:.55; background:linear-gradient(118deg,transparent 18%,rgba(255,255,220,.36) 39%,transparent 52%),radial-gradient(circle at 25% 75%,rgba(255,233,114,.35),transparent 24%); transform:translateX(-8%); animation:nexusFallbackSweep 8s linear infinite; }
-    .nexus-card-shader { position:absolute; inset:0; z-index:2; width:100%; height:100%; display:block; opacity:0; mix-blend-mode:screen; transition:opacity 160ms ease; }
-    .has-live-shader .nexus-card-shader { opacity:.92; }
-    .shader-fallback .nexus-card-shader[hidden] { display:none; }
-    .nexus-art-vignette { position:absolute; inset:0; z-index:3; pointer-events:none; background:radial-gradient(circle at 65% 20%,rgba(255,252,198,.28),transparent 30%),linear-gradient(180deg,transparent 48%,rgba(9,4,1,.55)); }
-    .nexus-app-info { padding:15px 16px 16px; display:flex; flex-direction:column; gap:9px; flex:1; position:relative; z-index:1; }
-    .nexus-app-card h2 { margin:0; font-size:clamp(1.05rem,1.28vw,1.32rem); line-height:1.07; letter-spacing:-.02em; }
-    .nexus-app-card p { margin:0; color:var(--muted); line-height:1.4; flex:1; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
-    .nexus-open { color:var(--gold); font-weight:950; letter-spacing:.08em; text-transform:uppercase; font-size:.75rem; }
-    .nexus-empty { border:1px dashed rgba(255,229,151,.28); border-radius:22px; padding:28px; color:#5b2d10; background:rgba(255,230,170,.26); font-weight:800; }
-    @keyframes nexusFallbackGlow { from { transform:translate3d(-1%,0,0) scale(1.02); filter:saturate(1.05); } to { transform:translate3d(2%,-2%,0) scale(1.08); filter:saturate(1.25); } }
-    @keyframes nexusFallbackSweep { from { transform:translateX(-18%) rotate(0deg); } to { transform:translateX(18%) rotate(1deg); } }
-    @media (max-width:980px) { :root { --card-min:220px; } .nexus-topbar { align-items:flex-start; flex-direction:column; } }
-    @media (max-width:640px) { :root { --card-min:min(100%,240px); } .nexus-shell { width:min(100% - 20px,1680px); } .nexus-tabs { padding-bottom:4px; } .nexus-toolbar { align-items:flex-start; flex-direction:column; } .nexus-search { flex-basis:auto; } .nexus-app-card { min-height:260px; } }
+    .nexus-shell { width:min(100% - 28px,1780px); min-height:100svh; margin:0 auto; padding:12px 0 24px; }
+    .nexus-command-bar { min-height:56px; display:grid; grid-template-columns:minmax(230px,auto) minmax(280px,1fr) auto auto; align-items:center; gap:12px; padding:8px 10px 8px 14px; border:1px solid var(--line); border-radius:14px; background:var(--bar); box-shadow:0 1px 0 rgba(255,255,255,.05),0 18px 56px rgba(0,0,0,.26); }
+    .nexus-brand { min-width:0; }
+    .nexus-brand strong { display:block; color:var(--accent); font-size:.95rem; font-weight:950; letter-spacing:.18em; line-height:1.1; text-transform:uppercase; white-space:nowrap; }
+    .nexus-brand span { display:block; margin-top:2px; color:var(--muted); font-size:.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .nexus-search { min-width:0; height:38px; display:flex; align-items:center; gap:8px; border:1px solid rgba(255,203,53,.24); border-radius:9px; padding:0 11px; background:#0d0c0a; }
+    .nexus-search span { color:var(--accent); font-size:.68rem; font-weight:950; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+    .nexus-search-input { width:100%; min-width:80px; border:0; outline:0; background:transparent; color:var(--text); font:inherit; font-size:.92rem; }
+    .nexus-search-input::placeholder { color:rgba(249,237,199,.42); }
+    .nexus-tabs { display:flex; align-items:center; gap:3px; white-space:nowrap; overflow-x:auto; scrollbar-width:none; }
+    .nexus-tabs::-webkit-scrollbar { display:none; }
+    .nexus-tab { position:relative; height:34px; border:0; border-radius:8px; padding:0 10px; color:var(--muted); background:transparent; font-weight:900; font-size:.76rem; letter-spacing:.07em; text-transform:uppercase; cursor:pointer; }
+    .nexus-tab:hover { color:var(--text); background:rgba(255,255,255,.04); }
+    .nexus-tab.is-active { color:#120b02; background:linear-gradient(90deg,var(--accent),#92e29a); }
+    .nexus-tab-count { opacity:.74; margin-left:4px; }
+    .nexus-meta { display:flex; align-items:center; gap:12px; justify-content:flex-end; white-space:nowrap; }
+    .nexus-result-count { color:var(--accent); font-size:.78rem; font-weight:950; letter-spacing:.08em; text-transform:uppercase; }
+    .nexus-repo-button { height:34px; display:inline-grid; place-items:center; border:1px solid rgba(255,203,53,.45); border-radius:9px; padding:0 12px; color:var(--accent); background:transparent; font-size:.75rem; font-weight:950; letter-spacing:.08em; text-transform:uppercase; text-decoration:none; }
+    .nexus-repo-button:hover { background:rgba(255,203,53,.08); }
+    .nexus-context { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 4px 6px; color:var(--muted-2); font-size:.82rem; }
+    .nexus-route-list { display:flex; flex-direction:column; border-top:1px solid var(--line); }
+    .nexus-route-row { display:grid; grid-template-columns:6px minmax(180px,1.08fr) minmax(150px,.62fr) minmax(260px,1.9fr) auto; align-items:center; gap:12px; min-height:56px; padding:0 12px 0 0; border-bottom:1px solid var(--line); color:var(--muted); text-decoration:none; cursor:default; outline:none; }
+    .nexus-route-row:hover { background:var(--hover); }
+    .nexus-route-row.is-selected { background:var(--selected); color:var(--text); }
+    .nexus-route-row.is-selected .nexus-route-accent { background:linear-gradient(180deg,var(--accent),var(--accent-2)); box-shadow:0 0 18px rgba(255,203,53,.35); }
+    .nexus-route-row.is-selected .nexus-route-title { color:var(--text); }
+    .nexus-route-row.is-selected .nexus-route-open { color:var(--accent); opacity:1; }
+    .nexus-route-accent { width:4px; height:36px; border-radius:0 999px 999px 0; background:rgba(255,203,53,.36); }
+    .nexus-route-title { color:#f7e9be; font-weight:900; letter-spacing:-.015em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .nexus-route-kind { color:#d1ba85; font-size:.84rem; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .nexus-route-desc { color:#a99a76; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .nexus-route-open { justify-self:end; color:#b5a06e; opacity:.72; font-size:.75rem; font-weight:950; letter-spacing:.08em; text-transform:uppercase; }
+    .nexus-empty { padding:22px 12px; border-bottom:1px solid var(--line); color:var(--muted); }
+    @media (max-width:1180px) { .nexus-command-bar { grid-template-columns:1fr minmax(220px,1.2fr) auto; } .nexus-tabs { grid-column:1 / -1; order:4; } .nexus-route-row { grid-template-columns:6px minmax(180px,1fr) minmax(220px,1.6fr) auto; } .nexus-route-kind { display:none; } }
+    @media (max-width:760px) { .nexus-shell { width:min(100% - 18px,1780px); padding-top:8px; } .nexus-command-bar { grid-template-columns:1fr; align-items:stretch; min-height:auto; } .nexus-meta { justify-content:space-between; } .nexus-brand span { white-space:normal; } .nexus-route-row { grid-template-columns:5px 1fr auto; gap:9px; min-height:62px; padding-right:8px; } .nexus-route-desc { grid-column:2 / 4; margin-top:-8px; font-size:.84rem; } .nexus-route-kind { display:block; grid-column:2 / 3; font-size:.76rem; } .nexus-route-open { grid-column:3 / 4; grid-row:1 / 2; } }
   `;
   documentRef.head.append(style);
-}
-
-function renderCard(app) {
-  const title = displayTitle(app);
-  return `<a class="nexus-app-card shader-fallback" href="${escapeHtml(app.route)}" target="_blank" rel="noopener" data-app-id="${escapeHtml(app.id)}"><div class="nexus-app-art" aria-hidden="true"><canvas class="nexus-card-shader"></canvas><div class="nexus-art-vignette"></div></div><div class="nexus-app-info"><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description(app))}</p><span class="nexus-open">Open →</span></div></a>`;
 }
 
 function renderTabs(activeTabId) {
   return tabs.map((tab) => `<button class="nexus-tab${tab.id === activeTabId ? " is-active" : ""}" type="button" data-tab-id="${escapeHtml(tab.id)}" aria-pressed="${tab.id === activeTabId}">${escapeHtml(tab.label)}<span class="nexus-tab-count">${tab.count}</span></button>`).join("");
 }
 
-function renderGrid(parts, state) {
-  state.cardShaders?.stop();
-  const activeTab = tabs.find((tab) => tab.id === state.activeTabId) ?? tabs[0];
-  const items = tabItems(activeTab?.id, state.query);
-  parts.heading.textContent = activeTab?.label ?? "Routes";
-  parts.copy.textContent = `${activeTab?.label ?? "Routes"} from the generated NexusRealtime route catalog. Use search to narrow the visible cards.`;
-  parts.count.textContent = `${items.length} / ${activeTab?.count ?? items.length} visible`;
-  parts.grid.innerHTML = items.length ? items.map(renderCard).join("") : `<div class="nexus-empty">No routes matched this search in ${escapeHtml(activeTab?.label ?? "this tab")}.</div>`;
-  state.cardShaders = attachNexusCardShaders(parts.grid);
+function renderRow(app, index, selected) {
+  return `<div class="nexus-route-row${selected ? " is-selected" : ""}" role="link" tabindex="${selected ? "0" : "-1"}" data-index="${index}" data-route="${escapeHtml(app.route)}" data-app-id="${escapeHtml(app.id)}" aria-selected="${selected}"><span class="nexus-route-accent" aria-hidden="true"></span><span class="nexus-route-title">${escapeHtml(displayTitle(app))}</span><span class="nexus-route-kind">${escapeHtml(routeKind(app))}</span><span class="nexus-route-desc">${escapeHtml(description(app))}</span><span class="nexus-route-open">Open →</span></div>`;
+}
+
+function renderShell(root, state) {
+  root.innerHTML = `<section class="nexus-shell" aria-label="NexusRealtime applications launcher"><header class="nexus-command-bar" aria-label="Launcher command bar"><div class="nexus-brand"><strong>${escapeHtml(galleryConfig.title)}</strong><span>${escapeHtml(galleryConfig.subtitle)}</span></div><label class="nexus-search"><span>Search</span><input class="nexus-search-input" type="search" placeholder="Filter routes, kits, controls..." autocomplete="off" /></label><nav class="nexus-tabs" aria-label="Route type tabs">${renderTabs(state.activeTabId)}</nav><div class="nexus-meta"><span class="nexus-result-count" aria-live="polite"></span><a class="nexus-repo-button" href="${escapeHtml(galleryConfig.repoUrl)}">Repo</a></div></header><div class="nexus-context" aria-live="polite"><span class="nexus-context-label"></span><span class="nexus-context-help">/ search · ↑↓ select · Enter open · Esc clear</span></div><section class="nexus-route-list" aria-label="Visible application routes"></section></section>`;
+  return {
+    tabButtons: Array.from(root.querySelectorAll(".nexus-tab")),
+    search: root.querySelector(".nexus-search-input"),
+    count: root.querySelector(".nexus-result-count"),
+    context: root.querySelector(".nexus-context-label"),
+    list: root.querySelector(".nexus-route-list")
+  };
+}
+
+function getVisible(state) {
+  return visibleItems(state);
+}
+
+function selectIndex(parts, state, index, focus = false) {
+  const items = getVisible(state);
+  state.selectedIndex = items.length ? Math.max(0, Math.min(items.length - 1, index)) : -1;
+  for (const row of parts.list.querySelectorAll(".nexus-route-row")) {
+    const active = Number(row.dataset.index) === state.selectedIndex;
+    row.classList.toggle("is-selected", active);
+    row.setAttribute("aria-selected", String(active));
+    row.tabIndex = active ? 0 : -1;
+    if (active && focus) row.focus({ preventScroll: false });
+  }
+}
+
+function renderList(parts, state) {
+  const tab = activeTab(state);
+  const items = getVisible(state);
+  if (state.selectedIndex >= items.length) state.selectedIndex = items.length - 1;
+  if (state.selectedIndex < 0 && items.length) state.selectedIndex = 0;
+  parts.count.textContent = `${items.length} / ${tab.count ?? items.length}`;
+  parts.context.textContent = `${tab.label} · ${items.length} visible`;
+  parts.list.innerHTML = items.length ? items.map((app, index) => renderRow(app, index, index === state.selectedIndex)).join("") : `<div class="nexus-empty">No routes matched this search in ${escapeHtml(tab.label)}.</div>`;
   for (const button of parts.tabButtons) {
     const active = button.dataset.tabId === state.activeTabId;
     button.classList.toggle("is-active", active);
@@ -113,45 +150,65 @@ function renderGrid(parts, state) {
   }
 }
 
-function renderShell(root, state) {
-  root.innerHTML = `<section class="nexus-shell" aria-label="NexusRealtime applications gallery"><header class="nexus-topbar" aria-label="Applications navigation"><div class="nexus-brand"><strong>${escapeHtml(galleryConfig.title)}</strong><span>${escapeHtml(galleryConfig.subtitle)}</span></div><div class="nexus-top-actions"><a class="nexus-repo-button" href="${escapeHtml(galleryConfig.repoUrl)}">Open repo</a></div></header><nav class="nexus-tabs" aria-label="Application type tabs">${renderTabs(state.activeTabId)}</nav><section class="nexus-toolbar" aria-label="Gallery search and count"><label class="nexus-search"><span>Search</span><input class="nexus-search-input" type="search" placeholder="Filter routes, kits, tags..." autocomplete="off" /></label><span class="nexus-result-count" aria-live="polite"></span></section><section aria-label="Current route group"><h1 class="nexus-tab-heading"></h1><p class="nexus-tab-copy"></p></section><section class="nexus-gallery-grid" aria-label="Visible application routes"></section></section>`;
-  return {
-    tabButtons: Array.from(root.querySelectorAll(".nexus-tab")),
-    search: root.querySelector(".nexus-search-input"),
-    count: root.querySelector(".nexus-result-count"),
-    heading: root.querySelector(".nexus-tab-heading"),
-    copy: root.querySelector(".nexus-tab-copy"),
-    grid: root.querySelector(".nexus-gallery-grid")
-  };
+function openSelected(state) {
+  const app = getVisible(state)[state.selectedIndex] ?? getVisible(state)[0];
+  openRoute(app?.route);
 }
 
-function wireGallery(parts, state) {
+function wireLauncher(parts, state) {
   for (const button of parts.tabButtons) {
     button.addEventListener("click", () => {
       state.activeTabId = button.dataset.tabId || firstTabId();
-      state.query = "";
-      parts.search.value = "";
-      renderGrid(parts, state);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      state.selectedIndex = 0;
+      renderList(parts, state);
     });
   }
+
   parts.search.addEventListener("input", () => {
     state.query = parts.search.value;
-    renderGrid(parts, state);
+    state.selectedIndex = 0;
+    renderList(parts, state);
   });
+
+  parts.list.addEventListener("click", (event) => {
+    const row = event.target.closest?.(".nexus-route-row");
+    if (!row) return;
+    selectIndex(parts, state, Number(row.dataset.index), true);
+  });
+  parts.list.addEventListener("dblclick", (event) => {
+    const row = event.target.closest?.(".nexus-route-row");
+    if (row) openRoute(row.dataset.route);
+  });
+
   window.addEventListener("keydown", (event) => {
-    if (event.key === "/" && document.activeElement !== parts.search) {
+    const inSearch = document.activeElement === parts.search;
+    if (event.key === "/" && !inSearch) {
       event.preventDefault();
       parts.search.focus();
+      return;
     }
-    if (event.key === "Escape" && document.activeElement === parts.search) {
+    if (event.key === "Escape" && (inSearch || state.query)) {
+      event.preventDefault();
       parts.search.value = "";
       state.query = "";
-      renderGrid(parts, state);
+      state.selectedIndex = 0;
+      renderList(parts, state);
+      return;
     }
-    if (event.key === "Enter" && document.activeElement === parts.search) {
-      const firstCard = parts.grid.querySelector(".nexus-app-card");
-      if (firstCard) globalThis.open(firstCard.href, "_blank", "noopener");
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      selectIndex(parts, state, state.selectedIndex + 1, true);
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      selectIndex(parts, state, state.selectedIndex - 1, true);
+      return;
+    }
+    if (event.key === "Enter") {
+      const activeRow = document.activeElement?.closest?.(".nexus-route-row");
+      if (activeRow) openRoute(activeRow.dataset.route);
+      else if (inSearch || state.selectedIndex >= 0) openSelected(state);
     }
   });
 }
@@ -160,11 +217,10 @@ function boot() {
   const root = document.getElementById("app");
   if (!root) throw new Error("Missing #app root.");
   injectStyles(document);
-  const state = { activeTabId: firstTabId(), query: "", cardShaders: null };
+  const state = { activeTabId: firstTabId(), query: "", selectedIndex: 0 };
   const parts = renderShell(root, state);
-  wireGallery(parts, state);
-  renderGrid(parts, state);
-  try { startNexusGalleryShader({ parent: document.body }); } catch { document.body.classList.add("nexus-gallery-background-fallback"); }
+  wireLauncher(parts, state);
+  renderList(parts, state);
 }
 
 boot();
