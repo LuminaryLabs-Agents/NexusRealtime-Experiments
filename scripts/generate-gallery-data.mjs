@@ -1,13 +1,15 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, posix } from "node:path";
+import { aaaBatchGames } from "../experiments/aaa-batch/host/game-registry.js";
 
 const ROOT = process.cwd();
 const DATA_PATH = join(ROOT, "experiments/_shared/nexus-gallery-data.js");
 const INDEX_PATH = join(ROOT, "index.html");
+const PROMOTED_APP_IDS = new Set(aaaBatchGames.map((app) => app.id));
 const SEARCH_ROOTS = [
   { dir: "experiments", kind: "experiment", subtype: "experiment", tab: "experiments", tabLabel: "Experiments", playLabel: "Open experiment" },
-  { dir: "apps", kind: "app", subtype: "game", tab: "games", tabLabel: "Games", playLabel: "Open app" },
-  { dir: "games", kind: "app", subtype: "game", tab: "games", tabLabel: "Games", playLabel: "Open app", legacy: true }
+  { dir: "apps", kind: "app", subtype: "game", playLabel: "Open app" },
+  { dir: "games", kind: "app", subtype: "game", playLabel: "Open app", legacy: true }
 ];
 const IGNORE = new Set(["_shared", "aaa-batch", "assets"]);
 
@@ -89,8 +91,8 @@ function visualFor(slug, title) {
 
 function subtypeFor(slug, root) {
   if (root.kind === "experiment") return "experiment";
-  if (/workshop|forge|builder/.test(slug)) return "workshop";
-  if (/cartographer|sim|calibrator|physics|orbit|gyro|magnetist/.test(slug)) return "simulation";
+  if (/workshop|forge|builder|broker/.test(slug)) return "workshop";
+  if (/cartographer|sim|calibrator|physics|orbit|gyro|magnetist|anvil|tideglass|core-diver|trench|distiller/.test(slug)) return "simulation";
   if (/agent|onnx|companion/.test(slug)) return "companion";
   return "game";
 }
@@ -121,6 +123,11 @@ function routeExists(route) {
   return existsSync(join(ROOT, route.replace(/^\.\//, ""), "index.html"));
 }
 
+function shouldSkipEntry(root, entryName) {
+  if (IGNORE.has(entryName) || entryName.startsWith(".")) return true;
+  return root.dir === "experiments" && PROMOTED_APP_IDS.has(entryName);
+}
+
 function discoverRoutes() {
   const routes = [];
   const seen = new Set();
@@ -128,12 +135,12 @@ function discoverRoutes() {
     const absRoot = join(ROOT, root.dir);
     if (!existsSync(absRoot)) continue;
     for (const entry of readdirSync(absRoot, { withFileTypes: true })) {
-      if (!entry.isDirectory() || IGNORE.has(entry.name) || entry.name.startsWith(".")) continue;
+      if (!entry.isDirectory() || shouldSkipEntry(root, entry.name)) continue;
       const indexPath = join(absRoot, entry.name, "index.html");
       if (!existsSync(indexPath)) continue;
       const id = entry.name;
       const route = `./${posix.join(root.dir, id)}/`;
-      const key = `${root.kind}:${id}`;
+      const key = `${root.dir}:${id}`;
       if (seen.has(key)) continue;
       seen.add(key);
       const html = readFileSync(indexPath, "utf8");
