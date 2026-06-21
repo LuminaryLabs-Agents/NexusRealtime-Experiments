@@ -2,16 +2,23 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { apps, tabs } from "../experiments/_shared/nexus-gallery-data.js";
+import { aaaBatchGames } from "../experiments/aaa-batch/host/game-registry.js";
 
 const roots = ["experiments", "apps", "games"];
 const ignore = new Set(["_shared", "aaa-batch", "assets"]);
+const promotedAppIds = new Set(aaaBatchGames.map((app) => app.id));
+
+function shouldSkip(root, entryName) {
+  if (ignore.has(entryName) || entryName.startsWith(".")) return true;
+  return root === "experiments" && promotedAppIds.has(entryName);
+}
 
 function discoverRoutes() {
   const routes = [];
   for (const root of roots) {
     if (!existsSync(root)) continue;
     for (const entry of readdirSync(root, { withFileTypes: true })) {
-      if (!entry.isDirectory() || ignore.has(entry.name) || entry.name.startsWith(".")) continue;
+      if (!entry.isDirectory() || shouldSkip(root, entry.name)) continue;
       const indexPath = join(root, entry.name, "index.html");
       if (!existsSync(indexPath)) continue;
       routes.push(`./${root}/${entry.name}/`);
@@ -42,6 +49,8 @@ for (const app of apps) {
 const experimentRoutes = apps.filter((app) => app.tab === "experiments");
 assert.ok(experimentRoutes.length > 0, "experiments tab must list experiments");
 assert.ok(experimentRoutes.every((app) => app.route.startsWith("./experiments/")), "experiments tab must contain experiment routes first");
+assert.ok(apps.some((app) => app.route.startsWith("./apps/")), "gallery must include promoted application routes under apps/");
+assert.ok(!apps.some((app) => app.route.startsWith("./experiments/") && promotedAppIds.has(app.id)), "promoted app ids must not appear as experiment routes");
 
 const onnx = apps.find((app) => app.id === "onnx-agent-lab");
 assert.ok(onnx, "onnx-agent-lab must remain listed");
