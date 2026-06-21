@@ -56,7 +56,8 @@ export function startNexusGalleryShader(options = {}) {
   const gl = canvas.getContext("webgl", {
     antialias: false,
     alpha: false,
-    preserveDrawingBuffer: false
+    preserveDrawingBuffer: false,
+    powerPreference: "low-power"
   });
   if (!gl) return createFallback(canvas);
 
@@ -79,16 +80,16 @@ export function startNexusGalleryShader(options = {}) {
       float sun=1.0-smoothstep(.05,.92,length(p-vec2(.42,.28)));
       float vign=smoothstep(1.35,.22,length(p*vec2(.86,1.08)));
       float dust=spark(uv,time,18.0,.024,.83,vec2(.018,.045))+spark(uv+silk*.025,time,32.0,.014,.9,vec2(-.012,.035));
-      vec3 ember=vec3(.16,.055,.008);
-      vec3 orange=vec3(.86,.29,.025);
-      vec3 gold=vec3(1.0,.68,.10);
-      vec3 cream=vec3(1.0,.92,.54);
-      vec3 col=mix(ember,orange,molten*.82);
-      col=mix(col,gold,bands*.35+silk*.16);
-      col+=cream*(mouseGlow*.22+sun*.12+dust*.32);
-      col+=gold*pow(max(0.0,1.0-length(p-vec2(-.35,-.18))),3.0)*.12;
+      vec3 ember=vec3(.12,.038,.006);
+      vec3 orange=vec3(.68,.22,.018);
+      vec3 gold=vec3(.92,.52,.08);
+      vec3 cream=vec3(1.0,.84,.42);
+      vec3 col=mix(ember,orange,molten*.78);
+      col=mix(col,gold,bands*.28+silk*.12);
+      col+=cream*(mouseGlow*.16+sun*.08+dust*.22);
+      col+=gold*pow(max(0.0,1.0-length(p-vec2(-.35,-.18))),3.0)*.08;
       col*=vign;
-      col+=vec3(.025,.01,.004);
+      col+=vec3(.02,.007,.003);
       gl_FragColor=vec4(col,1.0);
     }`;
 
@@ -121,6 +122,7 @@ export function startNexusGalleryShader(options = {}) {
   }
 
   function draw(now = 0) {
+    if (stopped) return;
     resize();
     gl.uniform2f(resolution, canvas.width, canvas.height);
     gl.uniform2f(mouseUniform, mouse.x, mouse.y);
@@ -140,6 +142,15 @@ export function startNexusGalleryShader(options = {}) {
     mouse.y += (1 - (event.clientY / Math.max(1, globalThis.innerHeight)) - mouse.y) * 0.35;
   }
 
+  function onContextLost(event) {
+    event.preventDefault?.();
+    stopped = true;
+    canvas.classList.add("is-fallback");
+    styleCanvas(canvas);
+    globalThis.removeEventListener?.("pointermove", onPointerMove);
+  }
+
+  canvas.addEventListener("webglcontextlost", onContextLost, false);
   globalThis.addEventListener?.("resize", () => draw(performance.now()), { passive: true });
   globalThis.addEventListener?.("pointermove", onPointerMove, { passive: true });
   globalThis.requestAnimationFrame?.(frame);
@@ -149,6 +160,7 @@ export function startNexusGalleryShader(options = {}) {
     draw,
     stop() {
       stopped = true;
+      canvas.removeEventListener("webglcontextlost", onContextLost, false);
       globalThis.removeEventListener?.("pointermove", onPointerMove);
       canvas.remove();
     }
