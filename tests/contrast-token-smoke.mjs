@@ -32,6 +32,13 @@ assertIncludes(shellPath, ".nexus-route-desc", "route description contrast styli
 assertMatch(shellPath, /\.nexus-route-desc\s*\{[^}]*opacity:\.(9[0-9]|88)/s, "route descriptions at or above .88 opacity");
 assertIncludes(shellPath, "nexus-contrast-boost", "contrast boost shell class");
 assertIncludes(shellPath, "outline:3px solid rgba(255,245,180,.86)", "high contrast focus outline");
+assertIncludes(shellPath, "@keyframes zipperCardIn", "zipper card entrance animation");
+assertIncludes(shellPath, "--zipper-delay", "staggered zipper delay variable");
+assertIncludes(shellPath, "--zipper-side", "alternating zipper side variable");
+assertIncludes(shellPath, "is-even", "even arcade row class");
+assertIncludes(shellPath, "is-odd", "odd arcade row class");
+assertIncludes(shellPath, "--arcade-road", "arcade rainbow road token");
+assertIncludes(shellPath, "min-height:clamp(122px,16vh,168px)", "tall arcade row height");
 
 assertIncludes(generatorPath, "--hud-bg:rgba(4,3,12,.88)", "generated high contrast HUD token");
 assertIncludes(generatorPath, "#hud", "generated HUD style");
@@ -51,4 +58,4 @@ assertIncludes(meadowPath, "--muted:#f2e7bd", "high-contrast meadow muted text")
 assertIncludes(openAbovePath, "color:#10202a", "dark Open Above body fallback text");
 assertIncludes(openAbovePath, "background:rgba(3,10,16,.82)", "high-contrast Open Above HUD background");
 
-console.log("Contrast smoke checks passed.");
+console.log("Contrast and arcade zipper smoke checks passed.");
