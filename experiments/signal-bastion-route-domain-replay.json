@@ -6,8 +6,9 @@
   "sourceReplayManifest": "experiments/canonical-route-replay-manifest.json",
   "sourceLaneContracts": "experiments/headless-lane-replay-contracts.json",
   "sourceBridgeSmoke": "tests/signal-bastion-replay-bridge-smoke.mjs",
-  "purpose": "Pin the route-domain replay shape for the strongest current canonical route without moving reusable kit implementation into Experiments.",
-  "executionStatus": "spec-smoked-protokit-backed",
+  "sourceExecutableSmoke": "tests/signal-bastion-executable-route-replay-smoke.mjs",
+  "purpose": "Pin and execute the route-domain replay shape for the strongest current canonical route without moving reusable kit implementation into Experiments.",
+  "executionStatus": "executable-smoked-protokit-backed",
   "kitOwnership": "ProtoKits own generic-defense simulation and descriptor generation; Signal Bastion only bridges browser input into semantic methods and renders snapshots/descriptors.",
   "reusableKitOwnershipExcluded": [
     "DOM",
@@ -112,7 +113,7 @@
       "commandIdPattern": "place:<blueprint>:<frame>"
     },
     {
-      "frame": 0,
+      "frame": 1,
       "source": "route keyboard host",
       "method": "defenseBuild.upgrade",
       "bridgedMethod": "genericDefense.upgrade",
@@ -120,7 +121,7 @@
       "commandIdPattern": "upgrade:<frame>"
     },
     {
-      "frame": 1,
+      "frame": 2,
       "source": "route keyboard host",
       "method": "defenseWaves.startWave",
       "bridgedMethod": "genericDefense.startWave",
@@ -163,9 +164,16 @@
       "descriptor generation"
     ]
   },
+  "executableReplayCoverage": [
+    {
+      "repo": "LuminaryLabs-Agents/NexusRealtime-Experiments",
+      "test": "tests/signal-bastion-executable-route-replay-smoke.mjs",
+      "coverage": "imports real Core plus ProtoKits generic-defense DSK aliases, advances the Signal Bastion debug preset through fixed ticks, and compares deterministic descriptor/resource digests without browser ownership"
+    }
+  ],
   "localJsReductionSignal": [
     "Replace broad host imports of the generic-defense compatibility bundle with the smallest DSK boundary aliases once browser compatibility is proven.",
     "Keep route JavaScript limited to browser input bridging, canvas/HUD projection, assets, audio, and descriptor consumption."
   ],
-  "remainingGap": "browserless executable route replay that imports Core plus ProtoKits in the test workspace, advances fixed ticks, and verifies Signal Bastion digest fields without Canvas, DOM, animation frames, browser audio, asset loading, or pointer timing."
+  "remainingGap": "The browser route still imports the broad CDN compatibility facade. The browser host can shrink further only after it safely migrates from broad generic-defense compatibility imports toward the smallest generic-defense DSK aliases already proven by this executable replay."
 }
