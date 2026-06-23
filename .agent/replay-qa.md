@@ -19,3 +19,17 @@ Missing replay lanes:
 - Economy/social replay: do not canonicalize market/court/broker seeds until decision/economy/social state can replay with deterministic choice windows, ledger deltas, and outcome descriptors.
 
 Replay priority: create one compact scenario per higher-level domain and map canonical routes onto those scenarios before adding route-specific replay files.
+
+## 2026-06-23 Canonical Route Pruner replay map
+
+`experiments/canonical-route-pruning-map.json` now maps each manifest canonical route to a route-level replay lane before any destructive pruning:
+
+- `next-ledge` -> `traversal-cargo-pressure`.
+- `fogline-relay` -> `survey-pressure`.
+- `nexus-frontier-signal-isles` -> `field-engineer-composition`.
+- `sora-the-infinite` -> `aerial-open-traversal`.
+- `zombie-orchard` -> `survival-ecology`.
+- `signal-bastion` -> `strategic-pressure-loop`.
+- `rogue-lite-hellscape-siege` -> `action-defense-extraction`.
+
+This is metadata coverage, not executable replay coverage. The next replay patch should create compact fixtures for the higher-level lanes instead of one-off fantasy-route replay files.
