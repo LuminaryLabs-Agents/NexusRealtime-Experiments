@@ -13,8 +13,8 @@ Constraints:
 
 Current expansion focus: make canonical-route cutover decisions test-visible before adding or deleting playable routes.
 
-Current pruning focus: keep generated gallery seed/backlog routes distinct from manifest-owned canonical routes until a route proves reusable DSK pressure, smoke coverage, and replay direction.
+Current pruning focus: keep generated gallery seed/backlog routes distinct from manifest-owned canonical routes, and keep each manifest canonical route paired with an explicit pruning issue before any destructive route fold/delete.
 
-Current validation focus: guard `experiments/domain-kit-cutover-manifest.json` against drift from generated gallery routes, route folders, non-empty `domainCutover`, and bridge/preset ownership notes.
+Current validation focus: guard `experiments/domain-kit-cutover-manifest.json` and `experiments/canonical-route-pruning-map.json` against drift from generated gallery routes, route folders, non-empty `domainCutover`, bridge/preset ownership notes, variant/backlog pressure, and route-level smoke/replay direction.
 
-Last meaningful cycle report: `cycle-reports/2026-06-23-cycle-report-main-push-planner.md`.
+Last meaningful cycle report: `.agent/cycle-reports/2026-06-23-canonical-route-pruner.md`.
