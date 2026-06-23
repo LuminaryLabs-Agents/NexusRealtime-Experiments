@@ -3,8 +3,47 @@ import { createSignalBastionCanvasRenderer } from "./renderer-canvas.js";
 import { createSignalBastionInputHost } from "./input-host.js";
 
 const NEXUS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@main/src/index.js";
-const DEFENSE_KITS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.1/protokits/generic-defense-aaa-kits/index.js";
-const PRESENTATION_KITS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.1/protokits/generic-defense-presentation-stack-kit/index.js";
+const DEFENSE_KITS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@main/protokits/generic-defense-aaa-dsk-bridge/index.js";
+const PRESENTATION_KITS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@main/protokits/generic-defense-presentation-stack-kit/index.js";
+
+const SIGNAL_BASTION_DEFENSE_DSK_BOUNDARY_IDS = Object.freeze([
+  "map",
+  "economyWallet",
+  "buildPlacement",
+  "waveAgentDirector",
+  "combatResolver",
+  "sessionFacade",
+  "renderDescriptors"
+]);
+
+function assertDefenseDskBridge(DefenseKits) {
+  const requiredExports = [
+    "createGenericDefenseDskBundle",
+    "createGenericDefenseFoundationKit",
+    "createGenericDefenseBuildKit",
+    "createGenericDefenseWaveKit",
+    "createGenericDefenseScaleKit",
+    "createGenericDefenseAuthoringQaKit"
+  ];
+  const missing = requiredExports.filter((name) => typeof DefenseKits[name] !== "function");
+  if (missing.length > 0) {
+    throw new Error(`Signal Bastion defense DSK bridge missing exports: ${missing.join(", ")}`);
+  }
+}
+
+function createSignalBastionDefenseDskKits(NexusRealtime, DefenseKits, preset) {
+  return [
+    ...DefenseKits.createGenericDefenseDskBundle(
+      NexusRealtime,
+      preset,
+      SIGNAL_BASTION_DEFENSE_DSK_BOUNDARY_IDS
+    ),
+    DefenseKits.createGenericDefenseFoundationKit(NexusRealtime, preset.foundation ?? {}),
+    DefenseKits.createGenericDefenseBuildKit(NexusRealtime, preset.build ?? {}),
+    DefenseKits.createGenericDefenseWaveKit(NexusRealtime, preset.waves ?? {}),
+    DefenseKits.createGenericDefenseScaleKit(NexusRealtime, preset.scale ?? {})
+  ];
+}
 
 export async function bootSignalBastion(documentRef = document) {
   const canvas = documentRef.querySelector("#game");
@@ -22,13 +61,14 @@ export async function bootSignalBastion(documentRef = document) {
       import(DEFENSE_KITS_URL),
       import(PRESENTATION_KITS_URL)
     ]);
+    assertDefenseDskBridge(DefenseKits);
     const validationKit = DefenseKits.createGenericDefenseAuthoringQaKit(NexusRealtime);
     const validation = validationKit.metadata ? { valid: true, errors: [] } : { valid: true, errors: [] };
     if (!validation.valid) throw new Error(validation.errors.join("\n"));
 
     const engine = NexusRealtime.createRealtimeGame({
       kits: [
-        ...DefenseKits.createGenericDefenseKits(NexusRealtime, preset),
+        ...createSignalBastionDefenseDskKits(NexusRealtime, DefenseKits, preset),
         ...PresentationKits.createGenericDefensePresentationStackKits(NexusRealtime, preset.presentationStack ?? {})
       ]
     });
