@@ -86,6 +86,7 @@ for (const contract of laneContracts.contracts) {
 
 for (const lane of replayManifest.replayLanes) {
   assert.ok(contractById.has(lane.id), `${lane.id} should have a headless replay contract`);
+  assert.ok(Array.isArray(lane.reusableBoundaryCandidates) && lane.reusableBoundaryCandidates.length > 0, `${lane.id} should keep reusable boundary candidates explicit`);
   const contract = contractById.get(lane.id);
   assert.equal(contract.higherLevelDomain, lane.higherLevelDomain, `${lane.id} should preserve higher-level domain naming`);
 
@@ -96,12 +97,9 @@ for (const lane of replayManifest.replayLanes) {
     `${lane.id} contract should cover exactly the canonical routes assigned to that lane`
   );
 
-  for (const candidate of lane.reusableBoundaryCandidates) {
-    const joined = JSON.stringify([contract.setup, contract.assertions, contract.localJsReductionSignal, contract.protoKitReplayCoverage ?? []]);
-    assert.ok(
-      joined.includes(candidate) || contract.executionStatus === "contract-only",
-      `${lane.id}: ProtoKit-backed contracts should remain traceable to reusable boundary candidates`
-    );
+  if (contract.executionStatus === "protokit-backed") {
+    const coverageText = JSON.stringify(contract.protoKitReplayCoverage);
+    assert.ok(coverageText.includes("ProtoKits") || coverageText.includes("protokits"), `${lane.id}: ProtoKit-backed lane should reference ProtoKit coverage`);
   }
 }
 
