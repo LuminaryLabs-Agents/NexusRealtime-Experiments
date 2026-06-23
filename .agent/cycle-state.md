@@ -17,7 +17,9 @@ Current pruning focus: keep generated gallery seed/backlog routes distinct from 
 
 Current validation focus: guard `experiments/domain-kit-cutover-manifest.json`, `experiments/canonical-route-pruning-map.json`, `experiments/canonical-route-replay-manifest.json`, `experiments/headless-lane-replay-contracts.json`, `experiments/signal-bastion-route-domain-replay.json`, `experiments/executable-route-replay-import-gates.json`, and the Signal Bastion strategic-pressure bridge/spec/import-gate/executable/facade smokes against drift from generated gallery routes, route folders, non-empty `domainCutover`, bridge/preset ownership notes, variant/backlog pressure, renderer-free DSK surfaces, fixed-tick replay contracts, local JavaScript reduction opportunities, package-wiring gaps, and accidental route-local simulation ownership.
 
-Last meaningful cycle report: `.agent/cycle-reports/2026-06-23-deterministic-replay-qa-1630.md`.
+Last meaningful cycle report: `.agent/cycle-reports/2026-06-23-twenty-game-refiner-1700.md`.
+
+Latest Twenty Game Refiner change: `experiments/headless-lane-replay-contracts.json` now mirrors Signal Bastion's executable route replay coverage instead of carrying stale strategic-pressure missing-executable text. `tests/headless-lane-replay-contracts-smoke.mjs` now fails if a canonical route records route executable replay coverage but the higher-level lane contract does not mirror it, or if an executable lane keeps stale `missingExecutableFixture` text.
 
 Latest Headless Tick Smoke Builder change: `games/signal-bastion/src/boot.js` now imports the ProtoKits `generic-defense-aaa-dsk-bridge` browser module and composes the seven named generic-defense DSK aliases instead of the broad `createGenericDefenseKits()` compatibility facade. The Signal Bastion static, bridge, route-spec, import-gate, executable, and facade smokes now guard that browser DSK alias migration.
 
