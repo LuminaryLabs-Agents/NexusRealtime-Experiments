@@ -13,6 +13,7 @@ const fullCheckSuites = [
   "tests/signal-bastion-replay-bridge-smoke.mjs",
   "tests/signal-bastion-route-domain-replay-spec-smoke.mjs",
   "tests/executable-route-replay-import-gates-smoke.mjs",
+  "tests/signal-bastion-executable-route-replay-smoke.mjs",
   "tests/nexus-realtime-loader-smoke.mjs",
   "tests/fogline-three-renderer-smoke.mjs",
   "tests/fogline-environment-content-smoke.mjs",
