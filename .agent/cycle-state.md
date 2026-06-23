@@ -11,10 +11,10 @@ Constraints:
 - Merge features and kits into cumulative higher-level domains.
 - Keep DSKs as domain communication layers.
 
-Current expansion focus: TBD.
+Current expansion focus: make canonical-route cutover decisions test-visible before adding or deleting playable routes.
 
-Current pruning focus: TBD.
+Current pruning focus: keep generated gallery seed/backlog routes distinct from manifest-owned canonical routes until a route proves reusable DSK pressure, smoke coverage, and replay direction.
 
-Current validation focus: TBD.
+Current validation focus: guard `experiments/domain-kit-cutover-manifest.json` against drift from generated gallery routes, route folders, non-empty `domainCutover`, and bridge/preset ownership notes.
 
-Last meaningful cycle report: see `cycle-reports/`.
+Last meaningful cycle report: `cycle-reports/2026-06-23-cycle-report-main-push-planner.md`.
