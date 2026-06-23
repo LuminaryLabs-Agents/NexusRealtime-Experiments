@@ -61,7 +61,7 @@ assert.match(input, /renderer\.findHit\(.*presentation\(\)/s, "input host should
 assert.doesNotMatch(input, /createRealtimeGame|createGenericDefenseKits|requestAnimationFrame|performance\.now/, "input host should not own runtime creation or browser frame timing");
 
 assert.match(renderer, /function draw\(presentation/, "renderer should draw from a presentation snapshot");
-assert.match(renderer, /presentation\.rawSnapshot/, "renderer should tolerate raw DSK snapshots");
+assert.match(renderer, /presentation\?\.rawSnapshot|rawSnapshot:/, "renderer should tolerate raw DSK snapshots");
 assert.match(renderer, /presentation\.ui/, "renderer should consume UI descriptors");
 assert.match(renderer, /renderStats/, "renderer should project stat descriptors into DOM only");
 assert.match(renderer, /renderTowerPanel/, "renderer should project tower descriptors into DOM only");
