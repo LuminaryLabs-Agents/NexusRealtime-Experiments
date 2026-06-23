@@ -30,9 +30,10 @@ assert.ok(
   routeReplay.protoKitReplayCoverage.some((coverage) => coverage.test === "tests/generic-defense-replay-smoke.test.mjs"),
   "Signal Bastion replay entry should point at generic-defense deterministic replay"
 );
+assert.deepEqual(routeReplay.missingExecutableFixtures ?? [], [], "Signal Bastion executable replay gap should stay closed once route replay coverage exists");
 assert.ok(
-  routeReplay.missingExecutableFixtures.some((fixture) => fixture.includes("route-level bridge replay")),
-  "the remaining Signal Bastion executable bridge replay gap should stay explicit"
+  routeReplay.routeExecutableReplayCoverage?.some((coverage) => coverage.test === "tests/signal-bastion-executable-route-replay-smoke.mjs"),
+  "Signal Bastion should list executable route-domain replay coverage after the gap is closed"
 );
 
 const index = readFileSync("games/signal-bastion/index.html", "utf8");
