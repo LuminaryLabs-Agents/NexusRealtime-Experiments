@@ -86,3 +86,14 @@ The spec captures:
 `tests/signal-bastion-route-domain-replay-spec-smoke.mjs` validates the spec against the canonical replay manifest, lane contract, existing bridge smoke, and Signal Bastion host files, and is wired into both full and deploy checks. This narrows the gap from "bridge smoke only" to "checked route-domain replay spec," but still leaves the executable replay harness open.
 
 Next replay priority: create the executable browserless Signal Bastion harness that imports Core plus ProtoKits generic-defense DSK aliases, advances the fixed tick sequence, and asserts descriptor digests without browser presentation dependencies.
+
+## 2026-06-23 Cycle Report Main Push Planner replay gate
+
+The direct-main planner should not close the remaining Signal Bastion replay gap by adding fake or route-local simulation inside Experiments. The route already uses CDN imports in browser boot, while the Experiments package has no stable local dependency wiring for Core or ProtoKits imports in Node checks.
+
+Safest next replay patch:
+
+- either add stable package/workspace import wiring for `LuminaryLabs-Dev/NexusRealtime` and `LuminaryLabs-Agents/NexusRealtime-ProtoKits`, then write the executable browserless Signal Bastion replay against the real generic-defense DSK aliases;
+- or keep the next Experiments patch to a guard smoke that asserts the executable replay remains blocked until real package imports are available, while keeping `generic-defense` simulation ownership in ProtoKits.
+
+Do not add reusable kit logic or a duplicate defense interpreter under Experiments just to make `npm run check` execute a route replay. That would make the local JavaScript larger and blur the DSK boundary the current manifests are trying to protect.
