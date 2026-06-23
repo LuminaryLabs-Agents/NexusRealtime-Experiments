@@ -45,7 +45,7 @@ assert.equal(lane.coverageStatus, "protokit-covered", "strategic-pressure-loop s
 assert.equal(contract.executionStatus, "protokit-backed", "strategic-pressure-loop lane should remain ProtoKit-backed");
 assert.equal(routeReplaySpec.executionStatus, "executable-smoked-protokit-backed", "Signal Bastion spec should be executable-smoked and ProtoKit-backed");
 assert.equal(routeReplaySpec.sourceExecutableSmoke, executableSmokePath, "route spec should point at executable replay smoke");
-assert.equal(routeReplaySpec.remainingGap.includes("browser route"), true, "route spec should keep the browser import/local-JS reduction gap explicit");
+assert.equal(routeReplaySpec.remainingGap.includes("host convenience facades"), true, "route spec should keep the remaining local-JS reduction gap explicit");
 
 const dependencyNames = new Set([
   ...Object.keys(packageJson.dependencies ?? {}),
@@ -70,8 +70,10 @@ for (const required of gate.requiredLocalPackageWiring) {
 }
 
 assert.match(bootSource, /cdn\.jsdelivr\.net\/gh\/LuminaryLabs-Dev\/NexusRealtime@main\/src\/index\.js/, "Signal Bastion browser boot can still use the Core CDN import while Node replay uses package wiring");
-assert.match(bootSource, /cdn\.jsdelivr\.net\/gh\/LuminaryLabs-Agents\/NexusRealtime-ProtoKits@0\.0\.1\/protokits\/generic-defense-aaa-kits\/index\.js/, "Signal Bastion browser boot can still use the ProtoKits defense CDN import while Node replay uses package wiring");
-assert.match(bootSource, /cdn\.jsdelivr\.net\/gh\/LuminaryLabs-Agents\/NexusRealtime-ProtoKits@0\.0\.1\/protokits\/generic-defense-presentation-stack-kit\/index\.js/, "Signal Bastion browser boot can still use the ProtoKits presentation CDN import while Node replay uses package wiring");
+assert.match(bootSource, /cdn\.jsdelivr\.net\/gh\/LuminaryLabs-Agents\/NexusRealtime-ProtoKits@main\/protokits\/generic-defense-aaa-dsk-bridge\/index\.js/, "Signal Bastion browser boot should consume the ProtoKits defense DSK bridge CDN import");
+assert.match(bootSource, /cdn\.jsdelivr\.net\/gh\/LuminaryLabs-Agents\/NexusRealtime-ProtoKits@main\/protokits\/generic-defense-presentation-stack-kit\/index\.js/, "Signal Bastion browser boot should consume the ProtoKits presentation CDN import");
+assert.match(bootSource, /createGenericDefenseDskBundle/, "route boot should compose generic-defense through DSK aliases");
+assert.doesNotMatch(bootSource, /\bcreateGenericDefenseKits\s*\(/, "route boot should not compose the whole broad defense compatibility facade");
 assert.match(bootSource, /import\(NEXUS_URL\)/, "route boot should load Core through the declared dynamic import URL");
 assert.match(bootSource, /import\(DEFENSE_KITS_URL\)/, "route boot should load defense kits through the declared dynamic import URL");
 assert.doesNotMatch(bootSource, /from ["']nexusrealtime["']|from ["']@luminarylabs\/nexusrealtime-protokits/, "route boot should not silently switch browser runtime mode as part of the Node replay gate");
