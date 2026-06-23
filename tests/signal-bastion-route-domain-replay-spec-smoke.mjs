@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const specPath = "experiments/signal-bastion-route-domain-replay.json";
 const replayManifestPath = "experiments/canonical-route-replay-manifest.json";
 const laneContractsPath = "experiments/headless-lane-replay-contracts.json";
 const bridgeSmokePath = "tests/signal-bastion-replay-bridge-smoke.mjs";
+const executableSmokePath = "tests/signal-bastion-executable-route-replay-smoke.mjs";
 
 const spec = JSON.parse(readFileSync(specPath, "utf8"));
 const replayManifest = JSON.parse(readFileSync(replayManifestPath, "utf8"));
@@ -20,6 +21,9 @@ assert.equal(spec.canonicalPath, "games/signal-bastion/", "spec should target th
 assert.equal(spec.sourceReplayManifest, replayManifestPath, "spec should extend the canonical replay manifest");
 assert.equal(spec.sourceLaneContracts, laneContractsPath, "spec should extend the lane replay contracts");
 assert.equal(spec.sourceBridgeSmoke, bridgeSmokePath, "spec should build on the existing bridge smoke");
+assert.equal(spec.sourceExecutableSmoke, executableSmokePath, "spec should point at the executable route replay smoke");
+assert.ok(existsSync(executableSmokePath), "executable route replay smoke should exist");
+assert.equal(spec.executionStatus, "executable-smoked-protokit-backed", "spec should mark the route replay as executable and ProtoKit-backed");
 assert.ok(routeReplay, "Signal Bastion should still exist in the canonical replay manifest");
 assert.ok(lane, "strategic-pressure-loop should still exist in the canonical replay manifest");
 assert.ok(contract, "strategic-pressure-loop should still exist in the lane contracts");
@@ -27,6 +31,10 @@ assert.equal(spec.scenarioLane, routeReplay.scenarioLane, "spec lane should matc
 assert.equal(lane.coverageStatus, "protokit-covered", "strategic-pressure-loop should remain ProtoKit-covered");
 assert.equal(contract.executionStatus, "protokit-backed", "strategic-pressure-loop contract should remain ProtoKit-backed");
 assert.deepEqual(spec.fixedTickPlan, contract.fixedTickPlan, "spec should use the checked strategic-pressure fixed-tick plan");
+assert.ok(
+  spec.executableReplayCoverage?.some((coverage) => coverage.test === executableSmokePath),
+  "spec should list executable route replay coverage"
+);
 
 for (const exclusion of replayManifest.browserOwnershipExcluded) {
   assert.ok(spec.reusableKitOwnershipExcluded.includes(exclusion), `spec should keep ${exclusion} outside reusable kit ownership`);
@@ -63,7 +71,7 @@ for (const method of ["genericDefense.build", "genericDefense.upgrade", "generic
   assert.ok(replayMethods.has(method), `spec should include semantic replay method ${method}`);
 }
 assert.ok(spec.deterministicDigest.fields.includes("render.descriptors"), "spec digest should include renderer-agnostic descriptors");
-assert.ok(spec.remainingGap.includes("browserless executable route replay"), "spec should keep the remaining executable replay gap explicit");
+assert.ok(spec.remainingGap.includes("browser route") && spec.remainingGap.includes("DSK aliases"), "spec should keep the browser import/local-JS reduction gap explicit after executable replay coverage");
 
 const boot = readFileSync("games/signal-bastion/src/boot.js", "utf8");
 const input = readFileSync("games/signal-bastion/src/input-host.js", "utf8");
