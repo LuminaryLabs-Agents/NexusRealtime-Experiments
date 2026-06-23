@@ -172,8 +172,9 @@
     }
   ],
   "localJsReductionSignal": [
-    "Replace broad host imports of the generic-defense compatibility bundle with the smallest DSK boundary aliases once browser compatibility is proven.",
+    "Browser boot now imports the ProtoKits generic-defense AAA DSK bridge and requests the seven named DSK aliases instead of composing the entire broad compatibility facade.",
+    "The route still keeps small host convenience facades for foundation, build, wave, and scale APIs so existing browser input/UI bridges remain compatible while the DSK alias migration settles.",
     "Keep route JavaScript limited to browser input bridging, canvas/HUD projection, assets, audio, and descriptor consumption."
   ],
-  "remainingGap": "The browser route still imports the broad CDN compatibility facade. The browser host can shrink further only after it safely migrates from broad generic-defense compatibility imports toward the smallest generic-defense DSK aliases already proven by this executable replay."
+  "remainingGap": "The browser route now composes the seven generic-defense DSK aliases, but it still keeps minimal host convenience facades (`defenseFoundation`, `defenseBuild`, `defenseWaves`, and `defenseScale`) beside those DSK aliases so existing browser bridges keep working. Further local JavaScript shrink should replace convenience-facade calls with direct DSK semantic methods only after browser compatibility and descriptor consumption stay covered."
 }
