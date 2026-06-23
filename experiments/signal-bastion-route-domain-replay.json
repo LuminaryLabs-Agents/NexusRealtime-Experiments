@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "canonicalId": "signal-bastion",
+  "canonicalPath": "games/signal-bastion/",
+  "scenarioLane": "strategic-pressure-loop",
+  "sourceReplayManifest": "experiments/canonical-route-replay-manifest.json",
+  "sourceLaneContracts": "experiments/headless-lane-replay-contracts.json",
+  "sourceBridgeSmoke": "tests/signal-bastion-replay-bridge-smoke.mjs",
+  "purpose": "Pin the route-domain replay shape for the strongest current canonical route without moving reusable kit implementation into Experiments.",
+  "executionStatus": "spec-smoked-protokit-backed",
+  "kitOwnership": "ProtoKits own generic-defense simulation and descriptor generation; Signal Bastion only bridges browser input into semantic methods and renders snapshots/descriptors.",
+  "reusableKitOwnershipExcluded": [
+    "DOM",
+    "Canvas",
+    "WebGL",
+    "Three.js",
+    "pointer lock",
+    "browser audio",
+    "asset loading"
+  ],
+  "fixedTickPlan": {
+    "count": 30,
+    "dt": 0.1,
+    "totalSeconds": 3
+  },
+  "protokitBoundaries": [
+    {
+      "id": "map",
+      "exportName": "createGenericDefenseMapDsk",
+      "surfaces": {
+        "resources": ["genericDefense.map.state"],
+        "events": ["genericDefense.reset", "genericDefense.vital.damaged"],
+        "methods": ["defenseMap.getState", "defenseMap.samplePath", "defenseMap.getSlot"],
+        "snapshots": ["map", "vital", "slots", "path"],
+        "descriptors": []
+      }
+    },
+    {
+      "id": "economyWallet",
+      "exportName": "createGenericDefenseEconomyWalletDsk",
+      "surfaces": {
+        "resources": ["genericDefense.economy.state"],
+        "events": ["genericDefense.economy.credit", "genericDefense.economy.debit", "genericDefense.command.rejected"],
+        "methods": ["defenseEconomy.credit", "defenseEconomy.debit", "defenseEconomy.getState"],
+        "snapshots": ["economy.currency", "economy.transactions", "economy.rejected"],
+        "descriptors": []
+      }
+    },
+    {
+      "id": "buildPlacement",
+      "exportName": "createGenericDefenseBuildPlacementDsk",
+      "surfaces": {
+        "resources": ["genericDefense.structure.state"],
+        "events": ["genericDefense.build.requested", "genericDefense.upgrade.requested", "genericDefense.structure.built", "genericDefense.structure.upgraded", "genericDefense.command.rejected"],
+        "methods": ["defenseStructures.build", "defenseStructures.upgrade", "defenseStructures.getState"],
+        "snapshots": ["structures.blueprints", "structures.structures"],
+        "descriptors": []
+      }
+    },
+    {
+      "id": "waveAgentDirector",
+      "exportName": "createGenericDefenseWaveAgentDirectorDsk",
+      "surfaces": {
+        "resources": ["genericDefense.agent.state"],
+        "events": ["genericDefense.wave.start", "genericDefense.wave.started", "genericDefense.wave.completed", "genericDefense.vital.damaged"],
+        "methods": ["defenseAgents.startWave", "defenseAgents.getState"],
+        "snapshots": ["agents.waves", "agents.spawnQueue", "agents.active", "agents.waveActive"],
+        "descriptors": []
+      }
+    },
+    {
+      "id": "combatResolver",
+      "exportName": "createGenericDefenseCombatResolverDsk",
+      "surfaces": {
+        "resources": ["genericDefense.combat.state"],
+        "events": ["genericDefense.enemy.killed", "genericDefense.economy.credit"],
+        "methods": ["defenseCombat.getState"],
+        "snapshots": ["combat.projectiles", "combat.effects"],
+        "descriptors": ["projectile", "effect"]
+      }
+    },
+    {
+      "id": "sessionFacade",
+      "exportName": "createGenericDefenseSessionFacadeDsk",
+      "surfaces": {
+        "resources": ["genericDefense.session.state"],
+        "events": ["genericDefense.reset", "genericDefense.select", "genericDefense.wave.start", "genericDefense.build.requested", "genericDefense.upgrade.requested", "genericDefense.command.rejected"],
+        "methods": ["genericDefense.startWave", "genericDefense.build", "genericDefense.upgrade", "genericDefense.select", "genericDefense.cycleBlueprint", "genericDefense.restart", "genericDefense.getSnapshot"],
+        "snapshots": ["session", "level", "map", "economy", "structures", "agents", "combat", "render"],
+        "descriptors": []
+      }
+    },
+    {
+      "id": "renderDescriptors",
+      "exportName": "createGenericDefenseRenderDescriptorDsk",
+      "surfaces": {
+        "resources": ["genericDefense.render.state"],
+        "events": [],
+        "methods": ["defenseRender.getState", "defenseRender.getSnapshot", "defensePresentationStack.getSnapshot"],
+        "snapshots": ["render.hud", "render.descriptors", "render.world"],
+        "descriptors": ["path", "vital", "build-slot", "structure", "agent", "projectile", "effect"]
+      }
+    }
+  ],
+  "semanticReplayInputs": [
+    {
+      "frame": 0,
+      "source": "route placement host",
+      "method": "placementProjector.confirm",
+      "bridgedMethod": "genericDefense.build",
+      "args": ["slot-a", "bolt"],
+      "commandIdPattern": "place:<blueprint>:<frame>"
+    },
+    {
+      "frame": 0,
+      "source": "route keyboard host",
+      "method": "defenseBuild.upgrade",
+      "bridgedMethod": "genericDefense.upgrade",
+      "args": ["structure-1"],
+      "commandIdPattern": "upgrade:<frame>"
+    },
+    {
+      "frame": 1,
+      "source": "route keyboard host",
+      "method": "defenseWaves.startWave",
+      "bridgedMethod": "genericDefense.startWave",
+      "args": [{ "waveNumber": 1 }],
+      "commandIdPattern": "wave:<frame>"
+    },
+    {
+      "frame": 30,
+      "source": "route presentation host",
+      "method": "defensePresentationStack.getSnapshot",
+      "bridgedMethod": "genericDefense.getSnapshot",
+      "args": [],
+      "commandIdPattern": "snapshot:<frame>"
+    }
+  ],
+  "expectedAssertions": {
+    "resources": ["genericDefense.map", "genericDefense.economy", "genericDefense.structures", "genericDefense.agents", "genericDefense.combat", "genericDefense.render"],
+    "events": ["BuildRequested", "StructureBuilt", "EconomyDebit", "WaveStarted", "EnemyKilled", "WaveCompleted"],
+    "methods": ["genericDefense.build", "genericDefense.upgrade", "genericDefense.startWave", "genericDefense.getSnapshot"],
+    "snapshots": ["session.status", "economy.currency", "map.vital.health", "render.hud.status"],
+    "descriptors": ["path", "vital", "build-slot", "structure", "effect"]
+  },
+  "deterministicDigest": {
+    "fields": ["map", "economy", "structures", "agents", "combat", "render.descriptors"],
+    "descriptorKinds": ["path", "vital", "build-slot", "structure", "agent", "projectile", "effect"],
+    "forbiddenSources": ["Math.random", "Date.now", "crypto.getRandomValues", "performance.now", "requestAnimationFrame"]
+  },
+  "routeHostBoundary": {
+    "owns": [
+      "canvas draw projection",
+      "HUD DOM projection",
+      "pointer and keyboard input capture",
+      "asset/audio presentation hooks"
+    ],
+    "mustNotOwn": [
+      "generic-defense resource mutation",
+      "wave spawn cadence",
+      "economy ledger settlement",
+      "combat resolution",
+      "descriptor generation"
+    ]
+  },
+  "localJsReductionSignal": [
+    "Replace broad host imports of the generic-defense compatibility bundle with the smallest DSK boundary aliases once browser compatibility is proven.",
+    "Keep route JavaScript limited to browser input bridging, canvas/HUD projection, assets, audio, and descriptor consumption."
+  ],
+  "remainingGap": "browserless executable route replay that imports Core plus ProtoKits in the test workspace, advances fixed ticks, and verifies Signal Bastion digest fields without Canvas, DOM, animation frames, browser audio, asset loading, or pointer timing."
+}
