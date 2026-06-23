@@ -19,12 +19,12 @@ Current validation focus: guard `experiments/domain-kit-cutover-manifest.json`, 
 
 Last meaningful cycle report: `.agent/cycle-reports/2026-06-23-canonical-route-pruner-1500.md`.
 
-Latest Headless Tick Smoke Builder change: `experiments/headless-lane-replay-contracts.json` plus `tests/headless-lane-replay-contracts-smoke.mjs` now make every higher-level route lane carry a checked fixed-tick replay contract. The strategic-pressure lane is ProtoKit-backed; other lanes remain contract-only until executable Core/ProtoKit route-domain replays are added.
+Latest Headless Tick Smoke Builder change: `games/signal-bastion/src/boot.js` now imports the ProtoKits `generic-defense-aaa-dsk-bridge` browser module and composes the seven named generic-defense DSK aliases instead of the broad `createGenericDefenseKits()` compatibility facade. The Signal Bastion static, bridge, route-spec, and import-gate smokes now guard that browser DSK alias migration.
 
-Latest Deterministic Replay QA change: `experiments/signal-bastion-route-domain-replay.json` plus `tests/signal-bastion-route-domain-replay-spec-smoke.mjs` now pin the strategic-pressure / Signal Bastion replay spec to the manifest, lane contract, generic-defense DSK surfaces, semantic route inputs, descriptor digest fields, and renderer-free host boundary.
+Latest Deterministic Replay QA change: `experiments/signal-bastion-route-domain-replay.json` now records that the executable replay is closed and the browser route has migrated to the DSK bridge, but still has a smaller local-JS reduction gap around foundation/build/wave/scale host convenience facades.
 
-Latest Canonical Route Pruner change: `experiments/executable-route-replay-import-gates.json` plus `tests/executable-route-replay-import-gates-smoke.mjs` now records the Signal Bastion executable replay gate as `satisfied-by-package-wiring`: Experiments package metadata has Core and ProtoKits GitHub dev dependencies, and the gate still forbids fake route-local replay, copied ProtoKit fixtures, browser-CDN Node imports, DOM/Canvas-owned simulation, and route forks.
+Latest Canonical Route Pruner change: `experiments/executable-route-replay-import-gates.json` now records browser import mode as `browser-cdn-dynamic-import-dsk-bridge` and preserves the pruning rule that fake route-local replay, copied ProtoKit fixtures, DOM/Canvas-owned simulation shims, and route forks remain blocked.
 
-Latest ProtoKit Promotion Gate change: `tests/signal-bastion-executable-route-replay-smoke.mjs` now imports real Core plus ProtoKits `generic-defense-dsk-boundaries`, composes the Signal Bastion debug preset through the seven named DSK aliases, advances the checked fixed-tick plan, compares deterministic resource/snapshot/descriptor digests across fresh runs, and keeps browser ownership outside the replay. It is wired into the full check suite, not deploy checks yet.
+Latest ProtoKit Promotion Gate change: the strategic-pressure lane remains the only executable route-domain replay lane; do not repeat the pattern for another canonical lane until a real reusable ProtoKit boundary exists.
 
 Latest Core memory check: `LuminaryLabs-Dev/NexusRealtime` is accessible, but `.agent/intent.md` was not present during this cycle. Do not treat Core `.agent` memory as reviewed until the folder exists or a later run can fetch it.
