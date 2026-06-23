@@ -24,3 +24,9 @@ The route-pruning map keeps the current canonical set small because the reusable
 - Action-defense-extraction: harvest/inventory/build/wave/core/portal state folded into one unified base route before further promotion.
 
 ProtoKit opportunity: build executable smoke/replay fixtures around these higher-level lanes before promoting more seed/backlog routes to canonical status.
+
+## 2026-06-23 Canonical Route Pruner import-gate backlog
+
+The next strategic-pressure domain step is not a new route or a route-local replay; it is stable package/workspace/path import wiring that lets Experiments run a browserless Signal Bastion replay against real Core and ProtoKit DSK aliases.
+
+Backlog item: add local import wiring for Core `nexusrealtime` plus ProtoKits `@luminarylabs/nexusrealtime-protokits`, then write the executable `strategic-pressure-loop` replay over `generic-defense-dsk-boundaries`. This should reduce future local experiment JavaScript by preventing copied generic-defense fixtures, route-local simulation interpreters, and defense V1/V2/V3 route forks.
