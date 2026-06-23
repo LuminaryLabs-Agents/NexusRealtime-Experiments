@@ -33,4 +33,11 @@ Next smoke priority: route-level smoke/replay manifests that map each canonical 
 - Added `experiments/canonical-route-pruning-map.json` so every manifest-owned canonical route now has a test-visible pruning issue with variants/backlog to fold, manifest/docs updates, local JavaScript to move toward ProtoKits, smoke/replay lanes to preserve, and about-20 portfolio effect.
 - This closes the route-level replay-manifest metadata gap noted by the prior cycle report, but it does not yet add executable fixed-tick route simulations.
 
-Next smoke priority: implement one compact fixed-tick route/domain scenario per higher-level lane: survey pressure, strategic pressure, survival ecology, traversal/cargo, aerial traversal, field-engineer composition, and action-defense-extraction.
+## 2026-06-23 ProtoKit Promotion Gate replay-manifest closure
+
+- Added `experiments/canonical-route-replay-manifest.json` so every canonical route now has one route-level replay contract mapped to its pruning lane, host role, ProtoKit replay coverage when available, missing executable fixtures, and local JavaScript reduction opportunities.
+- Added `tests/canonical-route-replay-manifest-smoke.mjs` and wired it into full and deploy checks so replay mapping cannot drift away from the cutover manifest or pruning map.
+- Signal Bastion now explicitly points at ProtoKits `tests/generic-defense-dsk-boundaries-smoke.test.mjs` and `tests/generic-defense-replay-smoke.test.mjs` as its reusable strategic-pressure replay proof.
+- Other canonical routes remain planned fixtures, but their missing replay lanes are now test-visible instead of implicit.
+
+Next smoke priority: implement one compact fixed-tick route/domain scenario per higher-level lane: survey pressure, strategic pressure bridge consumption, survival ecology, traversal/cargo, aerial traversal, field-engineer composition, and action-defense-extraction.
