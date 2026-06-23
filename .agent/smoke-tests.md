@@ -57,3 +57,11 @@ Next smoke priority: convert one contract into executable headless replay. Safes
 - This is a bridge-boundary smoke, not a browserless executable route replay. It keeps the remaining gap explicit while preventing regression where Signal Bastion drifts back into owning defense simulation, runtime construction in renderer/input files, or browser-timing-dependent replay state.
 
 Next smoke priority: replace the remaining static bridge gap with a compact browserless Signal Bastion route-domain replay that imports the smallest generic-defense DSK aliases, runs fixed ticks, and asserts descriptor digests plus semantic-method/event/snapshot boundaries.
+
+## 2026-06-23 Signal Bastion route-domain replay spec closure
+
+- Added `experiments/signal-bastion-route-domain-replay.json` to pin the strategic-pressure replay shape for `signal-bastion`: fixed tick plan, semantic replay inputs, seven generic-defense DSK boundaries, expected resources/events/methods/snapshots/descriptors, renderer-free digest fields, and host ownership exclusions.
+- Added `tests/signal-bastion-route-domain-replay-spec-smoke.mjs` and wired it into both full and deploy checks. The smoke validates the spec against the canonical replay manifest, headless lane contract, Signal Bastion route host files, and the existing bridge smoke.
+- This is stronger than the prior static bridge check because the replay plan now has a checked route-domain spec, but it is still not the final browserless executable replay that imports Core plus ProtoKits and advances real fixed ticks.
+
+Next smoke priority: replace the spec with, or supplement it by, an executable route replay harness that imports the generic-defense DSK aliases from ProtoKits and Core, runs the fixed-tick strategic-pressure sequence, and asserts descriptor digests without Canvas, DOM, animation frames, browser audio, asset loading, or pointer timing.
