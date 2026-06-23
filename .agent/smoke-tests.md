@@ -83,3 +83,11 @@ Next smoke priority: add stable local package/workspace/path wiring for Core `ne
 - This closes the first browserless route-domain executable replay for the strongest canonical route without adding reusable kit logic or copied ProtoKit fixtures to Experiments.
 
 Next smoke priority: migrate the browser Signal Bastion host from broad generic-defense compatibility imports toward the smallest proven DSK aliases, then repeat the executable-replay pattern for the next lane only after a real ProtoKit boundary exists.
+
+## 2026-06-23 Headless Tick Smoke Builder browser DSK bridge closure
+
+- `games/signal-bastion/src/boot.js` now imports the ProtoKits `generic-defense-aaa-dsk-bridge` CDN module and composes the seven checked generic-defense DSK aliases instead of calling the broad `createGenericDefenseKits()` compatibility facade.
+- Signal Bastion bridge/spec/import-gate/static smokes now assert the browser host keeps the DSK alias set explicit while still leaving Canvas, DOM, frame timing, and descriptor projection in the route host.
+- The route still keeps minimal host convenience facades for foundation/build/wave/scale APIs so existing input and UI bridges remain compatible; this is a smaller browser surface than the broad compatibility bundle but not a full local-JS shrink to only direct DSK methods.
+
+Next smoke priority: guard the remaining host convenience facades, then replace facade calls with direct DSK semantic methods only where the browser route stays compatible and the executable replay remains green.
