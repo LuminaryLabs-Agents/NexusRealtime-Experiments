@@ -227,11 +227,19 @@
           "fixture": "tests/fixtures/generic-defense-replay-fixtures.mjs"
         }
       ],
+      "routeExecutableReplayCoverage": [
+        {
+          "repo": "LuminaryLabs-Agents/NexusRealtime-Experiments",
+          "test": "tests/signal-bastion-executable-route-replay-smoke.mjs",
+          "coverage": "route-domain executable replay imports real Core plus ProtoKits generic-defense DSK aliases, runs the checked fixed-tick plan against the Signal Bastion debug preset, and compares deterministic resource/snapshot/descriptor digests without browser ownership"
+        }
+      ],
       "localJsReductionSignal": [
         "Signal Bastion should keep defense simulation in ProtoKits and consume descriptors",
-        "host-owned JS should remain canvas/HUD/input/audio/asset presentation only"
+        "host-owned JS should remain canvas/HUD/input/audio/asset presentation only",
+        "remaining browser convenience facades should shrink only toward direct DSK semantic methods guarded by the host facade smoke"
       ],
-      "missingExecutableFixture": "route-level bridge replay asserting Signal Bastion consumes generic-defense descriptors without re-owning defense simulation"
+      "remainingBrowserHostReduction": "Browser Signal Bastion still keeps explicit foundation/build/wave/scale/authoring convenience facades beside the seven DSK aliases. Keep them guarded by tests/signal-bastion-host-facade-guard-smoke.mjs and reduce them only where the executable replay, bridge smoke, spec smoke, and static route smokes stay green."
     },
     {
       "id": "action-defense-extraction",
