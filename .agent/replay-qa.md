@@ -131,3 +131,15 @@ Fix:
 - The guard is wired into both full and deploy checks because it is static and does not need package dependency install stability.
 
 Replay QA implication: the strategic-pressure lane now has executable replay proof plus a browser-host guard for the remaining convenience-facade gap. The next executable route replay should still wait for a real reusable ProtoKit boundary in another higher-level lane; otherwise keep those lanes as checked contracts only.
+
+## 2026-06-23 Twenty Game Refiner lane-contract replay QA closure
+
+`experiments/headless-lane-replay-contracts.json` now mirrors the executable `signal-bastion` route replay coverage already recorded in `experiments/canonical-route-replay-manifest.json`.
+
+Replay QA implication:
+
+- `strategic-pressure-loop` remains the only executable route-domain lane because it is backed by real Core plus ProtoKits generic-defense DSK aliases.
+- The stale strategic-pressure missing-executable text is removed from the lane contract and replaced with `routeExecutableReplayCoverage` plus the remaining browser-host facade reduction note.
+- `tests/headless-lane-replay-contracts-smoke.mjs` now fails if a route gains executable replay coverage but its higher-level lane contract does not mirror that coverage, or if stale `missingExecutableFixture` text remains on an executable lane.
+
+Next replay priority: shrink Signal Bastion browser convenience facades only where the executable replay, bridge smoke, spec smoke, and host-facade guard stay green. Keep all other lanes as contract-only until reusable ProtoKit boundaries exist.
