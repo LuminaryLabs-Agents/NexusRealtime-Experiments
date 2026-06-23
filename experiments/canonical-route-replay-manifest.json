@@ -224,9 +224,14 @@
           "coverage": "build, upgrade, wave, combat, reward, vital breach, and renderer-agnostic descriptor replay"
         }
       ],
-      "missingExecutableFixtures": [
-        "route-level bridge replay asserting Signal Bastion consumes generic-defense descriptors without re-owning defense simulation"
+      "routeExecutableReplayCoverage": [
+        {
+          "repo": "LuminaryLabs-Agents/NexusRealtime-Experiments",
+          "test": "tests/signal-bastion-executable-route-replay-smoke.mjs",
+          "coverage": "route-domain executable replay imports real Core plus ProtoKits generic-defense DSK aliases, runs fixed ticks against the Signal Bastion debug preset, and compares deterministic descriptor/resource digests without browser ownership"
+        }
       ],
+      "missingExecutableFixtures": [],
       "localJsReductionOpportunity": [
         "replace route imports of the broad composite with the smallest generic-defense DSK aliases where safe",
         "keep cel renderer, HUD layout, audio, assets, and pointer/browser controls in the host"
