@@ -21,13 +21,15 @@
       "scenarioLane": "strategic-pressure-loop",
       "higherLevelDomain": "Strategic pressure loop",
       "gateStatus": "satisfied-by-package-wiring",
-      "reason": "Signal Bastion is the strongest ProtoKit-backed replay lane. Experiments now declares local package wiring for Core `nexusrealtime` and ProtoKits `@luminarylabs/nexusrealtime-protokits`, and the executable smoke imports the real generic-defense DSK aliases instead of copying or re-implementing defense simulation under Experiments.",
+      "reason": "Signal Bastion is the strongest ProtoKit-backed replay lane. Experiments declares local package wiring for Core `nexusrealtime` and ProtoKits `@luminarylabs/nexusrealtime-protokits`, the executable smoke imports real generic-defense DSK aliases, and the browser boot now consumes the ProtoKits generic-defense AAA DSK bridge instead of the broad compatibility facade.",
       "currentRouteImportMode": {
         "file": "games/signal-bastion/src/boot.js",
-        "mode": "browser-cdn-dynamic-import",
+        "mode": "browser-cdn-dynamic-import-dsk-bridge",
         "coreSource": "https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@main/src/index.js",
-        "protokitsDefenseSource": "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.1/protokits/generic-defense-aaa-kits/index.js",
-        "protokitsPresentationSource": "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.1/protokits/generic-defense-presentation-stack-kit/index.js"
+        "protokitsDefenseSource": "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@main/protokits/generic-defense-aaa-dsk-bridge/index.js",
+        "protokitsPresentationSource": "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@main/protokits/generic-defense-presentation-stack-kit/index.js",
+        "defenseComposition": "Browser boot calls createGenericDefenseDskBundle with map, economyWallet, buildPlacement, waveAgentDirector, combatResolver, sessionFacade, and renderDescriptors.",
+        "minimalHostFacades": ["createGenericDefenseFoundationKit", "createGenericDefenseBuildKit", "createGenericDefenseWaveKit", "createGenericDefenseScaleKit"]
       },
       "requiredLocalPackageWiring": [
         {
@@ -46,7 +48,8 @@
       "satisfiedBy": [
         "package.json devDependencies wire `nexusrealtime` to `github:LuminaryLabs-Dev/NexusRealtime#main`.",
         "package.json devDependencies wire `@luminarylabs/nexusrealtime-protokits` to `github:LuminaryLabs-Agents/NexusRealtime-ProtoKits#main`.",
-        "tests/signal-bastion-executable-route-replay-smoke.mjs imports real Core plus `@luminarylabs/nexusrealtime-protokits/generic-defense-dsk-boundaries` and advances the checked fixed-tick plan."
+        "tests/signal-bastion-executable-route-replay-smoke.mjs imports real Core plus `@luminarylabs/nexusrealtime-protokits/generic-defense-dsk-boundaries` and advances the checked fixed-tick plan.",
+        "games/signal-bastion/src/boot.js now imports the browser CDN generic-defense AAA DSK bridge and requests the seven named DSK aliases before adding only the small host convenience facades the current browser input/UI bridge still uses."
       ],
       "executableReplayCoverage": [
         {
@@ -64,10 +67,10 @@
       ],
       "nextMainBranchPatchPlan": [
         "Keep the executable replay in the full check suite while dependency install behavior settles; do not move it into deploy checks until package install latency and stability are known.",
-        "Migrate the browser Signal Bastion boot from the broad generic-defense compatibility facade toward the smallest proven generic-defense DSK aliases, while leaving Canvas/HUD/audio/assets in the route host.",
+        "Watch the browser DSK bridge migration through static/bridge checks, then replace host convenience-facade calls with direct DSK semantic methods only where the browser route can stay compatible.",
         "Use the same package-wired executable replay pattern for the next route lane only when a real ProtoKit boundary exists; otherwise keep the lane contract-only and avoid route-local simulation copies."
       ],
-      "pruningEffect": "This gate now permits a real Signal Bastion route-domain replay while continuing to block fake local replays, copied ProtoKit fixtures, browser-owned simulation shims, and route forks. Route pruning should still wait for browser host migration evidence before deleting compatibility paths."
+      "pruningEffect": "This gate now permits a real Signal Bastion route-domain replay and records browser migration from the broad generic-defense compatibility facade to explicit DSK aliases, while continuing to block fake local replays, copied ProtoKit fixtures, browser-owned simulation shims, and route forks. Route pruning should still wait for convenience-facade shrinkage evidence before deleting compatibility paths."
     }
   ]
 }
