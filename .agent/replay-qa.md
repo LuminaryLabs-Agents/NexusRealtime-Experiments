@@ -119,3 +119,15 @@ Coverage:
 - keeps DOM, Canvas, WebGL, Three.js, requestAnimationFrame, browser audio, and asset loading outside the Node replay.
 
 Remaining QA gap: the browser `games/signal-bastion/src/boot.js` still imports the broad generic-defense compatibility facade via CDN. That is acceptable for browser compatibility, but local JavaScript will not materially shrink until the route migrates toward the smallest proven DSK aliases. The next executable replay lane should not be added until a real reusable ProtoKit boundary exists; otherwise keep it as a contract-only lane.
+
+## 2026-06-23 Deterministic Replay QA host-facade drift fix
+
+`tests/signal-bastion-replay-bridge-smoke.mjs` was stale after the executable Signal Bastion route replay landed: it still expected a missing route-level executable fixture even though `experiments/canonical-route-replay-manifest.json` now records `routeExecutableReplayCoverage` and an empty `missingExecutableFixtures` list for `signal-bastion`.
+
+Fix:
+
+- `tests/signal-bastion-replay-bridge-smoke.mjs` now asserts that the executable replay gap is closed and that the manifest points at `tests/signal-bastion-executable-route-replay-smoke.mjs`.
+- `tests/signal-bastion-host-facade-guard-smoke.mjs` now guards the remaining local-JS reduction seam: the browser host may keep the explicitly allowed foundation/build/wave/scale/authoring convenience facades beside the seven DSK aliases, but it must not reintroduce the broad `createGenericDefenseKits()` compatibility facade or bypass the generic-defense/session/presentation surfaces through lower-level route-owned simulation state.
+- The guard is wired into both full and deploy checks because it is static and does not need package dependency install stability.
+
+Replay QA implication: the strategic-pressure lane now has executable replay proof plus a browser-host guard for the remaining convenience-facade gap. The next executable route replay should still wait for a real reusable ProtoKit boundary in another higher-level lane; otherwise keep those lanes as checked contracts only.
