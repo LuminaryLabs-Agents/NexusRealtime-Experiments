@@ -7,6 +7,7 @@ const fullCheckSuites = [
   "tests/next-ledge-grapple-static-smoke.mjs",
   "tests/canonical-game-routes-smoke.mjs",
   "tests/domain-cutover-manifest-smoke.mjs",
+  "tests/canonical-route-pruning-map-smoke.mjs",
   "tests/nexus-realtime-loader-smoke.mjs",
   "tests/fogline-three-renderer-smoke.mjs",
   "tests/fogline-environment-content-smoke.mjs",
@@ -33,6 +34,7 @@ const deployCheckSuites = [
   "tests/static-site-smoke.mjs",
   "tests/canonical-game-routes-smoke.mjs",
   "tests/domain-cutover-manifest-smoke.mjs",
+  "tests/canonical-route-pruning-map-smoke.mjs",
   "tests/experiment-flat-routes-smoke.mjs",
   "tests/gallery-coverage-smoke.mjs",
   "tests/contrast-token-smoke.mjs"
