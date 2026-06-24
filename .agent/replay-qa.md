@@ -154,3 +154,13 @@ The ProtoKits placement projector namespace patch is now reflected in Experiment
 - remaining build convenience seams are explicitly limited to `setBlueprint` and `sell`.
 
 Replay QA implication: placement is now a namespaced DSK bridge rather than an unresolved compatibility build seam. This does not add a second executable lane and does not move kit implementation into Experiments. The next strategic-pressure shrink target should be one of the remaining browser convenience seams only if the Signal Bastion executable replay plus static route guards stay green.
+
+## 2026-06-24 ProtoKit Promotion Gate wave-preview replay guard
+
+Signal Bastion's browser wave-preview bridge now uses the replay-facing DSK session snapshot instead of the broad wave preview convenience facade:
+
+- `GameHost.getWavePreview()` calls `getSignalBastionWavePreview(engine)`.
+- `getSignalBastionWavePreview(engine)` reads `engine.n.genericDefense.sessionFacade.getSnapshot()` and derives the next wave from `snapshot.level.waves[snapshot.session.waveIndex]`.
+- `tests/signal-bastion-host-facade-guard-smoke.mjs` blocks `engine.defenseWaves.previewNextWave()` from reappearing in the browser host.
+
+Replay QA implication: this is local host shrink on the already executable strategic-pressure lane, not a new replay lane. The remaining browser convenience seams are foundation snapshot, scale snapshot, build blueprint selection, and sell. Do not claim another executable lane until a different route consumes a real reusable ProtoKit DSK boundary.
