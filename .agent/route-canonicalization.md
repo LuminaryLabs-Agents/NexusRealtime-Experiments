@@ -77,3 +77,9 @@ The next exact canonical route shrink is now the Signal Bastion foundation debug
 A runtime patch was attempted to remove the foundation convenience kit and derive `getFoundation()` from the DSK session snapshot, but the GitHub connector safety layer blocked the code-file write before it reached GitHub. No route code changed in this cycle.
 
 Canonicalization implication: keep `signal-bastion` as the sole executable strategic-pressure route and make the foundation seam the next scoped main-branch patch before touching `defenseBuild.setBlueprint` or `defenseBuild.sell`. Do not delete route variants or add another executable lane as a substitute for this shrink.
+
+## 2026-06-24 Intent Miner README alignment
+
+`README.md` was restored from unrelated outreach documentation to NexusRealtime Experiments documentation. The README now mirrors the canonical route rule, points at `experiments/domain-kit-cutover-manifest.json`, names the current canonical routes, and describes Signal Bastion as the strongest strategic-pressure route using `generic-defense-aaa-dsk-bridge`, seven explicit generic-defense DSK aliases, and `engine.n.genericDefense` seams.
+
+Canonicalization implication: this fixes docs drift only. It does not change the manifest-owned route set, does not fold/delete routes, and does not claim new executable coverage. Continue to treat `signal-bastion` as the only executable route-domain lane while other routes remain contract-backed until their reusable ProtoKit boundaries are actually consumed.
