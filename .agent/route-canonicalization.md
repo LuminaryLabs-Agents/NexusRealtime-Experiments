@@ -83,3 +83,14 @@ Canonicalization implication: keep `signal-bastion` as the sole executable strat
 `README.md` was restored from unrelated outreach documentation to NexusRealtime Experiments documentation. The README now mirrors the canonical route rule, points at `experiments/domain-kit-cutover-manifest.json`, names the current canonical routes, and describes Signal Bastion as the strongest strategic-pressure route using `generic-defense-aaa-dsk-bridge`, seven explicit generic-defense DSK aliases, and `engine.n.genericDefense` seams.
 
 Canonicalization implication: this fixes docs drift only. It does not change the manifest-owned route set, does not fold/delete routes, and does not claim new executable coverage. Continue to treat `signal-bastion` as the only executable route-domain lane while other routes remain contract-backed until their reusable ProtoKit boundaries are actually consumed.
+
+## 2026-06-24 Canonical Route Pruner foundation namespace update
+
+The Signal Bastion foundation/debug seam is now migrated from the compatibility foundation facade to the namespaced DSK session snapshot:
+
+- `games/signal-bastion/src/boot.js` adds `getSignalBastionFoundationSnapshot(engine)`, deriving map/vital/slot/path debug state from `engine.n.genericDefense.sessionFacade.getSnapshot()`.
+- Browser boot no longer installs `createGenericDefenseFoundationKit` and `GameHost.getFoundation()` no longer calls `engine.defenseFoundation.getSnapshot()`.
+- `tests/signal-bastion-host-facade-guard-smoke.mjs` now rejects the old foundation shortcut and limits remaining convenience seams to `defenseBuild.setBlueprint` and `defenseBuild.sell` while still allowing the wave compatibility kit to stay installed for browser compatibility.
+- `experiments/signal-bastion-route-domain-replay.json` records this as another local-JS/facade shrink on the sole executable strategic-pressure lane.
+
+Canonicalization implication: this is meaningful pruning pressure because fewer defense variants need to be preserved as route forks solely to validate foundation/debug state. It still does not justify destructive deletion: keep `signal-bastion` canonical, keep defense variants folded/held as metadata, and target the remaining build blueprint/sell convenience seams only after static and executable replay guards remain green.
