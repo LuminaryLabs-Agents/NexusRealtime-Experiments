@@ -51,6 +51,8 @@ for (const factory of allowedDefenseFactories) {
 assert.doesNotMatch(boot, /\bcreateGenericDefenseKits\s*\(/, "boot should not return to the broad generic-defense compatibility facade");
 assert.doesNotMatch(boot, /generic-defense-kits\/index\.js/, "boot should not import the broad generic-defense-kit CDN module");
 assert.match(boot, /generic-defense-aaa-dsk-bridge\/index\.js/, "boot should keep the narrower DSK bridge import");
+assert.match(boot, /engine\.n\?\.genericDefense/, "boot should depend on the pruned generic-defense DSK namespace");
+assert.match(input, /engine\.n\?\.genericDefense/, "input host should depend on the pruned generic-defense DSK namespace");
 
 const browserHostSources = [boot, input, renderer].join("\n");
 for (const forbiddenFacade of [
@@ -70,12 +72,32 @@ for (const forbiddenFacade of [
 
 for (const semanticHostMethod of [
   "engine.placementProjector?.confirm?.(",
-  "engine.defenseBuild?.upgrade?.(",
-  "engine.defenseWaves?.startWave?.(",
-  "engine.genericDefense.getSnapshot()",
+  "sessionFacade()?.startWave?.(",
+  "sessionFacade()?.upgrade?.(",
+  "sessionFacade()?.restart?.(",
+  "sessionFacade()?.select?.(",
+  "getSignalBastionSessionFacade(engine)?.getSnapshot?.()",
   "engine.defensePresentationStack?.getSnapshot?.()"
 ]) {
   assert.ok(browserHostSources.includes(semanticHostMethod), `browser host should keep semantic bridge call ${semanticHostMethod}`);
+}
+
+for (const legacyBypass of [
+  /engine\.genericDefense\./,
+  /engine\.defenseWaves\?\.startWave\?\.\(/,
+  /engine\.defenseBuild\?\.upgrade\?\.\(/
+]) {
+  assert.doesNotMatch(browserHostSources, legacyBypass, `browser host should route migrated calls through engine.n.genericDefense instead of ${legacyBypass}`);
+}
+
+for (const remainingConvenience of [
+  "engine.defenseBuild?.setBlueprint?.(",
+  "engine.defenseBuild?.sell?.(",
+  "engine.defenseWaves?.previewNextWave?.(",
+  "engine.defenseFoundation?.getSnapshot?.(",
+  "engine.defenseScale?.getBudgetSnapshot?.("
+]) {
+  assert.ok(browserHostSources.includes(remainingConvenience), `remaining convenience seam should stay explicit: ${remainingConvenience}`);
 }
 
 for (const forbidden of [
