@@ -1,0 +1,326 @@
+{
+  "version": 1,
+  "sourceManifest": "experiments/domain-kit-cutover-manifest.json",
+  "sourcePruningMap": "experiments/canonical-route-pruning-map.json",
+  "sourceReplayManifest": "experiments/canonical-route-replay-manifest.json",
+  "policy": "Twenty Experiment Seeder keeps the canonical portfolio near 20 without filling slots. A route stays or becomes canonical only when it validates reusable DSK boundaries through resources, events, methods, snapshots, descriptors, smoke coverage, and deterministic replay direction.",
+  "portfolioTarget": {
+    "guidanceCount": 20,
+    "isRigidQuota": false,
+    "currentManifestOwnedCanonicalCount": 7,
+    "seedBacklogRule": "Do not add Harbor Salvage, Cargo Chain, Sky Courier, Trainyard Switcher, Dungeon Relay, Floodplain Rescue, or similar variants as canonical filler until they prove distinct reusable DSK boundaries."
+  },
+  "canonicalPortfolio": [
+    {
+      "canonicalId": "next-ledge",
+      "canonicalPath": "experiments/next-ledge/",
+      "scenarioLane": "traversal-cargo-pressure",
+      "routeDecision": "seed-and-harden",
+      "domainBoundariesValidated": [
+        "ordered checkpoint/objective progress",
+        "delivery/extraction loop",
+        "route/cargo/pressure snapshots",
+        "renderer-agnostic route-checkpoint descriptors"
+      ],
+      "protoKitsConsumedOrPlanned": [
+        "action-input-kit",
+        "generic-route-progress-kit",
+        "generic-route-cargo-extraction-kit",
+        "generic-resource-loop-kit",
+        "generic-pressure-loop-kit",
+        "camera-cinematic-maker-kit",
+        "visual-fidelity-maker-kit",
+        "scenario-qa-harness"
+      ],
+      "localJsShouldRemain": [
+        "browser collision and grapple input bridge",
+        "route fiction and sector presets",
+        "camera and renderer snapshot presentation",
+        "DOM, Canvas, WebGL, audio, and assets"
+      ],
+      "localJsShouldMoveToProtoKits": [
+        "checkpoint enter/exit ledger",
+        "cargo pickup/dropoff state",
+        "tether or delivery pressure bookkeeping",
+        "route-complete snapshots and descriptor hashing after DSK migration"
+      ],
+      "smokeReplayScenarioNeeded": "checkpoint/cargo/tether deterministic replay lane importing generic-route-progress-kit or generic-route-cargo-extraction-kit from ProtoKits; keep planned-fixture until the route consumes those DSKs",
+      "seedBacklogToFold": [
+        "Harbor Salvage",
+        "Cargo Chain",
+        "Sky Courier",
+        "Trainyard Switcher",
+        "Dungeon Relay",
+        "Floodplain Rescue"
+      ],
+      "executableReplayClaimed": false
+    },
+    {
+      "canonicalId": "fogline-relay",
+      "canonicalPath": "experiments/fogline-relay/",
+      "scenarioLane": "survey-pressure",
+      "routeDecision": "harden",
+      "domainBoundariesValidated": [
+        "scan/survey progress",
+        "zone field pressure",
+        "timed/resource pressure",
+        "hazard escalation",
+        "objective descriptors"
+      ],
+      "protoKitsConsumedOrPlanned": [
+        "action-input-kit",
+        "scan-survey-kit",
+        "zone-field-kit",
+        "timed-pressure-director-kit",
+        "resource-pressure-kit",
+        "hazard-director-kit",
+        "fogline-survey-pressure-bridge-kit",
+        "visual-fidelity-maker-kit",
+        "audio-event-feedback-maker-kit",
+        "scenario-qa-harness"
+      ],
+      "localJsShouldRemain": [
+        "movement/look/scan browser input bridge",
+        "fog volume presentation",
+        "route-specific objective fiction",
+        "Three.js renderer and browser asset loading"
+      ],
+      "localJsShouldMoveToProtoKits": [
+        "scan target registration",
+        "zone pressure tick progression",
+        "hazard escalation event/snapshot surfaces",
+        "survey objective descriptor hashing"
+      ],
+      "smokeReplayScenarioNeeded": "move/look/scan deterministic replay with scan progress, zone pressure, hazard events, objective state, and descriptor hashes",
+      "seedBacklogToFold": [
+        "Drone Swarm Survey",
+        "cartographer variants"
+      ],
+      "executableReplayClaimed": false
+    },
+    {
+      "canonicalId": "nexus-frontier-signal-isles",
+      "canonicalPath": "experiments/nexus-frontier-signal-isles/",
+      "scenarioLane": "field-engineer-composition",
+      "routeDecision": "harden",
+      "domainBoundariesValidated": [
+        "field-engineer kit composition",
+        "scan/harvest/build/pressure/gate/cargo/beacon flow",
+        "resource/build/objective snapshots",
+        "descriptor-only presentation boundary"
+      ],
+      "protoKitsConsumedOrPlanned": [
+        "foundation-kit",
+        "token-registry-kit",
+        "action-input-kit",
+        "view-rig-kit",
+        "spatial-interaction-kit",
+        "completion-ledger-kit",
+        "objective-bridge-kit",
+        "lock-group-kit",
+        "damage-health-kit",
+        "encounter-director-kit",
+        "resource-node-kit",
+        "build-placement-kit",
+        "structure-runtime-kit",
+        "diegetic-feedback-signal-kit",
+        "asset-descriptor-kit",
+        "timed-pressure-director-kit",
+        "zone-field-kit",
+        "scan-survey-kit",
+        "generic-resource-loop-kit",
+        "scenario-qa-harness",
+        "deterministic-replay-harness",
+        "gamehost-standard-kit"
+      ],
+      "localJsShouldRemain": [
+        "route presets and kit composition bridge",
+        "first-person presentation",
+        "terrain/biome renderer configuration",
+        "route-specific beacon fiction and assets"
+      ],
+      "localJsShouldMoveToProtoKits": [
+        "field-engineer objective bridge descriptors",
+        "resource-node/build-placement composition presets that prove reusable",
+        "completion-ledger snapshots",
+        "debug/replay metadata for composed kit routes"
+      ],
+      "smokeReplayScenarioNeeded": "harvest/build/unlock replay mapped to resource-node, build-placement, objective, and pressure boundaries",
+      "seedBacklogToFold": [
+        "High Fidelity Meadow",
+        "Living Agent Lab"
+      ],
+      "executableReplayClaimed": false
+    },
+    {
+      "canonicalId": "sora-the-infinite",
+      "canonicalPath": "experiments/sora-the-infinite/",
+      "scenarioLane": "aerial-open-traversal",
+      "routeDecision": "harden",
+      "domainBoundariesValidated": [
+        "aerial traversal envelope",
+        "route/checkpoint progress",
+        "updraft/terrain windows",
+        "camera descriptors"
+      ],
+      "protoKitsConsumedOrPlanned": [
+        "action-input-kit",
+        "generic-route-progress-kit",
+        "zone-field-kit",
+        "agent-group-kit",
+        "visual-fidelity-maker-kit",
+        "camera-cinematic-maker-kit",
+        "content-preset-kit",
+        "scenario-qa-harness"
+      ],
+      "localJsShouldRemain": [
+        "flight feel tuning and route presets",
+        "browser input bridge",
+        "visual terrain/camera presentation",
+        "route fiction and assets"
+      ],
+      "localJsShouldMoveToProtoKits": [
+        "flight envelope validation",
+        "updraft and terrain-window descriptors",
+        "aerial checkpoint ledger",
+        "camera rig snapshot descriptors"
+      ],
+      "smokeReplayScenarioNeeded": "pitch/bank/boost/checkpoint deterministic replay with position/velocity envelope, checkpoint ledger, camera descriptor, and terrain-window hashes",
+      "seedBacklogToFold": [
+        "The Open Above",
+        "Downhill Prix",
+        "Open Above harness"
+      ],
+      "executableReplayClaimed": false
+    },
+    {
+      "canonicalId": "zombie-orchard",
+      "canonicalPath": "experiments/zombie-orchard/",
+      "scenarioLane": "survival-ecology",
+      "routeDecision": "harden",
+      "domainBoundariesValidated": [
+        "survival ecology loop",
+        "pickup/gear/resource ledger",
+        "horde/agent pressure",
+        "hazard and health descriptors"
+      ],
+      "protoKitsConsumedOrPlanned": [
+        "action-input-kit",
+        "timed-pressure-director-kit",
+        "zone-field-kit",
+        "generic-resource-loop-kit",
+        "generic-pressure-loop-kit",
+        "agent-group-kit",
+        "hazard-director-kit",
+        "content-preset-kit",
+        "scenario-qa-harness"
+      ],
+      "localJsShouldRemain": [
+        "movement/combat/gear browser input bridge",
+        "canvas/world presentation",
+        "route-specific orchard fiction",
+        "audio/assets"
+      ],
+      "localJsShouldMoveToProtoKits": [
+        "pickup and gear resource ledger",
+        "horde spawn cadence",
+        "hazard/agent pressure descriptors",
+        "survival round outcome snapshots"
+      ],
+      "smokeReplayScenarioNeeded": "pickup/gear/horde deterministic replay with spawn cadence, resource deltas, hazard pressure, health outcome, and HUD descriptor hashes",
+      "seedBacklogToFold": [
+        "Crystal Cavern Rally",
+        "Biodome Wrangler",
+        "horde/survival variants"
+      ],
+      "executableReplayClaimed": false
+    },
+    {
+      "canonicalId": "signal-bastion",
+      "canonicalPath": "games/signal-bastion/",
+      "scenarioLane": "strategic-pressure-loop",
+      "routeDecision": "canonical-harden",
+      "domainBoundariesValidated": [
+        "strategic pressure loop",
+        "generic-defense map/economy/build/wave/combat/session/render DSK aliases",
+        "placement projector namespace seam",
+        "renderer-agnostic descriptor bridge"
+      ],
+      "protoKitsConsumedOrPlanned": [
+        "generic-defense-aaa-dsk-bridge",
+        "generic-defense-dsk-boundaries",
+        "generic-defense-presentation-stack-kit",
+        "generic-placement-projector-kit",
+        "generic-range-ring-kit",
+        "generic-defense-unit-render-kit",
+        "generic-tower-identity-layer-kit",
+        "generic-enemy-readability-layer-kit",
+        "generic-combat-vfx-kit",
+        "generic-layered-hud-shell-kit"
+      ],
+      "localJsShouldRemain": [
+        "2.5D cel renderer and HUD layout",
+        "browser pointer/keyboard bridge",
+        "tower/enemy art presentation",
+        "audio/assets and route-specific maps/waves presets"
+      ],
+      "localJsShouldMoveToProtoKits": [
+        "remaining foundation debug snapshot convenience seam",
+        "build setBlueprint/sell convenience seams where safe",
+        "any reusable defense descriptor formatting that is not renderer-specific"
+      ],
+      "smokeReplayScenarioNeeded": "keep existing executable route-domain replay; next smoke should guard foundation seam shrink through engine.n.genericDefense session/render descriptors without adding a second executable lane",
+      "seedBacklogToFold": [
+        "Mech Bastion",
+        "Factory Pulse",
+        "Prism Bastion Sealer"
+      ],
+      "executableReplayClaimed": true
+    },
+    {
+      "canonicalId": "rogue-lite-hellscape-siege",
+      "canonicalPath": "games/rogue-lite-hellscape-siege/",
+      "scenarioLane": "action-defense-extraction",
+      "routeDecision": "harden",
+      "domainBoundariesValidated": [
+        "action-defense-extraction loop",
+        "harvest/inventory/build/wave/core/extraction state",
+        "route/cargo extraction snapshots",
+        "resource/pressure/action descriptor boundary"
+      ],
+      "protoKitsConsumedOrPlanned": [
+        "action-input-kit",
+        "generic-resource-loop-kit",
+        "generic-pressure-loop-kit",
+        "generic-route-cargo-extraction-kit",
+        "generic-route-progress-kit",
+        "agent-group-kit",
+        "hazard-director-kit",
+        "visual-fidelity-maker-kit",
+        "audio-event-feedback-maker-kit",
+        "camera-cinematic-maker-kit",
+        "scenario-qa-harness",
+        "gamehost-standard-kit"
+      ],
+      "localJsShouldRemain": [
+        "action/combat browser input bridge",
+        "FX renderer and camera presentation",
+        "route-specific realm/portal fiction",
+        "audio/assets"
+      ],
+      "localJsShouldMoveToProtoKits": [
+        "inventory/material ledger",
+        "harvest/pickup interaction boundary",
+        "build blueprint validation",
+        "portal/extraction route state"
+      ],
+      "smokeReplayScenarioNeeded": "harvest/build/wave/core/extraction deterministic replay with inventory ledger, route/cargo extraction state, wave pressure, and extraction descriptors",
+      "seedBacklogToFold": [
+        "Dungeon Relay",
+        "Orbital Dockyard",
+        "dockyard/dungeon extraction variants"
+      ],
+      "executableReplayClaimed": false
+    }
+  ]
+}
