@@ -7,6 +7,16 @@ export const galleryConfig = Object.freeze({
 
 export const games = Object.freeze([
   {
+    id: "vr-platformer-board",
+    title: "VR Platformer Board",
+    route: "./experiments/vr-platformer-board/",
+    kind: "experiment",
+    visual: "next",
+    playLabel: "Play experiment",
+    tags: [{ label: "VR Board", tone: "gold" }, { label: "Platformer", tone: "green" }, { label: "6DOF", tone: "blue" }],
+    description: "Maximum-feature 2D platformer composition viewed as a floating 6DOF-style board with XR pose, input, comfort, spatial anchor, stereo descriptors, and renderer-neutral ProtoKit state."
+  },
+  {
     id: "the-open-above-harness",
     title: "The Open Above V2",
     route: "./experiments/the-open-above-harness/",
@@ -218,11 +228,3 @@ export const games = Object.freeze([
     description: "Pilot a soft biotech mech, select tool arms, harvest unstable flowers, and vent spores before greenhouse pressure blooms out of control."
   }
 ]);
-
-export function getFeaturedGame() {
-  return games.find((game) => game.featured) ?? games[0] ?? null;
-}
-
-export function getGameById(id) {
-  return games.find((game) => game.id === id) ?? null;
-}
