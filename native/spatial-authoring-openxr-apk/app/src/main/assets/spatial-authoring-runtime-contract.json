@@ -1,110 +1,39 @@
 {
-  "appId": "spatial-authoring-openxr-shell",
-  "version": "0.3.0",
+  "appId": "vr-platformer-board-openxr",
+  "version": "0.4.0",
   "runtime": "native-openxr",
-  "contract": "spatial-authoring-toolkit.manifest.v1",
-  "sourcePackage": "@luminarylabs/nexusrealtime-protokits/spatial-authoring-toolkit-dsks",
+  "contract": "vr-platformer-board.manifest.v1",
+  "sourcePackage": "@luminarylabs/nexusrealtime-protokits/vr-platformer-kit-suite",
   "bridge": {
-    "status": "native-host-reads-dsk-descriptors",
-    "rule": "Native OpenXR host owns platform and rendering only; spatial behavior is described by DSK contracts.",
-    "requiredDsks": [
-      "openxr-hand-adapter-dsk",
-      "spatial-scene-graph-dsk",
-      "selection-dsk",
-      "transform-dsk",
-      "widget-dsk",
-      "interaction-dsk",
-      "persistence-dsk",
-      "note-card-spawner-dsk",
-      "particle-funnel-spawner-dsk",
-      "portal-transition-dsk",
-      "meadow-scene-recipe-dsk"
-    ],
-    "hostOwns": [
-      "OpenXR session lifecycle",
-      "reference spaces",
-      "right-controller input adaptation",
-      "environment blend mode selection",
-      "rendering descriptors"
-    ],
-    "dskOwns": [
-      "note-card spawn/place lifecycle",
-      "grip color cycling",
-      "particle funnel effect cycling",
-      "portal environment transition",
-      "meadow scene recipe",
-      "object movement semantics"
+    "status": "native-host-renders-vr-platformer-board",
+    "rule": "Native OpenXR host owns headset session, stereo images, input bridge, and drawing; ProtoKits define platformer and spatial-board domains.",
+    "requiredKits": [
+      "platformer-level-domain-kit",
+      "platformer-avatar-domain-kit",
+      "platformer-physics-system-kit",
+      "platformer-collision-domain-kit",
+      "platformer-object-domain-kit",
+      "platformer-camera-domain-kit",
+      "platformer-render-descriptor-kit",
+      "platformer-objective-sequence-kit",
+      "xr-pose-domain-kit",
+      "xr-input-adapter-kit",
+      "spatial-anchor-domain-kit",
+      "spatial-game-board-domain-kit",
+      "xr-comfort-domain-kit",
+      "stereoscopic-render-domain-kit",
+      "xr-platformer-render-adapter-kit"
     ]
   },
   "controls": {
-    "rightController": {
-      "trigger": "activate selected object behavior: note spawn/place, particle cycle, portal enter",
-      "grip": "grab/move objects; cycle attached note-card color"
-    }
+    "stick": "move left/right",
+    "primary": "jump",
+    "secondary": "reset"
   },
-  "environment": {
-    "activeMode": "mixed-reality-authoring",
-    "passthrough": {
-      "requested": true,
-      "fallback": "opaque-authoring-room",
-      "notes": "Host should use alpha blend or vendor passthrough when available; portal switches to opaque meadow VR."
-    }
-  },
-  "objects": [
-    {
-      "id": "note-card-spawner",
-      "type": "spatial-tool.note-card-spawner",
-      "dsk": "note-card-spawner-dsk",
-      "position": [-0.72, 1.2, -2.0],
-      "scale": [0.46, 0.34, 0.04],
-      "noteCardPrototype": {
-        "type": "widget.note-card",
-        "colors": ["yellow", "orange", "green", "blue", "red"],
-        "attachment": "right-controller"
-      }
-    },
-    {
-      "id": "particle-funnel-spawner",
-      "type": "spatial-tool.particle-funnel-spawner",
-      "dsk": "particle-funnel-spawner-dsk",
-      "position": [0.0, 1.2, -2.0],
-      "scale": [0.46, 0.34, 0.04],
-      "emitter": {
-        "shape": "cone",
-        "effects": ["mist", "embers", "pollen", "violet-sparks"]
-      }
-    },
-    {
-      "id": "meadow-portal",
-      "type": "spatial-tool.portal",
-      "dsk": "portal-transition-dsk",
-      "position": [0.72, 1.2, -2.05],
-      "scale": [0.42, 0.68, 0.04],
-      "transition": {
-        "fromMode": "mixed-reality-authoring",
-        "toMode": "meadow-immersive-vr",
-        "targetRecipe": "meadow"
-      }
-    }
-  ],
-  "recipes": {
-    "meadow": {
-      "id": "meadow",
-      "type": "scene.recipe.meadow.v1",
-      "dsk": "meadow-scene-recipe-dsk",
-      "mode": "opaque-immersive-vr",
-      "composedFrom": [
-        "scene-recipe-kit",
-        "biome-field-kit",
-        "vegetation-archetype-kit",
-        "scatter-object-kit",
-        "vegetation-lod-kit",
-        "billboard-prop-kit",
-        "depth-fog-kit",
-        "lighting-mood-kit",
-        "surface-material-kit",
-        "ground-contact-kit"
-      ]
-    }
+  "board": {
+    "id": "platformer-board",
+    "positionMeters": [0.0, 1.35, -2.0],
+    "sizeMeters": [1.72, 1.02],
+    "gameResolution": [320, 180]
   }
 }
