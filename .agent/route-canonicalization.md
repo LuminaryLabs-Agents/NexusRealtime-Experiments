@@ -94,3 +94,20 @@ The Signal Bastion foundation/debug seam is now migrated from the compatibility 
 - `experiments/signal-bastion-route-domain-replay.json` records this as another local-JS/facade shrink on the sole executable strategic-pressure lane.
 
 Canonicalization implication: this is meaningful pruning pressure because fewer defense variants need to be preserved as route forks solely to validate foundation/debug state. It still does not justify destructive deletion: keep `signal-bastion` canonical, keep defense variants folded/held as metadata, and target the remaining build blueprint/sell convenience seams only after static and executable replay guards remain green.
+
+## 2026-06-24 Twenty Experiment Seeder seam realignment
+
+Signal Bastion's host-facade shrink has advanced beyond the older foundation/build/wave/scale notes:
+
+- `games/signal-bastion/src/boot.js` imports `generic-defense-session-command-kit` and installs it beside the seven generic-defense DSK aliases.
+- `games/signal-bastion/src/input-host.js` routes blueprint selection and sell through `engine.n.genericDefense.sessionFacade` rather than broad `engine.defenseBuild` or `engine.defenseWaves` facades.
+- `tests/signal-bastion-host-facade-guard-smoke.mjs` now blocks `defenseBuild`, `defenseWaves`, `defenseScale`, `defenseFoundation`, and legacy `engine.genericDefense` browser-host regression.
+- `experiments/twenty-experiment-seeder-map.json` now treats the next Signal Bastion route pressure as presentation bridge hardening rather than already-closed host facade shrink.
+
+Next Ledge canonicalization is also more specific:
+
+- `next-ledge` is a partial `generic-route-progress-kit` consumer through `engine.n.genericRouteProgress` and `domain.routeProgress`.
+- The remaining canonical hardening path is cargo/resource/pressure consumption through `generic-route-cargo-extraction-kit`, not a new route/checkpoint atom and not filler route promotion.
+- Harbor Salvage, Cargo Chain, Sky Courier, Trainyard Switcher, Dungeon Relay, and Floodplain Rescue remain backlog pressure folded under the delivery/extraction loop until one proves a distinct reusable DSK boundary.
+
+Canonicalization implication: keep `signal-bastion` as the only executable route-domain lane, keep `next-ledge` as the first seed/harden candidate for delivery/extraction, and do not add or delete routes to satisfy the twenty-route target. The safest next route change is a narrow `next-ledge` cargo/resource/pressure consumption patch with route-level smoke/replay proof.
