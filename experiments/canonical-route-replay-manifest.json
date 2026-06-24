@@ -116,7 +116,7 @@
       "canonicalPath": "experiments/next-ledge/",
       "scenarioLane": "traversal-cargo-pressure",
       "status": "planned-fixture",
-      "hostRole": "bridge semantic input, tick route/checkpoint/resource DSKs, and render snapshots only",
+      "hostRole": "bridge semantic input, tick route-progress DSKs, keep cargo/resource/pressure planned, and render snapshots only",
       "protoKitReplayCoverage": [
         {
           "repo": "LuminaryLabs-Agents/NexusRealtime-ProtoKits",
@@ -130,11 +130,11 @@
         }
       ],
       "missingExecutableFixtures": [
-        "checkpoint/cargo/tether deterministic replay lane that imports generic-route-progress-kit or generic-route-cargo-extraction-kit from ProtoKits"
+        "cargo/resource/pressure deterministic replay lane that imports generic-route-cargo-extraction-kit and proves the remaining delivery/extraction boundary beyond the now-consumed route-progress DSK"
       ],
       "localJsReductionOpportunity": [
-        "move checkpoint enter/exit ledger into generic-route-progress-kit or the route child of generic-route-cargo-extraction-kit",
-        "express cargo, tether, or pressure state through generic-route-cargo-extraction-kit resources and descriptors after a metadata/spec smoke is in place"
+        "replace remaining cargo, tether, or pressure route-local bookkeeping with generic-route-cargo-extraction-kit children after a metadata/spec smoke is in place",
+        "keep browser collision, camera, Three.js rendering, route fiction, and input bridges in the host while ProtoKits own ledgers and descriptors"
       ]
     },
     {
