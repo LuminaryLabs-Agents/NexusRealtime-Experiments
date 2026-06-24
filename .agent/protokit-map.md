@@ -28,3 +28,21 @@ Promotion direction:
 - Keep `generic-defense-dsk-boundaries` as the strongest current composite-to-atomic split proof.
 - Do not promote the broad generic-defense AAA compatibility facade. Treat `generic-defense-aaa-dsk-bridge` as a migration bridge, not the final reusable domain surface.
 - Do not add another executable route replay lane until another real reusable ProtoKit boundary exists. Other canonical lanes should stay contract-only until their DSK surfaces can be imported and advanced headlessly.
+
+## 2026-06-24 Twenty Experiment Seeder consumption map
+
+New reusable route DSKs to reflect in Experiments:
+
+- `generic-route-progress-kit`: atomic route/checkpoint/objective progress through resources, events, methods, snapshots, and renderer-agnostic route-checkpoint descriptors.
+- `generic-route-cargo-extraction-kit`: composite delivery/extraction boundary over `generic-route-progress-kit`, `generic-resource-loop-kit`, and `generic-pressure-loop-kit`, exposing route/cargo/pressure snapshots and descriptors.
+
+Current consumption state:
+
+- `signal-bastion` remains the only route with executable route-domain replay against real ProtoKits.
+- `next-ledge` is the next safest consumer candidate, but consumption is not implemented yet. Do not count this as local JS shrink until the route imports/uses the DSK and removes route-local checkpoint/cargo ledger ownership.
+
+Recommended manifest/test direction:
+
+- Update traversal/cargo metadata to name `generic-route-progress-kit` and `generic-route-cargo-extraction-kit` as concrete candidates, replacing older generic `route-checkpoint-kit` / `cargo-delivery-kit` language where the new generic DSKs are intended.
+- Add a metadata or contract smoke that keeps `next-ledge` as the first route-progress consumer candidate without claiming executable replay.
+- Migrate route-local JavaScript only after the metadata smoke is in place, starting with ordered checkpoint progress and leaving browser collision, movement, camera, renderer, route fiction, DOM, Canvas, WebGL, audio, and assets in the host.
