@@ -29,8 +29,6 @@ for (const boundaryId of expectedBoundaryIds) {
 
 const allowedDefenseFactories = new Set([
   "createGenericDefenseDskBundle",
-  "createGenericDefenseBuildKit",
-  "createGenericDefenseWaveKit",
   "createGenericDefenseAuthoringQaKit"
 ]);
 
@@ -49,6 +47,8 @@ for (const factory of allowedDefenseFactories) {
 assert.doesNotMatch(boot, /\bcreateGenericDefenseKits\s*\(/, "boot should not return to the broad generic-defense compatibility facade");
 assert.doesNotMatch(boot, /generic-defense-kits\/index\.js/, "boot should not import the broad generic-defense-kit CDN module");
 assert.match(boot, /generic-defense-aaa-dsk-bridge\/index\.js/, "boot should keep the narrower DSK bridge import");
+assert.match(boot, /generic-defense-session-command-kit\/index\.js/, "boot should import the reusable session command ProtoKit instead of broad build/wave compatibility facades");
+assert.match(boot, /SessionCommandKits\.createGenericDefenseSessionCommandKit\(/, "boot should install the reusable session command ProtoKit");
 assert.match(boot, /engine\.n\?\.genericDefense/, "boot should depend on the pruned generic-defense DSK namespace");
 assert.match(input, /engine\.n\?\.genericDefense/, "input host should depend on the pruned generic-defense DSK namespace");
 
@@ -74,6 +74,8 @@ for (const semanticHostMethod of [
   "sessionFacade()?.upgrade?.(",
   "sessionFacade()?.restart?.(",
   "sessionFacade()?.select?.(",
+  "sessionFacade()?.setBlueprint?.(",
+  "sessionFacade()?.sell?.(",
   "getSignalBastionSessionFacade(engine)?.getSnapshot?.()",
   "getSignalBastionFoundationSnapshot(engine)",
   "getSignalBastionWavePreview(engine)",
@@ -87,6 +89,8 @@ for (const legacyBypass of [
   /engine\.genericDefense\./,
   /engine\.defenseWaves\?\.startWave\?\.\(/,
   /engine\.defenseWaves\?\.previewNextWave\?\.\(/,
+  /engine\.defenseBuild\?\.setBlueprint\?\.\(/,
+  /engine\.defenseBuild\?\.sell\?\.\(/,
   /engine\.defenseBuild\?\.upgrade\?\.\(/,
   /engine\.defenseScale\?\.getBudgetSnapshot\?\.\(/,
   /engine\.defenseFoundation\?\.getSnapshot\?\.\(/
@@ -94,12 +98,8 @@ for (const legacyBypass of [
   assert.doesNotMatch(browserHostSources, legacyBypass, `browser host should route migrated calls through engine.n.genericDefense instead of ${legacyBypass}`);
 }
 
-for (const remainingConvenience of [
-  "engine.defenseBuild?.setBlueprint?.(",
-  "engine.defenseBuild?.sell?.("
-]) {
-  assert.ok(browserHostSources.includes(remainingConvenience), `remaining convenience seam should stay explicit: ${remainingConvenience}`);
-}
+assert.doesNotMatch(browserHostSources, /engine\.defenseBuild\b/, "browser host should not depend on the broad defenseBuild compatibility facade after session-command migration");
+assert.doesNotMatch(browserHostSources, /engine\.defenseWaves\b/, "browser host should not depend on the broad defenseWaves compatibility facade after session-command migration");
 
 for (const forbidden of [
   "Math.random",
