@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "purpose": "Generated route cover manifest consumed by the NexusRealtime gallery.",
+    "defaultCaptureTick": 90,
+    "viewport": [1280, 720],
+    "format": "webp",
+    "quality": 82,
+    "fallbackPolicy": [
+      "generated cover",
+      "route-defined static cover",
+      "quiet procedural placeholder",
+      "text-only row"
+    ]
+  }
+}
