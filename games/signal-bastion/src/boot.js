@@ -16,6 +16,25 @@ const SIGNAL_BASTION_DEFENSE_DSK_BOUNDARY_IDS = Object.freeze([
   "renderDescriptors"
 ]);
 
+function getSignalBastionGenericDefenseNamespace(engine) {
+  return engine.n?.genericDefense ?? {};
+}
+
+function getSignalBastionSessionFacade(engine) {
+  return getSignalBastionGenericDefenseNamespace(engine).sessionFacade;
+}
+
+function getSignalBastionRenderDescriptors(engine) {
+  return getSignalBastionGenericDefenseNamespace(engine).renderDescriptors;
+}
+
+function getSignalBastionPresentation(engine) {
+  return engine.defensePresentationStack?.getSnapshot?.() ?? {
+    rawSnapshot: getSignalBastionSessionFacade(engine)?.getSnapshot?.(),
+    render: getSignalBastionRenderDescriptors(engine)?.getSnapshot?.()
+  };
+}
+
 function assertDefenseDskBridge(DefenseKits) {
   const requiredExports = [
     "createGenericDefenseDskBundle",
@@ -90,7 +109,7 @@ export async function bootSignalBastion(documentRef = document) {
       const dt = Math.min(1 / 30, (now - last) / 1000 || 1 / 60);
       last = now;
       engine.tick(dt);
-      const presentation = engine.defensePresentationStack?.getSnapshot?.() ?? { rawSnapshot: engine.genericDefense.getSnapshot() };
+      const presentation = getSignalBastionPresentation(engine);
       renderer.draw(presentation, input.getActiveBlueprint());
       requestAnimationFrame(frame);
     }
@@ -100,15 +119,15 @@ export async function bootSignalBastion(documentRef = document) {
       input,
       renderer,
       preset,
-      getState: () => engine.genericDefense.getSnapshot(),
-      getPresentation: () => engine.defensePresentationStack?.getSnapshot?.(),
+      getState: () => getSignalBastionSessionFacade(engine)?.getSnapshot?.(),
+      getPresentation: () => getSignalBastionPresentation(engine),
       getFoundation: () => engine.defenseFoundation?.getSnapshot?.(),
       getScale: () => engine.defenseScale?.getBudgetSnapshot?.(),
       getWavePreview: () => engine.defenseWaves?.previewNextWave?.(),
       getRewards: () => preset.rewards ?? [],
       getCampaign: () => preset.campaign ?? null,
-      startWave: () => engine.defenseWaves?.startWave?.({ commandId: `host-wave:${engine.clock.frame}` }),
-      restart: () => engine.genericDefense.restart({ commandId: `host-restart:${engine.clock.frame}` }),
+      startWave: () => getSignalBastionSessionFacade(engine)?.startWave?.({ commandId: `host-wave:${engine.clock.frame}` }),
+      restart: () => getSignalBastionSessionFacade(engine)?.restart?.({ commandId: `host-restart:${engine.clock.frame}` }),
       stop: () => { running = false; }
     };
 
