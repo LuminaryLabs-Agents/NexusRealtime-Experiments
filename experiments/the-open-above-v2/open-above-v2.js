@@ -483,11 +483,11 @@ function createHarnessRenderer(THREE, engine, config) {
     bird.userData.rightWing.rotation.z = flap + roll * (0.48 + carve * 0.22);
     bird.userData.tail.rotation.x = -body.rotation.pitch * 0.38 + dive * 0.12;
 
-    camera.position.lerp(new THREE.Vector3(state.camera.position.x, state.camera.position.y, state.camera.position.z), config.camera.smoothing);
+    camera.position.copy(new THREE.Vector3(state.camera.position.x, state.camera.position.y, state.camera.position.z));
     skyDome.position.copy(camera.position);
     cloudBands.position.copy(camera.position);
     camera.lookAt(state.camera.lookAt.x, state.camera.lookAt.y, state.camera.lookAt.z);
-    camera.fov += (state.camera.fov - camera.fov) * 0.14;
+    camera.fov = state.camera.fov;
     camera.updateProjectionMatrix();
 
     const sunDirection = state.sky.sun.direction;
@@ -497,7 +497,7 @@ function createHarnessRenderer(THREE, engine, config) {
     sun.target.updateMatrixWorld();
     scene.fog = new THREE.FogExp2(state.sky.atmosphere.fogColor, state.sky.atmosphere.density);
 
-    hud.innerHTML = `<strong>${config.title}</strong><br>Speed ${Math.round(body.speed)} · Swoop ${Math.round(dive * 100)}% · Clearance ${Math.round(body.clearance)} · Rivers ${state.terrain.rivers.length} · Horizon ${state.terrain.horizonRings.length}`;
+    hud.innerHTML = `<strong>${config.title}</strong><br>Speed ${Math.round(body.speed)} · Swoop ${Math.round(dive * 100)}% · Clearance ${Math.round(body.clearance)} · Rivers ${state.terrain.rivers.length} · Horizon ${state.terrain.horizonRings.length} · Bird camera`;
     renderer.render(scene, camera);
   }
 
@@ -511,14 +511,6 @@ function createHarnessRenderer(THREE, engine, config) {
   return { draw, renderer };
 }
 
-function cameraForward(motion, config) {
-  const rotationForward = normalize(forwardFromRotation(motion.rotation));
-  const velocityForward = normalize(motion.velocity, rotationForward);
-  const carveForward = normalize(motion.carve?.focusDirection, rotationForward);
-  const rotationVelocity = normalize(blend(rotationForward, velocityForward, clamp(config.camera.lookVelocityWeight, 0, 1)), rotationForward);
-  return normalize(blend(rotationVelocity, carveForward, clamp(config.camera.lookCarveFocusWeight, 0, 1)), rotationVelocity);
-}
-
 function composeState(engine, frame, elapsed, input, config) {
   const motion = engine.flightMotion.snapshot();
   const position = motion.position;
@@ -527,12 +519,8 @@ function composeState(engine, frame, elapsed, input, config) {
   const patches = engine.worldPatch.listActive();
   const horizonRings = engine.terrainHorizon?.buildHorizonRings?.(position) ?? [];
   const rivers = engine.terrainHydrology?.listRivers?.(position) ?? [];
-  const lookForward = cameraForward(motion, config);
-  const velocityForward = normalize(motion.velocity, lookForward);
-  const followForward = normalize(blend(lookForward, velocityForward, clamp(config.camera.followVelocityBias, 0, 1)), lookForward);
+  const camera = engine.flightCamera?.snapshot?.() ?? { position, lookAt: { x: position.x, y: position.y, z: position.z - 1 }, fov: config.camera.baseFov };
   const clearance = position.y - groundHeight;
-  const dive = clamp(Math.max(0, -n(motion.velocity?.y) / 72), 0, 1);
-  const speedRatio = clamp(motion.speed / config.physics.maxSpeed, 0, 1);
 
   return {
     id: config.id,
@@ -547,21 +535,7 @@ function composeState(engine, frame, elapsed, input, config) {
     actor: engine.actorRender.snapshot(),
     flock: engine.flockAgent.snapshot(),
     render: engine.instancedRender.snapshot(),
-    camera: {
-      lookForward,
-      velocityForward,
-      position: {
-        x: position.x - followForward.x * config.camera.followDistance,
-        y: position.y + config.camera.followHeight - followForward.y * config.camera.pitchLag,
-        z: position.z - followForward.z * config.camera.followDistance
-      },
-      lookAt: {
-        x: position.x + lookForward.x * config.camera.lookAhead,
-        y: position.y + lookForward.y * config.camera.verticalLookAhead,
-        z: position.z + lookForward.z * config.camera.lookAhead
-      },
-      fov: config.camera.baseFov + speedRatio * config.camera.speedFovBoost + dive * config.camera.diveFovBoost
-    },
+    camera,
     validation: {
       booted: true,
       frameAdvanced: frame > 0,
@@ -575,7 +549,9 @@ function composeState(engine, frame, elapsed, input, config) {
       terrainShapingReady: Boolean(engine.terrainShaping),
       terrainHydrologyReady: Boolean(engine.terrainHydrology),
       terrainHorizonReady: Boolean(engine.terrainHorizon),
-      horizonRingsPresent: horizonRings.length > 0
+      horizonRingsPresent: horizonRings.length > 0,
+      flightCameraReady: Boolean(engine.flightCamera),
+      trailingBirdCamera: camera.mode === "bird-follow"
     }
   };
 }
@@ -595,6 +571,7 @@ function buildKits(Nexus, kits, config) {
     kits.scatter.createScatterPlacementKit(Nexus, { seed: `${config.seed}:scatter`, rules: config.scatterRules }),
     kits.instanced.createInstancedRenderKit(Nexus, { lod: true }),
     kits.flight.createFlightMotionKit(Nexus, { physics: config.physics, actorId: config.actor.id }),
+    kits.flightCamera.createFlightCameraDomainKit(Nexus, { camera: config.camera }),
     kits.actor.createActorRenderKit(Nexus, { actors: [{ id: config.actor.id, archetype: config.actor.archetype }] }),
     kits.flock.createFlockAgentKit(Nexus, { seed: `${config.seed}:flock`, ...config.flock })
   ];
@@ -615,6 +592,7 @@ function initializeFlight(engine, config) {
     onGround: false,
     boostCooldown: 0
   });
+  engine.flightCamera?.updateFromMotion?.(engine.flightMotion.snapshot(), config.simulation.fixedDt);
 }
 
 async function loadModules(config) {
@@ -623,7 +601,7 @@ async function loadModules(config) {
     nexusUrl: params.get("nexus") || config.runtime.nexusUrl,
     protoKitBaseUrl: params.get("kitBase") || config.runtime.protoKitBaseUrl
   };
-  const [THREE, Nexus, data, performance, sky, lighting, materials, terrain, terrainHydrology, terrainShaping, terrainHorizon, world, scatter, instanced, flight, actor, flock] = await Promise.all([
+  const [THREE, Nexus, data, performance, sky, lighting, materials, terrain, terrainHydrology, terrainShaping, terrainHorizon, world, scatter, instanced, flight, flightCamera, actor, flock] = await Promise.all([
     import(runtime.threeUrl),
     import(runtime.nexusUrl),
     import(kitUrl(runtime.protoKitBaseUrl, "data-registry-kit")),
@@ -639,10 +617,11 @@ async function loadModules(config) {
     import(kitUrl(runtime.protoKitBaseUrl, "scatter-placement-kit")),
     import(kitUrl(runtime.protoKitBaseUrl, "instanced-render-kit")),
     import(kitUrl(runtime.protoKitBaseUrl, "flight-motion-kit")),
+    import(kitUrl(runtime.protoKitBaseUrl, "flight-camera-domain-kit")),
     import(kitUrl(runtime.protoKitBaseUrl, "actor-render-kit")),
     import(kitUrl(runtime.protoKitBaseUrl, "flock-agent-kit"))
   ]);
-  return { THREE, Nexus, kits: { data, performance, sky, lighting, materials, terrain, terrainHydrology, terrainShaping, terrainHorizon, world, scatter, instanced, flight, actor, flock } };
+  return { THREE, Nexus, kits: { data, performance, sky, lighting, materials, terrain, terrainHydrology, terrainShaping, terrainHorizon, world, scatter, instanced, flight, flightCamera, actor, flock } };
 }
 
 async function boot() {
@@ -679,6 +658,7 @@ async function boot() {
     const nextInput = inputOverride ?? manualInput;
     activeInput = nextInput;
     const motion = engine.flightMotion.step(nextInput, dt);
+    engine.flightCamera?.updateFromMotion?.(motion, dt);
     syncWorld(motion.position);
     engine.actorRender.updateFromMotion(CONFIG.actor.id, motion);
     engine.flockAgent.step(motion.position, dt);
@@ -726,6 +706,7 @@ async function boot() {
     getState: () => clone(state),
     getRawState: () => ({
       flightMotion: engine.flightMotion?.snapshot?.(),
+      flightCamera: engine.flightCamera?.snapshot?.(),
       terrainSampler: engine.terrainSampler?.snapshot?.(),
       baseTerrainSampler: engine.baseTerrainSampler?.snapshot?.(),
       terrainShaping: engine.terrainShaping?.snapshot?.(),
@@ -739,7 +720,7 @@ async function boot() {
     setInput(input = {}) { manualInput = input; return this.getState(); },
     tick(delta = CONFIG.simulation.fixedDt, input) { return clone(tick(delta, input ?? manualInput)); },
     render: () => clone(render()),
-    captureReady: () => Boolean(state?.validation?.booted && state?.validation?.terrainShapingReady && state?.validation?.terrainHydrologyReady && state?.validation?.terrainHorizonReady),
+    captureReady: () => Boolean(state?.validation?.booted && state?.validation?.terrainShapingReady && state?.validation?.terrainHydrologyReady && state?.validation?.terrainHorizonReady && state?.validation?.flightCameraReady),
     hideHudForCapture() { hud.hidden = true; return this.getState(); },
     showHudAfterCapture() { hud.hidden = false; return this.getState(); },
     setCoverCamera() { return this.getState(); },
