@@ -19,6 +19,8 @@ Current validation focus: guard `experiments/domain-kit-cutover-manifest.json`, 
 
 Last meaningful cycle report: `.agent/cycle-reports/2026-06-24-cycle-report-main-push-planner-0528.md`.
 
+Latest Intent Miner update: `README.md` was restored from the unrelated Luminary Outreach document back to NexusRealtime Experiments documentation. The restored README now states the canonical-route rule, domain-kit cutover target, current canonical route portfolio, and Signal Bastion's `generic-defense-aaa-dsk-bridge` / seven-alias `engine.n.genericDefense` migration status. This was a docs alignment push only; no reusable kit implementation moved into Experiments and no local route JavaScript shrink is newly claimed from the README change.
+
 Latest Cycle Report Main Push Planner update: reviewed the latest ProtoKits route-progress/cargo-extraction memory and Experiments Signal Bastion host state. The next safe shrink seam is the foundation debug snapshot: `GameHost.getFoundation()` still calls `engine.defenseFoundation.getSnapshot()` and boot still installs `createGenericDefenseFoundationKit`, while the rest of the route is already migrating toward `engine.n.genericDefense.sessionFacade` and `engine.n.genericDefense.renderDescriptors`. A code push was attempted for `games/signal-bastion/src/boot.js`, but the connector safety layer blocked the runtime-file write before it reached GitHub. The safe next patch is now explicit in `.agent/cycle-reports/2026-06-24-cycle-report-main-push-planner-0528.md`.
 
 Latest Twenty Game Refiner change: `experiments/domain-kit-cutover-manifest.json` now maps `next-ledge` to the concrete route/cargo ProtoKits instead of stale traversal placeholders, `tests/next-ledge-route-cargo-cutover-smoke.mjs` guards the manifest/replay planned-vs-executable boundary, and `scripts/run-checks.mjs` wires that smoke into both full and deploy checks. This is manifest/test hardening only; no local experiment JavaScript shrink is claimed until `next-ledge` actually consumes the route/cargo DSKs.
@@ -47,4 +49,4 @@ Latest Deterministic Replay QA change: fixed stale Signal Bastion bridge-smoke e
 
 Latest ProtoKit Promotion Gate constraint: the strategic-pressure lane remains the only executable route-domain replay lane; do not repeat the pattern for another canonical lane until a real reusable ProtoKit boundary exists and the route consumes it.
 
-Latest Core memory check: `LuminaryLabs-Dev/NexusRealtime` is accessible, but `.agent/intent.md` was not present during this cycle. Do not treat Core `.agent` memory as reviewed until the folder exists or a later run can fetch it.
+Latest Core memory check: `LuminaryLabs-Dev/NexusRealtime` is accessible, but `.agent/intent.md` was not present during this cycle and the integration rejected a safe create-file attempt with `Resource not accessible by integration`. Do not treat Core `.agent` memory as reviewed until the folder exists or a later run can fetch it.
