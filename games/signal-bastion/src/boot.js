@@ -35,6 +35,17 @@ function getSignalBastionPresentation(engine) {
   };
 }
 
+function getSignalBastionFoundationSnapshot(engine) {
+  const snapshot = getSignalBastionSessionFacade(engine)?.getSnapshot?.() ?? {};
+  const map = snapshot.map ?? {};
+  return {
+    map,
+    vital: map.vital ?? snapshot.vital ?? null,
+    slots: map.slots ?? {},
+    path: map.path ?? []
+  };
+}
+
 function getSignalBastionWavePreview(engine) {
   const snapshot = getSignalBastionSessionFacade(engine)?.getSnapshot?.() ?? {};
   const waveIndex = Number(snapshot.session?.waveIndex ?? 0);
@@ -56,7 +67,6 @@ function getSignalBastionBudgetSnapshot(engine) {
 function assertDefenseDskBridge(DefenseKits) {
   const requiredExports = [
     "createGenericDefenseDskBundle",
-    "createGenericDefenseFoundationKit",
     "createGenericDefenseBuildKit",
     "createGenericDefenseWaveKit",
     "createGenericDefenseAuthoringQaKit"
@@ -74,7 +84,6 @@ function createSignalBastionDefenseDskKits(NexusRealtime, DefenseKits, preset) {
       preset,
       SIGNAL_BASTION_DEFENSE_DSK_BOUNDARY_IDS
     ),
-    DefenseKits.createGenericDefenseFoundationKit(NexusRealtime, preset.foundation ?? {}),
     DefenseKits.createGenericDefenseBuildKit(NexusRealtime, preset.build ?? {}),
     DefenseKits.createGenericDefenseWaveKit(NexusRealtime, preset.waves ?? {})
   ];
@@ -137,7 +146,7 @@ export async function bootSignalBastion(documentRef = document) {
       preset,
       getState: () => getSignalBastionSessionFacade(engine)?.getSnapshot?.(),
       getPresentation: () => getSignalBastionPresentation(engine),
-      getFoundation: () => engine.defenseFoundation?.getSnapshot?.(),
+      getFoundation: () => getSignalBastionFoundationSnapshot(engine),
       getScale: () => getSignalBastionBudgetSnapshot(engine),
       getWavePreview: () => getSignalBastionWavePreview(engine),
       getRewards: () => preset.rewards ?? [],
