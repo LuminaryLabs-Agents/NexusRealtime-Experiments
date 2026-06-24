@@ -45,18 +45,123 @@ function hasInput(input = {}) {
   return Math.abs(n(input.pitch)) > 0.05 || Math.abs(n(input.bank)) > 0.05 || Boolean(input.boost);
 }
 
-function terrainColor(biome, height) {
-  if (height > 118) return "#919d90";
-  if (biome === "rocky") return "#747d78";
-  if (biome === "meadow") return "#407d42";
-  if (biome === "highland") return "#789071";
-  return "#245b31";
+const TERRAIN_PALETTES = Object.freeze({
+  meadow: { low: [0.36, 0.50, 0.25], mid: [0.50, 0.63, 0.36], high: [0.64, 0.70, 0.48] },
+  forest: { low: [0.16, 0.32, 0.19], mid: [0.26, 0.43, 0.25], high: [0.42, 0.54, 0.35] },
+  rocky: { low: [0.33, 0.35, 0.32], mid: [0.47, 0.49, 0.44], high: [0.63, 0.64, 0.57] },
+  highland: { low: [0.38, 0.45, 0.34], mid: [0.53, 0.58, 0.45], high: [0.68, 0.68, 0.58] },
+  snow: { low: [0.74, 0.77, 0.72], mid: [0.84, 0.86, 0.80], high: [0.94, 0.95, 0.90] }
+});
+
+const rgbMix = (a, b, t) => [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
+const rgbScale = (rgb, s) => rgb.map((value) => clamp(value * s, 0, 1));
+
+function terrainVisualConfig(config) {
+  return {
+    enabled: true,
+    terraceStep: 14,
+    terraceStrength: 0.44,
+    ridgeHeight: 18,
+    ridgeScale: 0.011,
+    ridgeCrossScale: 0.007,
+    carveDepth: 24,
+    carveScale: 0.0042,
+    carveSharpness: 10,
+    strataStep: 18,
+    strataStrength: 0.09,
+    slopeRockMix: 2.6,
+    normalStep: 4,
+    ...config.terrainVisuals
+  };
 }
 
-function colorArray(hex, fallback = [0.22, 0.44, 0.25]) {
-  const raw = String(hex || "").replace("#", "");
-  if (raw.length !== 6) return fallback;
-  return [parseInt(raw.slice(0, 2), 16) / 255, parseInt(raw.slice(2, 4), 16) / 255, parseInt(raw.slice(4, 6), 16) / 255];
+function terrainRgb(biome, height, slope, x, z, visual) {
+  const highSnow = height > n(visual.snowLine, 136);
+  const palette = highSnow ? TERRAIN_PALETTES.snow : (TERRAIN_PALETTES[biome] ?? TERRAIN_PALETTES.forest);
+  const elevation = clamp((height + 120) / 280, 0, 1);
+  const base = elevation < 0.52
+    ? rgbMix(palette.low, palette.mid, elevation / 0.52)
+    : rgbMix(palette.mid, palette.high, (elevation - 0.52) / 0.48);
+  const bandIndex = Math.floor((height + 500) / n(visual.strataStep, 18));
+  const strata = bandIndex % 2 === 0 ? -n(visual.strataStrength, 0.09) : n(visual.strataStrength, 0.09) * 0.5;
+  const wash = Math.sin(x * 0.006 + z * 0.004 + height * 0.035) * 0.035;
+  const slopeRock = clamp(slope * n(visual.slopeRockMix, 2.6), 0, 0.72);
+  const rocky = rgbMix(base, TERRAIN_PALETTES.rocky.mid, slopeRock);
+  return rgbScale(rocky, 1 + strata + wash);
+}
+
+function createCarvedTerrainSampler(baseSampler, config) {
+  const visual = terrainVisualConfig(config);
+  const baseHeight = (x, z) => baseSampler.getHeight(x, z);
+  const baseBiome = (x, z) => baseSampler.getBiome?.(x, z) ?? "forest";
+
+  function rawCarvedHeight(x, z) {
+    const h = baseHeight(x, z);
+    const ridgeA = Math.sin(x * visual.ridgeScale + z * visual.ridgeCrossScale);
+    const ridgeB = Math.cos(x * visual.ridgeCrossScale * 0.72 - z * visual.ridgeScale * 0.82);
+    const ridge = (Math.abs(ridgeA * ridgeB) - 0.5) * visual.ridgeHeight;
+    const channel = Math.abs(Math.sin(x * visual.carveScale + z * visual.carveScale * 0.61));
+    const cut = Math.pow(1 - channel, visual.carveSharpness) * visual.carveDepth;
+    return h + ridge - cut;
+  }
+
+  function getHeight(x, z) {
+    const carved = rawCarvedHeight(x, z);
+    const step = Math.max(1, n(visual.terraceStep, 14));
+    const terraced = Math.round(carved / step) * step;
+    return mix(carved, terraced, n(visual.terraceStrength, 0.44));
+  }
+
+  function getNormal(x, z) {
+    const step = Math.max(1, n(visual.normalStep, 4));
+    const hL = getHeight(x - step, z);
+    const hR = getHeight(x + step, z);
+    const hD = getHeight(x, z - step);
+    const hU = getHeight(x, z + step);
+    const nx = hL - hR;
+    const ny = step * 2;
+    const nz = hD - hU;
+    const len = Math.hypot(nx, ny, nz) || 1;
+    return { x: nx / len, y: ny / len, z: nz / len };
+  }
+
+  function getVisualSample(x, z) {
+    const height = getHeight(x, z);
+    const normal = getNormal(x, z);
+    const slope = clamp(1 - normal.y, 0, 1);
+    const biome = baseBiome(x, z);
+    return { height, normal, slope, biome, color: terrainRgb(biome, height, slope, x, z, visual) };
+  }
+
+  return {
+    getState: () => baseSampler.getState?.(),
+    getHeight,
+    getNormal,
+    getBiome: baseBiome,
+    getVisualSample,
+    getPatchDescriptor(px, pz, patchSize = config.terrain.patchSize) {
+      const cx = n(px) * patchSize;
+      const cz = n(pz) * patchSize;
+      return {
+        id: `terrain-patch:${px},${pz}`,
+        key: `${px},${pz}`,
+        px,
+        pz,
+        patchSize,
+        center: { x: cx, z: cz, y: getHeight(cx, cz) },
+        biome: baseBiome(cx, cz),
+        seed: `${config.terrain.seed}:carved:${px}:${pz}`
+      };
+    },
+    snapshot: () => ({
+      ...(baseSampler.snapshot?.() ?? baseSampler.getState?.() ?? {}),
+      visualDomain: {
+        id: "open-above-carved-terrain-domain",
+        purpose: "Additive carved, terraced, strata-colored terrain adapter for bird-flight readability.",
+        visual
+      }
+    })
+  };
 }
 
 function createBirdMesh(THREE, config, scale = 1) {
@@ -121,14 +226,13 @@ function createTerrainGeometry(THREE, patch, sampler, segments) {
       const index = z * (segments + 1) + x;
       const wx = originX + x * step;
       const wz = originZ + z * step;
-      const height = sampler.getHeight(wx, wz);
-      const rgb = colorArray(terrainColor(sampler.getBiome(wx, wz), height));
+      const sample = sampler.getVisualSample?.(wx, wz) ?? { height: sampler.getHeight(wx, wz), color: TERRAIN_PALETTES.forest.mid };
       positions[index * 3] = wx;
-      positions[index * 3 + 1] = height;
+      positions[index * 3 + 1] = sample.height;
       positions[index * 3 + 2] = wz;
-      colors[index * 3] = rgb[0];
-      colors[index * 3 + 1] = rgb[1];
-      colors[index * 3 + 2] = rgb[2];
+      colors[index * 3] = sample.color[0];
+      colors[index * 3 + 1] = sample.color[1];
+      colors[index * 3 + 2] = sample.color[2];
     }
   }
 
@@ -211,7 +315,7 @@ function createHarnessRenderer(THREE, engine, config) {
 
   const cloudBands = createCloudBands(THREE);
   scene.add(cloudBands);
-  const terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0.01 });
+  const terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.98, metalness: 0.01, flatShading: true });
   const treeMat = new THREE.MeshStandardMaterial({ color: 0x1f6531, roughness: 0.86 });
   const rockMat = new THREE.MeshStandardMaterial({ color: 0x747d78, roughness: 0.88 });
   const bird = createBirdMesh(THREE, config.actor, 1);
@@ -239,7 +343,7 @@ function createHarnessRenderer(THREE, engine, config) {
     const live = new Set();
     for (const patch of state.terrain.patches) {
       const segments = patchSegments(patch, state.body);
-      const renderKey = `${patch.key}:${segments}`;
+      const renderKey = `${patch.key}:${segments}:carved-v1`;
       live.add(patch.key);
       const previous = terrainMeshes.get(patch.key);
       if (!previous || previous.renderKey !== renderKey) {
@@ -355,7 +459,7 @@ function createHarnessRenderer(THREE, engine, config) {
     sun.target.updateMatrixWorld();
     scene.fog = new THREE.FogExp2(state.sky.atmosphere.fogColor, state.sky.atmosphere.density);
 
-    hud.innerHTML = `<strong>${config.title}</strong><br>Speed ${Math.round(body.speed)} · Swoop ${Math.round(dive * 100)}% · Carve ${Math.round(carve * 100)}% · Clearance ${Math.round(body.clearance)}`;
+    hud.innerHTML = `<strong>${config.title}</strong><br>Speed ${Math.round(body.speed)} · Swoop ${Math.round(dive * 100)}% · Carve ${Math.round(carve * 100)}% · Clearance ${Math.round(body.clearance)} · Carved terrain`;
     renderer.render(scene, camera);
   }
 
@@ -397,7 +501,7 @@ function composeState(engine, frame, elapsed, input, config) {
     elapsed,
     input: clone(input),
     body: { ...clone(motion), altitude: position.y, clearance, groundHeight },
-    terrain: { seed: config.terrain.seed, patchSize: config.terrain.patchSize, patchCount: patches.length, patches },
+    terrain: { seed: config.terrain.seed, patchSize: config.terrain.patchSize, patchCount: patches.length, patches, visual: terrain.snapshot?.().visualDomain },
     sky: engine.skyAtmosphere.snapshot(),
     lighting: engine.lightingDescriptor.snapshot(),
     actor: engine.actorRender.snapshot(),
@@ -426,14 +530,16 @@ function composeState(engine, frame, elapsed, input, config) {
       carveStatePresent: Boolean(motion.carve),
       directAssistedFlight: motion.control?.responseMode === "direct",
       cameraRelativeSkybox: true,
-      compositionalHarness: true
+      compositionalHarness: true,
+      birdFlightSimulator: true,
+      carvedTerrainDomain: Boolean(terrain.getVisualSample)
     }
   };
 }
 
 function buildKits(Nexus, kits, config) {
   return [
-    kits.data.createDataRegistryKit(Nexus, { data: config, seed: config.seed, mode: "v2-harness" }),
+    kits.data.createDataRegistryKit(Nexus, { data: config, seed: config.seed, mode: "bird-flight-simulator" }),
     kits.performance.createPerformanceBudgetKit(Nexus, { quality: "adaptive", budgets: config.quality }),
     kits.sky.createSkyAtmosphereKit(Nexus, config.sky),
     kits.lighting.createLightingDescriptorKit(Nexus, config.lighting),
@@ -493,6 +599,8 @@ async function loadModules(config) {
 async function boot() {
   const { THREE, Nexus, kits } = await loadModules(CONFIG);
   const engine = Nexus.createRealtimeGame({ kits: buildKits(Nexus, kits, CONFIG) });
+  engine.baseTerrainSampler = engine.terrainSampler;
+  engine.terrainSampler = createCarvedTerrainSampler(engine.baseTerrainSampler, CONFIG);
   initializeFlight(engine, CONFIG);
   const view = createHarnessRenderer(THREE, engine, CONFIG);
   const keys = new Set();
@@ -554,7 +662,7 @@ async function boot() {
   addEventListener("keydown", (event) => {
     keys.add(event.code);
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) event.preventDefault();
-    if (event.code === "Backquote") console.log(window.GameHostV2.getState());
+    if (event.code === "Backquote") console.log(window.GameHost.getState());
   });
   addEventListener("keyup", (event) => keys.delete(event.code));
   addEventListener("blur", () => keys.clear());
@@ -562,7 +670,7 @@ async function boot() {
   tick(CONFIG.simulation.fixedDt, { boost: true });
   render();
 
-  window.GameHostV2 = {
+  const host = {
     engine,
     renderer: view,
     config: CONFIG,
@@ -570,6 +678,7 @@ async function boot() {
     getRawState: () => ({
       flightMotion: engine.flightMotion?.snapshot?.(),
       terrainSampler: engine.terrainSampler?.snapshot?.(),
+      baseTerrainSampler: engine.baseTerrainSampler?.snapshot?.(),
       worldPatch: engine.worldPatch?.snapshot?.(),
       instancedRender: engine.instancedRender?.snapshot?.(),
       flockAgent: engine.flockAgent?.snapshot?.()
@@ -578,11 +687,17 @@ async function boot() {
     setInput(input = {}) { manualInput = input; return this.getState(); },
     tick(delta = CONFIG.simulation.fixedDt, input) { return clone(tick(delta, input ?? manualInput)); },
     render: () => clone(render()),
+    captureReady: () => Boolean(state?.validation?.booted && state?.validation?.carvedTerrainDomain),
+    hideHudForCapture() { hud.hidden = true; return this.getState(); },
+    showHudAfterCapture() { hud.hidden = false; return this.getState(); },
+    setCoverCamera() { return this.getState(); },
     start() { if (!running) { running = true; loop(performance.now()); } return this.getState(); },
     stop() { running = false; if (rafId) cancelAnimationFrame(rafId); rafId = 0; return this.getState(); },
     reset() { location.reload(); }
   };
 
+  window.GameHost = host;
+  window.GameHostV2 = host;
   loop(performance.now());
 }
 
