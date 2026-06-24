@@ -16,7 +16,7 @@ export const OPEN_ABOVE_V2_CONFIG = Object.freeze({
   },
   quality: {
     pixelRatioMax: 1.65,
-    patchRadius: 4,
+    patchRadius: 6,
     nearSegments: 68,
     midSegments: 34,
     farSegments: 14,
@@ -46,14 +46,44 @@ export const OPEN_ABOVE_V2_CONFIG = Object.freeze({
     terraceStepNear: 6,
     terraceStepMid: 10,
     terraceStepFar: 18,
-    terraceStrengthNear: 0.08,
-    terraceStrengthMid: 0.16,
-    terraceStrengthFar: 0.26,
+    terraceStrengthNear: 0.05,
+    terraceStrengthMid: 0.1,
+    terraceStrengthFar: 0.18,
     slopeRockMix: 3.2,
     normalStep: 4,
     snowLine: 180,
-    midDistance: 1800,
-    farDistance: 2600
+    midDistance: 1500,
+    farDistance: 2200,
+    materialPaint: {
+      textureScale: 0.022,
+      detailScale: 0.085,
+      noiseStrength: 0.065,
+      layerContrast: 1.08,
+      riverPaintStrength: 0.62,
+      snowLine: 190,
+      snowSoftness: 48,
+      slopeRockStart: 0.16,
+      slopeRockEnd: 0.50,
+      palette: {
+        grass: [0.46, 0.57, 0.35],
+        meadow: [0.58, 0.66, 0.42],
+        forest: [0.25, 0.39, 0.25],
+        highland: [0.58, 0.61, 0.48],
+        rock: [0.50, 0.53, 0.48],
+        cliff: [0.35, 0.42, 0.40],
+        snow: [0.87, 0.90, 0.84],
+        river: [0.55, 0.78, 0.80],
+        silt: [0.56, 0.54, 0.39]
+      }
+    },
+    celShading: {
+      enabled: true,
+      bands: [0.38, 0.56, 0.74, 0.92],
+      shadowStrength: 0.28,
+      highlightStrength: 0.08,
+      rimStrength: 0.1,
+      sunDirection: { x: -0.35, y: 0.72, z: 0.42 }
+    }
   },
   terrainHydrology: {
     riverCount: 3,
@@ -67,16 +97,16 @@ export const OPEN_ABOVE_V2_CONFIG = Object.freeze({
   },
   terrainHorizon: {
     nearRadius: 900,
-    midRadius: 1800,
-    farRadius: 2600,
+    midRadius: 1500,
+    farRadius: 2200,
     horizonRadius: 22000,
     horizonBands: 4,
-    horizonSegments: 72,
-    ringThickness: 4200,
+    horizonSegments: 80,
+    ringThickness: 4800,
     heightCompressionFar: 0.42,
     heightCompressionHorizon: 0.16,
-    silhouettePreservation: 0.78,
-    fogBlendStart: 3800,
+    silhouettePreservation: 0.82,
+    fogBlendStart: 2200,
     fogBlendEnd: 18000
   },
   physics: {
