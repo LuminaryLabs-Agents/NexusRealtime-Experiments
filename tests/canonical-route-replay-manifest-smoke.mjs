@@ -119,18 +119,18 @@ assert.ok(
 );
 
 const nextLedgeReplay = replayByCanonicalId.get("next-ledge");
-assert.equal(nextLedgeReplay.status, "planned-fixture", "Next Ledge should remain planned until route code actually consumes the route DSKs");
+assert.equal(nextLedgeReplay.status, "planned-fixture", "Next Ledge should remain planned until cargo/resource/pressure replay is executable");
 assert.ok(
   nextLedgeReplay.protoKitReplayCoverage.some((coverage) => coverage.test === "tests/generic-route-progress-kit-smoke.test.mjs"),
-  "Next Ledge should point at the atomic route progress smoke before route migration"
+  "Next Ledge should point at the atomic route progress smoke"
 );
 assert.ok(
   nextLedgeReplay.protoKitReplayCoverage.some((coverage) => coverage.test === "tests/generic-route-cargo-extraction-kit-smoke.test.mjs"),
-  "Next Ledge should point at the composite route/cargo/extraction smoke before route migration"
+  "Next Ledge should point at the composite route/cargo/extraction smoke before cargo migration"
 );
 assert.ok(
-  nextLedgeReplay.missingExecutableFixtures.some((gap) => gap.includes("generic-route")),
-  "Next Ledge should keep the route-level executable fixture gap explicit"
+  nextLedgeReplay.missingExecutableFixtures.some((gap) => gap.includes("cargo/resource/pressure")),
+  "Next Ledge should keep the remaining cargo/resource/pressure executable fixture gap explicit"
 );
 
 console.log("Canonical route replay manifest smoke passed.");
