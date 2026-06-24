@@ -123,3 +123,11 @@ Next smoke priority: implement the ProtoKits placement projector namespace prefe
 - Added `tests/signal-bastion-placement-namespace-contract-smoke.mjs` and wired it into both full and deploy checks. The smoke proves the canonical route spec keeps `placementProjector.confirm -> n.genericDefense.sessionFacade.build`, the browser input host does not call `engine.defenseBuild.build` or legacy `engine.genericDefense.build`, and only `setBlueprint` / `sell` remain as explicit build convenience seams.
 
 Next smoke priority: evaluate whether `defenseBuild.setBlueprint`, `defenseBuild.sell`, `defenseWaves.previewNextWave`, `defenseFoundation.getSnapshot`, and `defenseScale.getBudgetSnapshot` can be replaced or justified one at a time without expanding route-local JavaScript or weakening Signal Bastion's executable replay.
+
+## 2026-06-24 ProtoKit Promotion Gate wave-preview guard
+
+- `games/signal-bastion/src/boot.js` now derives `GameHost.getWavePreview()` from `engine.n.genericDefense.sessionFacade.getSnapshot()` instead of calling `engine.defenseWaves.previewNextWave()`.
+- `tests/signal-bastion-host-facade-guard-smoke.mjs` now requires the `getSignalBastionWavePreview(engine)` bridge and forbids `engine.defenseWaves?.previewNextWave?.(` in the browser host.
+- `experiments/signal-bastion-route-domain-replay.json` records this as a local-JS/facade shrink for the strategic-pressure canonical route while keeping the remaining convenience-facade gap explicit.
+
+Next smoke priority: evaluate `defenseFoundation.getSnapshot`, `defenseScale.getBudgetSnapshot`, `defenseBuild.setBlueprint`, and `defenseBuild.sell` one at a time. Do not add a second executable route-domain smoke until another canonical route consumes a real reusable ProtoKit boundary.
