@@ -100,4 +100,37 @@ assert.ok(
 );
 assert.deepEqual(signalBastionReplay.missingExecutableFixtures, [], "Signal Bastion executable replay gap should be closed at the route-manifest layer");
 
+const traversalCargoLane = laneById.get("traversal-cargo-pressure");
+assert.ok(
+  traversalCargoLane.reusableBoundaryCandidates.includes("generic-route-progress-kit"),
+  "traversal/cargo should consolidate route checkpoint pressure onto generic-route-progress-kit"
+);
+assert.ok(
+  traversalCargoLane.reusableBoundaryCandidates.includes("generic-route-cargo-extraction-kit"),
+  "traversal/cargo should consolidate cargo/extraction pressure onto generic-route-cargo-extraction-kit"
+);
+assert.ok(
+  !traversalCargoLane.reusableBoundaryCandidates.includes("route-checkpoint-kit"),
+  "traversal/cargo should not regress to the stale route-checkpoint-kit placeholder"
+);
+assert.ok(
+  !traversalCargoLane.reusableBoundaryCandidates.includes("cargo-delivery-kit"),
+  "traversal/cargo should not regress to the stale cargo-delivery-kit placeholder"
+);
+
+const nextLedgeReplay = replayByCanonicalId.get("next-ledge");
+assert.equal(nextLedgeReplay.status, "planned-fixture", "Next Ledge should remain planned until route code actually consumes the route DSKs");
+assert.ok(
+  nextLedgeReplay.protoKitReplayCoverage.some((coverage) => coverage.test === "tests/generic-route-progress-kit-smoke.test.mjs"),
+  "Next Ledge should point at the atomic route progress smoke before route migration"
+);
+assert.ok(
+  nextLedgeReplay.protoKitReplayCoverage.some((coverage) => coverage.test === "tests/generic-route-cargo-extraction-kit-smoke.test.mjs"),
+  "Next Ledge should point at the composite route/cargo/extraction smoke before route migration"
+);
+assert.ok(
+  nextLedgeReplay.missingExecutableFixtures.some((gap) => gap.includes("generic-route")),
+  "Next Ledge should keep the route-level executable fixture gap explicit"
+);
+
 console.log("Canonical route replay manifest smoke passed.");
