@@ -1,6 +1,7 @@
 import * as NexusRealtime from "https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@main/src/index.js";
 import { createGenericAnchorDescriptorKit } from "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.1/protokits/generic-anchor-descriptor-kit/index.js";
 import { createGenericModeProjectedRoute, createProjectedRoute } from "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.1/protokits/generic-mode-projected-route/index.js";
+import { createGenericRouteProgressKit } from "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@main/protokits/generic-route-progress-kit/index.js";
 import { createGenericTetherTraversalDomainKits, createGenericTetherTraversalPreset } from "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.1/protokits/generic-tether-traversal-domain-kits/index.js";
 import { createNextLedgeClimbPreset } from "./climb-preset.js";
 import { adaptProjectedRouteToClimbRoute } from "./climb-anchor-adapter.js";
@@ -86,6 +87,65 @@ function createProjectedClimbRoute(options = {}) {
   const projectedRoute = createProjectedRoute(preset.routeProjection);
   const route = adaptProjectedRouteToClimbRoute(projectedRoute, { ...preset.climb, sector: preset.sector });
   return { preset, projectedRoute, route };
+}
+
+function createRouteProgressRoute(state) {
+  const ledges = state.route?.ledges ?? [];
+  return {
+    id: state.route?.id ?? state.levelId ?? `next-ledge-sector-${state.sector}`,
+    label: state.route?.label ?? `Next Ledge Sector ${state.sector}`,
+    checkpoints: ledges.map((ledge, index) => ({
+      id: ledge.id,
+      label: ledge.label ?? ledge.id,
+      objective: ledge.type === "summit" ? "Reach the summit anchor." : ledge.type === "rest" ? "Secure a restore anchor." : "Secure climb anchor.",
+      order: index,
+      required: ledge.type === "summit" || index === 0,
+      position: { x: n(ledge.x), y: n(ledge.y), z: 1 },
+      radius: n(ledge.r, 8),
+      tags: ["next-ledge", "climb-anchor", ledge.type].filter(Boolean),
+      descriptor: { kind: "climb-anchor", anchorType: ledge.type ?? "anchor" },
+      metadata: { sector: state.sector, source: "next-ledge" }
+    }))
+  };
+}
+
+function routeProgressFacade(engine) {
+  return engine.n?.genericRouteProgress ?? engine.genericRouteProgress;
+}
+
+function syncRouteProgressRoute(engine, state, reason = "next-ledge-route-sync") {
+  const facade = routeProgressFacade(engine);
+  if (!facade) return null;
+  facade.setRoute?.(createRouteProgressRoute(state), { reason });
+  if (state.currentAnchorId) {
+    facade.complete?.(state.currentAnchorId, {
+      allowOutOfOrder: true,
+      actorId: "next-ledge-climber",
+      commandId: `${reason}:${state.currentAnchorId}`
+    });
+  }
+  return facade.getState?.() ?? null;
+}
+
+function syncRouteProgressEvents(engine, state, beforeCount) {
+  const facade = routeProgressFacade(engine);
+  if (!facade) return;
+  const synced = new Set();
+  for (const evt of state.recentEvents.slice(beforeCount)) {
+    const checkpointId = evt.targetId;
+    if (!checkpointId || synced.has(checkpointId)) continue;
+    if (!["anchor-locked", "restored", "summit-reached"].includes(evt.type)) continue;
+    facade.enter?.(checkpointId, {
+      actorId: "next-ledge-climber",
+      commandId: `frame-${state.frame}:enter:${checkpointId}`
+    });
+    facade.complete?.(checkpointId, {
+      allowOutOfOrder: true,
+      actorId: "next-ledge-climber",
+      commandId: `frame-${state.frame}:complete:${checkpointId}`
+    });
+    synced.add(checkpointId);
+  }
 }
 
 function createInitialState(options = {}, status = "SYS_STATUS: ACTIVE") {
@@ -228,11 +288,12 @@ function lock(state, ledge) {
   state.player.aVel = (state.player.vx >= 0 ? 1 : -1) * (Math.hypot(state.player.vx, state.player.vy) / state.constants.ropeLength) * 0.72;
   state.player.vx = 0;
   state.player.vy = 0;
+  addEvent(state, "anchor-locked", { targetId: ledge.id, type: ledge.type });
   if (ledge.type === "summit") {
     state.mode = "won";
     state.completed = true;
     state.status = "Summit reclaimed. Sector clearance criteria reached.";
-    addEvent(state, "summit-reached", { sector: state.sector });
+    addEvent(state, "summit-reached", { sector: state.sector, targetId: ledge.id });
   } else {
     state.mode = "swinging";
     if (ledge.type === "rest") {
@@ -395,6 +456,7 @@ function domainSnapshot(engine) {
     projectedRoute: engine.projectedRoute?.getState?.(),
     anchors: engine.anchorDescriptors?.getState?.(),
     objective: engine.objectiveFlow?.getState?.(),
+    routeProgress: routeProgressFacade(engine)?.getState?.(),
     routePacing: engine.routePacing?.getState?.(),
     tetherMotion: engine.tetherMotion?.getState?.(),
     cableLaunch: engine.cableLaunch?.getState?.(),
@@ -416,7 +478,8 @@ export function createNextLedgeSession(options = {}) {
       NexusRealtime.createRenderDescriptorKit({ ...level, id: "next-ledge-render-descriptor-kit" }),
       NexusRealtime.createObjectiveFlowKit({ id: "next-ledge-objective-flow-kit", objectiveDataset: state.preset.objective }),
       createGenericAnchorDescriptorKit(NexusRealtime, { kitId: "next-ledge-anchor-descriptor-kit", anchors: state.projectedRoute.anchors }),
-      createGenericModeProjectedRoute(NexusRealtime, { ...state.preset.routeProjection, kitId: "next-ledge-projected-route-kit" })
+      createGenericModeProjectedRoute(NexusRealtime, { ...state.preset.routeProjection, kitId: "next-ledge-projected-route-kit" }),
+      createGenericRouteProgressKit(NexusRealtime, { kitId: "next-ledge-route-progress-kit", ...createRouteProgressRoute(state) })
     ],
     renderer: typeof NexusRealtime.createRenderer === "function" ? NexusRealtime.createRenderer("headless") : undefined
   });
@@ -434,6 +497,7 @@ export function createNextLedgeSession(options = {}) {
     engine.projectedRoute?.rebuild?.(state.preset.routeProjection, { reason: "generic-traversal-domain-sync" });
     engine.tick(0);
     refreshTuning();
+    syncRouteProgressRoute(engine, state, "generic-traversal-domain-sync");
   }
 
   function restart(message = state.tuning?.restartMessage ?? "Host resynced. Sector restarted.") {
@@ -477,6 +541,7 @@ export function createNextLedgeSession(options = {}) {
     stepState(state, clamp(n(dt, 1 / 60), 0, 1 / 30));
     engine.tick(dt);
     syncObjective(beforeCount);
+    syncRouteProgressEvents(engine, state, beforeCount);
     return snapshot();
   }
 
