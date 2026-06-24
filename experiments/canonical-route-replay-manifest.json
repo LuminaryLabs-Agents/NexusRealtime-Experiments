@@ -125,12 +125,24 @@
         },
         {
           "repo": "LuminaryLabs-Agents/NexusRealtime-ProtoKits",
+          "test": "tests/generic-route-progress-replay-smoke.test.mjs",
+          "fixture": "tests/fixtures/generic-route-progress-replay-fixtures.mjs",
+          "coverage": "deterministic fixed-tick route-progress replay through engine.n.genericRouteProgress, including checkpoint completion, rejection/reset, route snapshots, and descriptor digest equality"
+        },
+        {
+          "repo": "LuminaryLabs-Agents/NexusRealtime-ProtoKits",
           "test": "tests/generic-route-cargo-extraction-kit-smoke.test.mjs",
           "coverage": "composite delivery/extraction smoke over generic route progress, cargo/resource ledger, pressure channels, snapshots, and route/cargo/pressure descriptors"
+        },
+        {
+          "repo": "LuminaryLabs-Agents/NexusRealtime-ProtoKits",
+          "test": "tests/generic-route-cargo-extraction-replay-smoke.test.mjs",
+          "fixture": "tests/fixtures/generic-route-cargo-extraction-replay-fixtures.mjs",
+          "coverage": "deterministic fixed-tick delivery/extraction replay through engine.n.genericRouteCargoExtraction, including cargo pickup/delivery, pressure deltas, reset, completion, and descriptor digest equality"
         }
       ],
       "missingExecutableFixtures": [
-        "cargo/resource/pressure deterministic replay lane that imports generic-route-cargo-extraction-kit and proves the remaining delivery/extraction boundary beyond the now-consumed route-progress DSK"
+        "cargo/resource/pressure deterministic route-level replay that imports generic-route-cargo-extraction-kit from Next Ledge, proves the remaining delivery/extraction boundary beyond the now-consumed route-progress DSK, and keeps tether physics, collision, browser input, camera, renderer, assets, and fiction in the host"
       ],
       "localJsReductionOpportunity": [
         "replace remaining cargo, tether, or pressure route-local bookkeeping with generic-route-cargo-extraction-kit children after a metadata/spec smoke is in place",
