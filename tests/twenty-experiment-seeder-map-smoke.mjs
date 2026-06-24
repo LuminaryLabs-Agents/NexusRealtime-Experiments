@@ -90,7 +90,8 @@ for (const entry of seederMap.canonicalPortfolio) {
     ...lane.reusableBoundaryCandidates,
     ...replay.protoKitReplayCoverage.map((coverage) => coverage.test),
     "generic-defense-aaa-dsk-bridge",
-    "generic-defense-dsk-boundaries"
+    "generic-defense-dsk-boundaries",
+    "generic-defense-session-command-kit"
   ]);
   assert.ok(
     entry.protoKitsConsumedOrPlanned.some((kit) => allowedKitNames.has(kit)),
@@ -122,6 +123,10 @@ assert.deepEqual(executableClaimIds, ["signal-bastion"], "Signal Bastion should 
 const nextLedge = seederById.get("next-ledge");
 assert.equal(nextLedge.routeDecision, "seed-and-harden", "Next Ledge should stay the first route/cargo seed-hardening candidate");
 assert.ok(
+  nextLedge.domainBoundariesValidated.some((boundary) => boundary.includes("engine.n.genericRouteProgress")),
+  "Next Ledge should record partial downstream route-progress DSK consumption"
+);
+assert.ok(
   nextLedge.protoKitsConsumedOrPlanned.includes("generic-route-progress-kit"),
   "Next Ledge should name generic-route-progress-kit"
 );
@@ -129,7 +134,15 @@ assert.ok(
   nextLedge.protoKitsConsumedOrPlanned.includes("generic-route-cargo-extraction-kit"),
   "Next Ledge should name generic-route-cargo-extraction-kit"
 );
-assert.equal(nextLedge.executableReplayClaimed, false, "Next Ledge should not claim executable replay before route code consumes the DSKs");
+assert.ok(
+  nextLedge.localJsShouldMoveToProtoKits.some((item) => item.includes("cargo") || item.includes("pressure")),
+  "Next Ledge should now keep the remaining shrink target on cargo/resource/pressure rather than the consumed route-progress seam"
+);
+assert.ok(
+  !nextLedge.localJsShouldMoveToProtoKits.some((item) => item.includes("checkpoint enter/exit ledger")),
+  "Next Ledge seeder map should not describe the consumed route-progress seam as the primary remaining migration target"
+);
+assert.equal(nextLedge.executableReplayClaimed, false, "Next Ledge should not claim executable replay before route-cargo composite consumption and replay are proven");
 
 const foldedSeedNames = seederMap.canonicalPortfolio.flatMap((entry) => entry.seedBacklogToFold);
 for (const seedName of ["Harbor Salvage", "Cargo Chain", "Sky Courier", "Trainyard Switcher", "Dungeon Relay", "Floodplain Rescue"]) {
@@ -139,8 +152,18 @@ for (const seedName of ["Harbor Salvage", "Cargo Chain", "Sky Courier", "Trainya
 const signalBastion = seederById.get("signal-bastion");
 assert.equal(signalBastion.routeDecision, "canonical-harden", "Signal Bastion should be hardened, not split into route forks");
 assert.ok(
-  signalBastion.localJsShouldMoveToProtoKits.some((item) => item.includes("foundation")),
-  "Signal Bastion seeder map should keep the foundation debug seam as the next shrink target"
+  signalBastion.protoKitsConsumedOrPlanned.includes("generic-defense-session-command-kit"),
+  "Signal Bastion should record the session command ProtoKit after setBlueprint/sell migration"
+);
+for (const staleSeam of ["foundation", "setBlueprint", "sell", "defenseBuild", "defenseWaves", "defenseScale"]) {
+  assert.ok(
+    !signalBastion.localJsShouldMoveToProtoKits.some((item) => item.includes(staleSeam)),
+    `Signal Bastion seeder map should not reopen closed browser-host seam ${staleSeam}`
+  );
+}
+assert.ok(
+  signalBastion.smokeReplayScenarioNeeded.includes("presentation bridge hardening"),
+  "Signal Bastion next seeder pressure should move to presentation bridge hardening after host facade closures"
 );
 
 console.log("Twenty experiment seeder map smoke passed.");
