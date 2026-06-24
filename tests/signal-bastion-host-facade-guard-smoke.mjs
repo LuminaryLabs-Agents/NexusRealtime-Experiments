@@ -32,7 +32,6 @@ const allowedDefenseFactories = new Set([
   "createGenericDefenseFoundationKit",
   "createGenericDefenseBuildKit",
   "createGenericDefenseWaveKit",
-  "createGenericDefenseScaleKit",
   "createGenericDefenseAuthoringQaKit"
 ]);
 
@@ -78,6 +77,7 @@ for (const semanticHostMethod of [
   "sessionFacade()?.select?.(",
   "getSignalBastionSessionFacade(engine)?.getSnapshot?.()",
   "getSignalBastionWavePreview(engine)",
+  "getSignalBastionBudgetSnapshot(engine)",
   "engine.defensePresentationStack?.getSnapshot?.()"
 ]) {
   assert.ok(browserHostSources.includes(semanticHostMethod), `browser host should keep semantic bridge call ${semanticHostMethod}`);
@@ -87,7 +87,8 @@ for (const legacyBypass of [
   /engine\.genericDefense\./,
   /engine\.defenseWaves\?\.startWave\?\.\(/,
   /engine\.defenseWaves\?\.previewNextWave\?\.\(/,
-  /engine\.defenseBuild\?\.upgrade\?\.\(/
+  /engine\.defenseBuild\?\.upgrade\?\.\(/,
+  /engine\.defenseScale\?\.getBudgetSnapshot\?\.\(/
 ]) {
   assert.doesNotMatch(browserHostSources, legacyBypass, `browser host should route migrated calls through engine.n.genericDefense instead of ${legacyBypass}`);
 }
@@ -95,8 +96,7 @@ for (const legacyBypass of [
 for (const remainingConvenience of [
   "engine.defenseBuild?.setBlueprint?.(",
   "engine.defenseBuild?.sell?.(",
-  "engine.defenseFoundation?.getSnapshot?.(",
-  "engine.defenseScale?.getBudgetSnapshot?.("
+  "engine.defenseFoundation?.getSnapshot?.("
 ]) {
   assert.ok(browserHostSources.includes(remainingConvenience), `remaining convenience seam should stay explicit: ${remainingConvenience}`);
 }
