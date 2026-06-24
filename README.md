@@ -47,7 +47,7 @@ gamehost-standard-kit
 
 `experiments/next-ledge/` is a cinematic grapple-climb validation demo. It imports the real NexusRealtime runtime, composes the Next Ledge cinematic ascent ProtoKit, maps browser input into route APIs, ticks the runtime, and renders snapshots with Three.js.
 
-Cutover target: preserve climb feel while migrating action input, route progress, cargo/extraction, risk/resource pressure, camera, feedback, and replay snapshots into domain-kit-owned state. Route-progress/cargo-extraction consumption is planned, not executable yet.
+Cutover target: preserve climb feel while migrating action input, route progress, cargo/extraction, risk/resource pressure, camera, feedback, and replay snapshots into domain-kit-owned state. Route-progress consumption is now executable through `engine.n.genericRouteProgress`; cargo/resource/pressure consumption and route-level deterministic replay are still planned.
 
 ### Fogline Relay
 
