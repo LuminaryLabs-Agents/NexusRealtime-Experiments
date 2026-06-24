@@ -55,9 +55,10 @@ assert.doesNotMatch(boot, /\bcreateGenericDefenseKits\s*\(/, "boot should not im
 assert.match(boot, /createGenericDefensePresentationStackKits/, "boot should compose descriptor presentation from ProtoKits");
 assert.match(boot, /engine\.tick\(0\)/, "boot should settle initial state through the runtime tick");
 assert.match(boot, /engine\.tick\(dt\)/, "boot should advance simulation through runtime ticks");
-assert.match(boot, /engine\.genericDefense\.getSnapshot\(\)/, "boot should expose generic-defense snapshots instead of local simulation state");
+assert.match(boot, /getSignalBastionSessionFacade\(engine\)\?\.getSnapshot\?\.\(\)/, "boot should expose namespaced generic-defense DSK snapshots instead of local simulation state");
+assert.match(boot, /engine\.n\?\.genericDefense/, "boot should route Signal Bastion through the generic-defense DSK namespace");
 assert.match(boot, /engine\.defensePresentationStack\?\.getSnapshot\?\.\(\)/, "boot should prefer descriptor snapshots for presentation");
-assert.match(boot, /rawSnapshot:\s*engine\.genericDefense\.getSnapshot\(\)/, "boot should fall back to a raw DSK snapshot, not browser-local state");
+assert.match(boot, /rawSnapshot:\s*getSignalBastionSessionFacade\(engine\)\?\.getSnapshot\?\.\(\)/, "boot should fall back to a namespaced DSK snapshot, not browser-local state");
 assert.match(boot, /requestAnimationFrame\(frame\)/, "browser frame scheduling should stay in the route host");
 assert.match(boot, /performance\.now\(\)/, "browser timing should stay isolated in the route host");
 
@@ -66,9 +67,11 @@ for (const boundary of ["map", "economyWallet", "buildPlacement", "waveAgentDire
 }
 
 assert.match(input, /engine\.placementProjector\?\.confirm\?\.\(/, "input host should bridge placement into semantic methods");
-assert.match(input, /engine\.defenseWaves\?\.startWave\?\.\(/, "input host should bridge wave input into semantic methods");
-assert.match(input, /engine\.defenseBuild\?\.upgrade\?\.\(/, "input host should bridge upgrade input into semantic methods");
-assert.match(input, /engine\.genericDefense\.getSnapshot\(\)/, "input host should read snapshots rather than own simulation state");
+assert.match(input, /sessionFacade\(\)\?\.startWave\?\.\(/, "input host should bridge wave input through the namespaced session DSK facade");
+assert.match(input, /sessionFacade\(\)\?\.upgrade\?\.\(/, "input host should bridge upgrade input through the namespaced session DSK facade");
+assert.match(input, /sessionFacade\(\)\?\.getSnapshot\?\.\(\)/, "input host should read namespaced DSK snapshots rather than own simulation state");
+assert.doesNotMatch(input, /engine\.defenseWaves\?\.startWave\?\.\(/, "input host should not start waves through the wave convenience facade once the session DSK namespace is available");
+assert.doesNotMatch(input, /engine\.genericDefense\./, "input host should avoid direct broad genericDefense calls after the DSK namespace bridge");
 assert.match(input, /renderer\.findHit\(.*presentation\(\)/s, "input host should hit-test against descriptors or snapshots from the renderer boundary");
 assert.doesNotMatch(input, /createRealtimeGame|createGenericDefenseKits|requestAnimationFrame|performance\.now/, "input host should not own runtime creation or browser frame timing");
 
