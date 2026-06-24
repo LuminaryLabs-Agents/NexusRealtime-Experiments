@@ -59,3 +59,13 @@ The placement seam that previously sat between route-local browser input and the
 - Signal Bastion's input host still calls `engine.placementProjector.confirm` from browser pointer input, but the route-side contract now forbids direct `engine.defenseBuild.build` or legacy `engine.genericDefense.build` as placement shortcuts.
 
 Canonicalization implication: `signal-bastion` remains the sole executable strategic-pressure canonical route, and this reduces one more reason to preserve defense variants as separate route forks. Do not delete or fold route folders yet; next pruning should continue through metadata, smoke guards, and one remaining browser convenience seam at a time.
+
+## 2026-06-24 ProtoKit Promotion Gate wave-preview namespace update
+
+Signal Bastion's GameHost wave preview now derives from the namespaced DSK session snapshot instead of the broad wave convenience facade:
+
+- `games/signal-bastion/src/boot.js` adds `getSignalBastionWavePreview(engine)`, which reads `engine.n.genericDefense.sessionFacade.getSnapshot()` and derives the next wave from `snapshot.level.waves[snapshot.session.waveIndex]`.
+- `globalThis.GameHost.getWavePreview()` now uses that helper instead of `engine.defenseWaves.previewNextWave()`.
+- `tests/signal-bastion-host-facade-guard-smoke.mjs` forbids reintroducing the wave preview convenience call and keeps the remaining convenience list limited to build blueprint/sell, foundation snapshot, and scale snapshot seams.
+
+Canonicalization implication: this is a small but real local route-host shrink for the strategic-pressure canonical route. It does not justify destructive route deletion or a second executable lane; it tightens the single strongest route while keeping reusable simulation and descriptor ownership in ProtoKits.
