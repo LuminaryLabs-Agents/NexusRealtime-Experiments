@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "routeId": "next-ledge",
+  "canonicalPath": "experiments/next-ledge/",
+  "scenarioLane": "traversal-cargo-pressure",
+  "higherLevelDomain": "Delivery/extraction loop",
+  "status": "partial-route-progress-dsk-consumed",
+  "fullLaneExecutableClaim": false,
+  "sourceManifest": "experiments/domain-kit-cutover-manifest.json",
+  "sourceReplayManifest": "experiments/canonical-route-replay-manifest.json",
+  "sourceSession": "experiments/next-ledge/src/session.js",
+  "sourceProtoKitCoverage": [
+    {
+      "repo": "LuminaryLabs-Agents/NexusRealtime-ProtoKits",
+      "test": "tests/generic-route-progress-kit-smoke.test.mjs",
+      "coverage": "atomic route/checkpoint/objective-progress resources, events, methods, snapshots, and route-checkpoint descriptors"
+    },
+    {
+      "repo": "LuminaryLabs-Agents/NexusRealtime-ProtoKits",
+      "test": "tests/generic-route-progress-replay-smoke.test.mjs",
+      "coverage": "deterministic route-progress replay through engine.n.genericRouteProgress without browser or renderer ownership"
+    }
+  ],
+  "routeProgressBoundary": {
+    "namespace": "engine.n.genericRouteProgress",
+    "resources": ["route", "checkpoints", "activeCheckpoint", "completedCheckpoints"],
+    "events": ["route-set", "checkpoint-entered", "checkpoint-completed", "route-completed", "route-reset", "checkpoint-rejected"],
+    "methods": ["setRoute", "enter", "complete", "reset", "getState"],
+    "snapshots": ["domain.routeProgress"],
+    "descriptors": ["route-checkpoint"]
+  },
+  "fixedTickSpec": {
+    "purpose": "Guard the route-progress seam shape before claiming a full traversal/cargo executable route replay.",
+    "tickHz": 60,
+    "semanticInputs": [
+      "sync generated climb anchors into route-progress route",
+      "complete current start anchor through genericRouteProgress",
+      "mirror anchor-locked/restored/summit-reached route events through enter/complete methods",
+      "snapshot domain.routeProgress after fixed route ticks"
+    ],
+    "digestFields": [
+      "routeProgress.route.id",
+      "routeProgress.activeCheckpointId",
+      "routeProgress.completedCheckpointIds",
+      "routeProgress.descriptors",
+      "state.currentAnchorId",
+      "state.frame"
+    ]
+  },
+  "routeHostOwns": [
+    "tether physics",
+    "grapple/collision sweep",
+    "camera and visual trail state",
+    "browser input bridge",
+    "route fiction and climb labels",
+    "renderer presentation"
+  ],
+  "browserOwnershipExcludedFromDsk": [
+    "DOM",
+    "Canvas",
+    "WebGL",
+    "Three.js",
+    "pointer lock",
+    "browser audio",
+    "asset loading"
+  ],
+  "remainingExecutableGap": [
+    "cargo/resource/pressure deterministic replay that imports generic-route-cargo-extraction-kit after the route consumes cargo, resource, and pressure DSKs",
+    "full traversal-cargo-pressure lane digest that proves route progress, cargo extraction, resource deltas, pressure deltas, and descriptor hashes together"
+  ],
+  "localJsReductionOpportunity": [
+    "keep local checkpoint lists as route geometry source only while generic-route-progress owns objective/checkpoint state",
+    "move cargo/resource/pressure ledgers next, but only after this route-progress seam remains stable",
+    "do not move tether physics, browser collision, DOM input, camera, renderer, route fiction, or assets into ProtoKits"
+  ]
+}
