@@ -96,7 +96,7 @@ Next smoke priority: guard the remaining host convenience facades, then replace 
 
 - Fixed stale `tests/signal-bastion-replay-bridge-smoke.mjs` expectations after the executable route replay closure. The bridge smoke now requires the `signal-bastion` manifest entry to keep `missingExecutableFixtures` empty and list `tests/signal-bastion-executable-route-replay-smoke.mjs` as route executable replay coverage.
 - Added `tests/signal-bastion-host-facade-guard-smoke.mjs` to guard the remaining convenience-facade seam in the browser host. It allows only the named generic-defense DSK bundle plus foundation/build/wave/scale/authoring convenience exports, blocks the broad `createGenericDefenseKits()` facade, preserves the seven DSK alias IDs, blocks lower-level browser-host bypasses such as `engine.defenseCombat`, and keeps renderer/input code outside reusable simulation ownership.
-- Wired the facade guard into both full and deploy checks. The executable replay remains full-check-only, but this static guard can run during deploy checks without requiring dependency install behavior for GitHub package imports.
+- Wired the facade guard into both full and deploy checks. The executable replay remains full-check-only, but this static guard can run during deploy checks without requiring dependency install stability.
 
 Next smoke priority: reduce the remaining Signal Bastion browser host convenience calls only where existing bridge/spec/executable/facade smokes stay green. Do not add another executable route replay lane until a real reusable ProtoKit boundary exists for that lane.
 
@@ -115,3 +115,11 @@ Next smoke priority: keep the strategic-pressure lane as the only executable rou
 - ProtoKits `.agent/smoke-tests.md` now records the exact implementation/test plan: make `createGenericPlacementProjectorKit().confirm()` prefer `engine.n?.genericDefense?.sessionFacade?.build`, then add a headless smoke that keeps the synced namespace alive while poisoning/reassigning legacy `engine.genericDefense`.
 
 Next smoke priority: implement the ProtoKits placement projector namespace preference and matching headless smoke before claiming the placement seam fully shrunk to the DSK namespace.
+
+## 2026-06-24 Canonical Route Pruner placement namespace guard
+
+- The ProtoKits placement-projector namespace patch is now treated as the reusable source of truth for the Signal Bastion placement seam.
+- Updated `experiments/signal-bastion-route-domain-replay.json` with `sourcePlacementNamespaceSmoke` pointing at ProtoKits `tests/generic-defense-placement-projector-namespace-smoke.test.mjs`, and updated the remaining-gap text so placement confirmation is no longer grouped with unresolved compatibility build seams.
+- Added `tests/signal-bastion-placement-namespace-contract-smoke.mjs` and wired it into both full and deploy checks. The smoke proves the canonical route spec keeps `placementProjector.confirm -> n.genericDefense.sessionFacade.build`, the browser input host does not call `engine.defenseBuild.build` or legacy `engine.genericDefense.build`, and only `setBlueprint` / `sell` remain as explicit build convenience seams.
+
+Next smoke priority: evaluate whether `defenseBuild.setBlueprint`, `defenseBuild.sell`, `defenseWaves.previewNextWave`, `defenseFoundation.getSnapshot`, and `defenseScale.getBudgetSnapshot` can be replaced or justified one at a time without expanding route-local JavaScript or weakening Signal Bastion's executable replay.
