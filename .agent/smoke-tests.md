@@ -107,3 +107,11 @@ Next smoke priority: reduce the remaining Signal Bastion browser host convenienc
 - The lane remains `protokit-backed`, not a second game-local implementation: the executable route replay imports real Core plus ProtoKits generic-defense DSK aliases and keeps renderer/browser ownership excluded.
 
 Next smoke priority: keep the strategic-pressure lane as the only executable route-domain lane until another reusable ProtoKit boundary exists. The next safe reduction is Signal Bastion browser-host facade shrink, guarded by bridge/spec/executable/facade smokes.
+
+## 2026-06-24 Headless Tick Smoke Builder placement-bridge drift note
+
+- Re-checked Signal Bastion route memory against ProtoKits and found a precise remaining bridge drift: `experiments/signal-bastion-route-domain-replay.json` records `placementProjector.confirm` as bridged to `n.genericDefense.sessionFacade.build`, while the reusable ProtoKits placement projector still prefers `engine.defenseBuild?.build` and legacy `engine.genericDefense?.build` internally.
+- This means the browser route is not re-owning simulation, but the reusable presentation projector has not fully caught up to the namespaced DSK bridge contract.
+- ProtoKits `.agent/smoke-tests.md` now records the exact implementation/test plan: make `createGenericPlacementProjectorKit().confirm()` prefer `engine.n?.genericDefense?.sessionFacade?.build`, then add a headless smoke that keeps the synced namespace alive while poisoning/reassigning legacy `engine.genericDefense`.
+
+Next smoke priority: implement the ProtoKits placement projector namespace preference and matching headless smoke before claiming the placement seam fully shrunk to the DSK namespace.
