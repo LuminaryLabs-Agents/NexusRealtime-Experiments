@@ -35,6 +35,13 @@ function getSignalBastionPresentation(engine) {
   };
 }
 
+function getSignalBastionWavePreview(engine) {
+  const snapshot = getSignalBastionSessionFacade(engine)?.getSnapshot?.() ?? {};
+  const waveIndex = Number(snapshot.session?.waveIndex ?? 0);
+  if (!Number.isFinite(waveIndex)) return null;
+  return snapshot.level?.waves?.[waveIndex] ?? null;
+}
+
 function assertDefenseDskBridge(DefenseKits) {
   const requiredExports = [
     "createGenericDefenseDskBundle",
@@ -123,7 +130,7 @@ export async function bootSignalBastion(documentRef = document) {
       getPresentation: () => getSignalBastionPresentation(engine),
       getFoundation: () => engine.defenseFoundation?.getSnapshot?.(),
       getScale: () => engine.defenseScale?.getBudgetSnapshot?.(),
-      getWavePreview: () => engine.defenseWaves?.previewNextWave?.(),
+      getWavePreview: () => getSignalBastionWavePreview(engine),
       getRewards: () => preset.rewards ?? [],
       getCampaign: () => preset.campaign ?? null,
       startWave: () => getSignalBastionSessionFacade(engine)?.startWave?.({ commandId: `host-wave:${engine.clock.frame}` }),
