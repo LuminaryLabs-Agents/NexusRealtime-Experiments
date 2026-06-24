@@ -5,7 +5,7 @@ export const OPEN_ABOVE_V2_CONFIG = Object.freeze({
   runtime: {
     threeUrl: "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
     nexusUrl: "https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@main/src/index.js",
-    protoKitBaseUrl: "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@0.0.1/protokits"
+    protoKitBaseUrl: "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@main/protokits"
   },
   controls: {
     pitchUp: ["KeyW", "ArrowUp"],
