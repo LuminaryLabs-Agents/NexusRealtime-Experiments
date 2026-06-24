@@ -18,7 +18,7 @@ FetchContent_MakeAvailable(OpenXRSDK)
 set(NATIVE_APP_GLUE ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 
 add_library(spatial_authoring_openxr SHARED
-  vr_platformer_board_openxr.cpp
+  endless_platformer_openxr.cpp
   ${NATIVE_APP_GLUE}
 )
 
