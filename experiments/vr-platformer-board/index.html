@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VR Platformer Board · NexusRealtime</title>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: radial-gradient(circle at 50% 30%, #24324f, #070a11 58%, #020306); color: white; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main, canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; }
+    canvas { display: block; }
+    #hud { position: fixed; left: 16px; top: 14px; right: 16px; display: flex; justify-content: space-between; gap: 12px; pointer-events: none; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.78); }
+    #hud span { background: rgba(0,0,0,0.24); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 7px 10px; backdrop-filter: blur(10px); }
+    #errorPanel { position: fixed; left: 16px; right: 16px; bottom: 16px; padding: 14px; border-radius: 14px; background: rgba(80, 0, 0, 0.86); color: white; white-space: pre-wrap; font-size: 13px; }
+    #errorPanel[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <canvas id="game" role="application" aria-label="VR platformer board experiment"></canvas>
+    <aside id="hud" aria-label="Game HUD">
+      <span id="objective">Booting kits…</span>
+      <span id="controls">A/D move · Space jump · R reset · drag head</span>
+    </aside>
+    <section id="errorPanel" role="alert" hidden></section>
+  </main>
+
+  <script type="module">
+    const NEXUS_URL = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Dev/NexusRealtime@main/src/index.js";
+    const PROTOKITS = "https://cdn.jsdelivr.net/gh/LuminaryLabs-Agents/NexusRealtime-ProtoKits@main/protokits";
+
+    const canvas = document.querySelector("#game");
+    const ctx = canvas.getContext("2d");
+    const objective = document.querySelector("#objective");
+    const errorPanel = document.querySelector("#errorPanel");
+
+    function showFatal(error) {
+      errorPanel.hidden = false;
+      errorPanel.textContent = String(error?.stack ?? error?.message ?? error);
+    }
+
+    const keys = new Set();
+    const head = { position: { x: 0, y: 1.6, z: 0 }, forward: { x: 0, y: 0, z: -1 }, up: { x: 0, y: 1, z: 0 } };
+    let dragging = false;
+    let lastPointer = null;
+
+    addEventListener("keydown", (event) => keys.add(event.key.toLowerCase()));
+    addEventListener("keyup", (event) => keys.delete(event.key.toLowerCase()));
+    addEventListener("blur", () => keys.clear());
+    canvas.addEventListener("pointerdown", (event) => { dragging = true; lastPointer = { x: event.clientX, y: event.clientY }; canvas.setPointerCapture?.(event.pointerId); });
+    canvas.addEventListener("pointerup", () => { dragging = false; lastPointer = null; });
+    canvas.addEventListener("pointermove", (event) => {
+      if (!dragging || !lastPointer) return;
+      const dx = event.clientX - lastPointer.x;
+      const dy = event.clientY - lastPointer.y;
+      lastPointer = { x: event.clientX, y: event.clientY };
+      head.position.x = Math.max(-0.22, Math.min(0.22, head.position.x + dx * 0.0012));
+      head.position.y = Math.max(1.35, Math.min(1.9, head.position.y - dy * 0.0012));
+    });
+
+    function resize() {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(innerWidth * dpr);
+      canvas.height = Math.floor(innerHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    addEventListener("resize", resize);
+    resize();
+
+    function drawBoard(snapshot) {
+      const w = innerWidth;
+      const h = innerHeight;
+      ctx.clearRect(0, 0, w, h);
+
+      const headX = snapshot.xrPose?.head?.position?.x ?? 0;
+      const headY = snapshot.xrPose?.head?.position?.y ?? 1.6;
+      const board = snapshot.board ?? { sizeMeters: { x: 1.6, y: 0.9 } };
+      const scale = Math.min(w * 0.72 / 320, h * 0.68 / 180);
+      const bw = 320 * scale;
+      const bh = 180 * scale;
+      const cx = w * 0.5 - headX * 180;
+      const cy = h * 0.52 + (1.6 - headY) * 120;
+      const left = cx - bw / 2;
+      const top = cy - bh / 2;
+
+      const gradient = ctx.createRadialGradient(cx, cy - bh * 0.8, 20, cx, cy, Math.max(bw, bh));
+      gradient.addColorStop(0, "rgba(91, 159, 255, 0.26)");
+      gradient.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.save();
+      ctx.translate(left, top);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = "rgba(7,10,18,0.94)";
+      roundRect(ctx, -8, -8, 336, 196, 12);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(150,210,255,0.55)";
+      ctx.lineWidth = 1.2 / scale;
+      ctx.stroke();
+
+      ctx.save();
+      ctx.beginPath();
+      roundRect(ctx, 0, 0, 320, 180, 7);
+      ctx.clip();
+      ctx.fillStyle = "#111b30";
+      ctx.fillRect(0, 0, 320, 180);
+      ctx.fillStyle = "#1f3155";
+      ctx.fillRect(0, 120, 320, 60);
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
+      for (let i = 0; i < 14; i++) ctx.fillRect(i * 28 - (snapshot.camera?.position?.x ?? 0) * 2 % 28, 24 + Math.sin(i) * 8, 20, 80);
+
+      const render = snapshot.render?.descriptors ?? [];
+      const cameraX = snapshot.camera?.position?.x ?? 0;
+      const cameraY = snapshot.camera?.position?.y ?? 0;
+      for (const item of render) drawDescriptor(item, cameraX, cameraY);
+      ctx.restore();
+
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.font = "5px ui-sans-serif";
+      ctx.fillText(`board ${board.sizeMeters?.x ?? 1.6}m · stereo eyes ${snapshot.stereo?.views?.length ?? 0}`, 4, 192);
+      ctx.restore();
+    }
+
+    function worldToScreen(x, y, cameraX, cameraY) {
+      return { x: 160 + (x - cameraX) * 18, y: 118 - (y - cameraY) * 18 };
+    }
+
+    function drawDescriptor(item, cameraX, cameraY) {
+      if (["camera", "parallax-layer"].includes(item.type)) return;
+      const p = worldToScreen(item.x ?? 0, item.y ?? 0, cameraX, cameraY);
+      const ww = (item.w ?? 0.6) * 18;
+      const hh = (item.h ?? 0.6) * 18;
+      if (item.type === "solid" || item.type === "moving-platform") {
+        ctx.fillStyle = item.type === "moving-platform" ? "#78ffd6" : "#7fa7ff";
+        roundRect(ctx, p.x, p.y - hh, ww, hh, 2);
+        ctx.fill();
+      } else if (item.type === "collectible") {
+        ctx.fillStyle = "#ffd35a";
+        ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
+      } else if (item.type === "hazard") {
+        ctx.fillStyle = "#ff4b6e";
+        ctx.fillRect(p.x, p.y - hh, ww, hh);
+      } else if (item.type === "exit") {
+        ctx.strokeStyle = "#9dff7a";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(p.x, p.y - hh, ww, hh);
+      } else if (item.type === "avatar") {
+        ctx.fillStyle = item.mode === "fallen" ? "#ff4b6e" : "#ffffff";
+        roundRect(ctx, p.x, p.y - hh, ww, hh, 3);
+        ctx.fill();
+      }
+    }
+
+    function roundRect(context, x, y, w, h, r) {
+      context.beginPath();
+      context.moveTo(x + r, y);
+      context.arcTo(x + w, y, x + w, y + h, r);
+      context.arcTo(x + w, y + h, x, y + h, r);
+      context.arcTo(x, y + h, x, y, r);
+      context.arcTo(x, y, x + w, y, r);
+      context.closePath();
+    }
+
+    async function boot() {
+      const NexusRealtime = await import(NEXUS_URL);
+      const { createPlatformerLevelDomainKit } = await import(`${PROTOKITS}/platformer-level-domain-kit/index.js`);
+      const { createPlatformerAvatarDomainKit } = await import(`${PROTOKITS}/platformer-avatar-domain-kit/index.js`);
+      const { createPlatformerPhysicsSystemKit, simulatePlatformerStep } = await import(`${PROTOKITS}/platformer-physics-system-kit/index.js`);
+      const { createPlatformerCollisionDomainKit } = await import(`${PROTOKITS}/platformer-collision-domain-kit/index.js`);
+      const { createPlatformerObjectDomainKit } = await import(`${PROTOKITS}/platformer-object-domain-kit/index.js`);
+      const { createPlatformerCameraDomainKit } = await import(`${PROTOKITS}/platformer-camera-domain-kit/index.js`);
+      const { createPlatformerRenderDescriptorKit } = await import(`${PROTOKITS}/platformer-render-descriptor-kit/index.js`);
+      const { createPlatformerEffectsDomainKit } = await import(`${PROTOKITS}/platformer-effects-domain-kit/index.js`);
+      const { createPlatformerParallaxDomainKit } = await import(`${PROTOKITS}/platformer-parallax-domain-kit/index.js`);
+      const { createPlatformerObjectiveSequenceKit } = await import(`${PROTOKITS}/platformer-objective-sequence-kit/index.js`);
+      const { createXrPoseDomainKit } = await import(`${PROTOKITS}/xr-pose-domain-kit/index.js`);
+      const { createXrInputAdapterKit } = await import(`${PROTOKITS}/xr-input-adapter-kit/index.js`);
+      const { createSpatialAnchorDomainKit } = await import(`${PROTOKITS}/spatial-anchor-domain-kit/index.js`);
+      const { createSpatialGameBoardDomainKit } = await import(`${PROTOKITS}/spatial-game-board-domain-kit/index.js`);
+      const { createXrComfortDomainKit } = await import(`${PROTOKITS}/xr-comfort-domain-kit/index.js`);
+      const { createXrPlatformerRenderAdapterKit } = await import(`${PROTOKITS}/xr-platformer-render-adapter-kit/index.js`);
+      const { createStereoscopicRenderDomainKit } = await import(`${PROTOKITS}/stereoscopic-render-domain-kit/index.js`);
+
+      const engine = NexusRealtime.createRealtimeGame({
+        kits: [
+          createPlatformerLevelDomainKit(NexusRealtime),
+          createPlatformerAvatarDomainKit(NexusRealtime),
+          createPlatformerCollisionDomainKit(NexusRealtime),
+          createPlatformerPhysicsSystemKit(NexusRealtime),
+          createPlatformerObjectDomainKit(NexusRealtime),
+          createPlatformerCameraDomainKit(NexusRealtime),
+          createPlatformerRenderDescriptorKit(NexusRealtime),
+          createPlatformerEffectsDomainKit(NexusRealtime),
+          createPlatformerParallaxDomainKit(NexusRealtime),
+          createPlatformerObjectiveSequenceKit(NexusRealtime),
+          createXrPoseDomainKit(NexusRealtime),
+          createXrInputAdapterKit(NexusRealtime),
+          createSpatialAnchorDomainKit(NexusRealtime),
+          createSpatialGameBoardDomainKit(NexusRealtime),
+          createXrComfortDomainKit(NexusRealtime),
+          createStereoscopicRenderDomainKit(NexusRealtime, { requires: [] }),
+          createXrPlatformerRenderAdapterKit(NexusRealtime)
+        ]
+      });
+
+      let avatar = engine.platformerAvatar.getState();
+      let last = performance.now();
+      let wasJumping = false;
+      let wasRestarting = false;
+
+      window.GameHost = {
+        engine,
+        getState: () => ({ avatar, level: engine.platformerLevel.getState(), board: engine.spatialGameBoard.getState(), sequence: engine.platformerSequence.getState() })
+      };
+
+      function frame(now) {
+        const dt = Math.min(1 / 30, (now - last) / 1000 || 1 / 60);
+        last = now;
+        const axis = (keys.has("d") || keys.has("arrowright") ? 1 : 0) - (keys.has("a") || keys.has("arrowleft") ? 1 : 0);
+        const jump = keys.has(" ") || keys.has("w") || keys.has("arrowup");
+        const restart = keys.has("r");
+        engine.xrPose.submit({ head });
+        engine.xrInput.submit({ moveAxis: axis, jumpPressed: jump && !wasJumping, restartPressed: restart && !wasRestarting });
+        wasJumping = jump;
+        wasRestarting = restart;
+        engine.tick(dt);
+
+        if (restart) avatar = engine.platformerAvatar.getState();
+        avatar.moveAxis = axis;
+        if (jump && avatar.grounded) { avatar.jumpQueued = true; avatar.jumpBuffer = 0.12; }
+        const level = engine.platformerLevel.getState().level;
+        avatar = simulatePlatformerStep(avatar, level, dt);
+        const collisions = engine.platformerCollision.resolve(avatar, level);
+        const objects = engine.platformerObjects.getState();
+        for (const coin of level.collectibles) {
+          const box = { x: avatar.position.x, y: avatar.position.y, w: avatar.size.x, h: avatar.size.y };
+          const hit = box.x < coin.x + 0.3 && box.x + box.w > coin.x - 0.3 && box.y < coin.y + 0.3 && box.y + box.h > coin.y - 0.3;
+          if (hit) engine.platformerObjects.collect(coin.id, coin.value);
+        }
+        if (collisions.hazardHits.length || avatar.mode === "fallen") { engine.platformerEffects.spawn("hazard", avatar.position); avatar = engine.platformerAvatar.reset({}).position ? engine.platformerAvatar.getState() : engine.platformerAvatar.getState(); }
+        if (collisions.exitHits.length) engine.platformerObjects.exit(collisions.exitHits[0]);
+        const camera = engine.platformerCamera.updateFromAvatar(avatar, level);
+        const sequence = engine.platformerSequence.evaluate({ objects: engine.platformerObjects.getState(), avatar });
+        const render = engine.platformerRender.build({ avatar, level, objects: engine.platformerObjects.getState(), camera });
+        const parallax = engine.platformerParallax.project(camera);
+        const board = engine.spatialGameBoard.getState();
+        const stereo = engine.stereoscopicRender.updateFromCamera(head, dt);
+        const comfort = engine.xrComfort.evaluate({ head, board });
+        const adapter = engine.xrPlatformerRenderAdapter.compose({ render, board, stereo, parallax, effects: engine.platformerEffects.getState().effects, sequence });
+
+        objective.textContent = `${sequence.hint} · ${comfort.warnings.join(",") || "comfort ok"}`;
+        drawBoard({ avatar, camera, render, sequence, board, stereo, comfort, adapter, xrPose: engine.xrPose.getState() });
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    boot().catch(showFatal);
+  </script>
+</body>
+</html>
