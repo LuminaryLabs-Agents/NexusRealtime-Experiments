@@ -56,3 +56,13 @@ The traversal/cargo metadata consolidation is now pushed in Experiments:
 - `tests/canonical-route-replay-manifest-smoke.mjs` guards those candidate names and blocks regression back to the stale placeholders.
 
 Consumption is still not implemented. The next safe route-host patch is to import only the route-progress or route-cargo-extraction DSK boundary for `next-ledge`, migrate ordered checkpoint progress first, then measure local JavaScript reduction after the route drops duplicated ledger code.
+
+## 2026-06-24 Canonical Route Pruner placement namespace update
+
+Strategic-pressure consumption is narrower after the ProtoKits placement-projector namespace smoke:
+
+- ProtoKits owns `createGenericPlacementProjectorKit()` and now proves it can confirm placement through `engine.n.genericDefense.sessionFacade.build` with broad compatibility build facades poisoned.
+- Experiments owns the route-side contract: `experiments/signal-bastion-route-domain-replay.json` now names the ProtoKits smoke, and `tests/signal-bastion-placement-namespace-contract-smoke.mjs` blocks direct browser-host fallback to `engine.defenseBuild.build` or legacy `engine.genericDefense.build`.
+- This is a strategic-pressure bridge shrink, not a new reusable kit implementation in Experiments.
+
+Next ProtoKit consumption decision: keep `generic-defense-dsk-boundaries` / `generic-defense-aaa-dsk-bridge` as the only executable lane proof, and move to `next-ledge` route-progress consumption only after a small route-host migration can remove duplicated checkpoint ledger code without claiming a second executable lane prematurely.
