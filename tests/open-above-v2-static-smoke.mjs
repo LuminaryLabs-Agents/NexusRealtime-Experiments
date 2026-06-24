@@ -20,6 +20,8 @@ assert.match(config, /sinkRateLimit:\s*-72/, "V2 should allow commanded pitch-do
 assert.match(config, /terrainShaping:/, "V2 should configure terrain shaping domain values.");
 assert.match(config, /terrainHydrology:/, "V2 should configure terrain hydrology domain values.");
 assert.match(config, /terrainHorizon:/, "V2 should configure terrain horizon LOD values.");
+assert.match(config, /materialPaint:/, "V2 should configure procedural material painting.");
+assert.match(config, /celShading:/, "V2 should configure cel terrain shading.");
 assert.match(script, /function buildKits/, "V2 should expose a clear kit composition boundary.");
 assert.match(script, /createFlightMotionKit/, "V2 should compose generic flight motion directly.");
 assert.match(script, /createTerrainSamplerKit/, "V2 should compose generic terrain sampling directly.");
