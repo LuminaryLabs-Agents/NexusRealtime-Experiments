@@ -121,7 +121,7 @@ export const OPEN_ABOVE_V2_CONFIG = Object.freeze({
     pitchSpeed: 2.1,
     rollSpeed: 2.55,
     yawFromRoll: 1.48,
-    groundClearance: 15,
+    groundClearance: 1.4,
     stallSpeed: 9,
     minForwardSpeed: 42,
     minimumAirspeed: 52,
@@ -152,15 +152,15 @@ export const OPEN_ABOVE_V2_CONFIG = Object.freeze({
     stallRecoveryPitch: 0.13,
     stallRecoveryLift: 12,
     terrainAvoidance: true,
-    safeClearance: 105,
-    criticalClearance: 52,
+    safeClearance: 16,
+    criticalClearance: 6,
     terrainPitchBias: 0.18,
     terrainLift: 20,
     terrainSpeedBias: 9,
     sinkRateLimit: -72
   },
   flightStart: {
-    clearance: 260,
+    clearance: 70,
     speed: 94,
     pitch: 0.035,
     yaw: 0
@@ -178,6 +178,23 @@ export const OPEN_ABOVE_V2_CONFIG = Object.freeze({
         { id: "high-haze", altitude: 980, density: 0.14, scale: 2.8 },
         { id: "ridge-bands", altitude: 560, density: 0.12, scale: 3.7 }
       ]
+    }
+  },
+  effects: {
+    windStreaks: {
+      enabled: true,
+      count: 96,
+      radius: 8.5,
+      length: 2.4,
+      speedScale: 0.032,
+      boostOpacity: 0.62,
+      baseOpacity: 0.22
+    },
+    smokeClouds: {
+      count: 90,
+      opacity: 0.28,
+      minScale: 34,
+      maxScale: 120
     }
   },
   lighting: {
@@ -200,15 +217,15 @@ export const OPEN_ABOVE_V2_CONFIG = Object.freeze({
   ],
   scatterRules: [
     {
-      id: "conifer-stands-v2",
+      id: "ancient-canopy-stands-v3",
       kind: "tree",
-      archetypes: [{ id: "pine", weight: 1 }, { id: "spruce", weight: 0.72 }],
-      densityByBiome: { forest: 1, meadow: 0.15, rocky: 0.035, highland: 0.1 },
-      maxPerPatch: 68,
+      archetypes: [{ id: "ancient-oak", weight: 1 }, { id: "giant-cedar", weight: 0.72 }],
+      densityByBiome: { forest: 1, meadow: 0.08, rocky: 0.02, highland: 0.08 },
+      maxPerPatch: 42,
       material: "tree.foliage",
       layer: "instanced-scatter",
-      scaleMin: 0.85,
-      scaleMax: 1.75
+      scaleMin: 30,
+      scaleMax: 50
     },
     {
       id: "stone-fields-v2",
@@ -225,10 +242,10 @@ export const OPEN_ABOVE_V2_CONFIG = Object.freeze({
   actor: {
     id: "player",
     archetype: "bird",
-    wingSpan: 6.6,
-    bodyLength: 4.2,
-    flapRate: 2.6,
-    speedFlapRate: 0.016
+    wingSpan: 1,
+    bodyLength: 0.62,
+    flapRate: 7.2,
+    speedFlapRate: 0.035
   },
   flock: {
     count: 7,
@@ -243,17 +260,22 @@ export const OPEN_ABOVE_V2_CONFIG = Object.freeze({
     speedFovBoost: 10,
     diveFovBoost: 6,
     maxSpeed: 164,
-    followDistance: 28,
-    followHeight: 8.5,
-    lookAhead: 34,
-    verticalLookAhead: 8,
-    positionLag: 0.08,
-    targetLag: 0.10,
-    headingLag: 0.07,
-    velocityLeadWeight: 0.16,
-    carveLookWeight: 0.12,
-    rollFrameWeight: 0.08,
-    horizonStabilization: 0.82
+    followDistance: 4.2,
+    followHeight: 1.5,
+    lookAhead: 5.5,
+    verticalLookAhead: 0.65,
+    positionLag: 0.16,
+    targetLag: 0.14,
+    headingLag: 0.10,
+    velocityLeadWeight: 0.12,
+    carveLookWeight: 0.08,
+    rollFrameWeight: 0.04,
+    horizonStabilization: 0.86,
+    shakeBase: 0.006,
+    shakeSpeed: 0.09,
+    shakeDive: 0.07,
+    shakeBoost: 0.11,
+    shakeFrequency: 10.5
   },
   simulation: {
     fixedDt: 1 / 60,
