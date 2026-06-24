@@ -9,7 +9,7 @@
   "sourceExecutableSmoke": "tests/signal-bastion-executable-route-replay-smoke.mjs",
   "purpose": "Pin and execute the route-domain replay shape for the strongest current canonical route without moving reusable kit implementation into Experiments.",
   "executionStatus": "executable-smoked-protokit-backed",
-  "kitOwnership": "ProtoKits own generic-defense simulation and descriptor generation; Signal Bastion only bridges browser input into semantic methods and renders snapshots/descriptors.",
+  "kitOwnership": "ProtoKits own generic-defense simulation and descriptor generation; Signal Bastion only bridges browser input into namespaced DSK semantic methods and renders snapshots/descriptors.",
   "reusableKitOwnershipExcluded": [
     "DOM",
     "Canvas",
@@ -31,7 +31,7 @@
       "surfaces": {
         "resources": ["genericDefense.map.state"],
         "events": ["genericDefense.reset", "genericDefense.vital.damaged"],
-        "methods": ["defenseMap.getState", "defenseMap.samplePath", "defenseMap.getSlot"],
+        "methods": ["n.genericDefense.map.getState", "n.genericDefense.map.samplePath", "n.genericDefense.map.getSlot"],
         "snapshots": ["map", "vital", "slots", "path"],
         "descriptors": []
       }
@@ -42,7 +42,7 @@
       "surfaces": {
         "resources": ["genericDefense.economy.state"],
         "events": ["genericDefense.economy.credit", "genericDefense.economy.debit", "genericDefense.command.rejected"],
-        "methods": ["defenseEconomy.credit", "defenseEconomy.debit", "defenseEconomy.getState"],
+        "methods": ["n.genericDefense.economyWallet.credit", "n.genericDefense.economyWallet.debit", "n.genericDefense.economyWallet.getState"],
         "snapshots": ["economy.currency", "economy.transactions", "economy.rejected"],
         "descriptors": []
       }
@@ -53,7 +53,7 @@
       "surfaces": {
         "resources": ["genericDefense.structure.state"],
         "events": ["genericDefense.build.requested", "genericDefense.upgrade.requested", "genericDefense.structure.built", "genericDefense.structure.upgraded", "genericDefense.command.rejected"],
-        "methods": ["defenseStructures.build", "defenseStructures.upgrade", "defenseStructures.getState"],
+        "methods": ["n.genericDefense.buildPlacement.build", "n.genericDefense.buildPlacement.upgrade", "n.genericDefense.buildPlacement.getState"],
         "snapshots": ["structures.blueprints", "structures.structures"],
         "descriptors": []
       }
@@ -64,7 +64,7 @@
       "surfaces": {
         "resources": ["genericDefense.agent.state"],
         "events": ["genericDefense.wave.start", "genericDefense.wave.started", "genericDefense.wave.completed", "genericDefense.vital.damaged"],
-        "methods": ["defenseAgents.startWave", "defenseAgents.getState"],
+        "methods": ["n.genericDefense.waveAgentDirector.startWave", "n.genericDefense.waveAgentDirector.getState"],
         "snapshots": ["agents.waves", "agents.spawnQueue", "agents.active", "agents.waveActive"],
         "descriptors": []
       }
@@ -75,7 +75,7 @@
       "surfaces": {
         "resources": ["genericDefense.combat.state"],
         "events": ["genericDefense.enemy.killed", "genericDefense.economy.credit"],
-        "methods": ["defenseCombat.getState"],
+        "methods": ["n.genericDefense.combatResolver.getState"],
         "snapshots": ["combat.projectiles", "combat.effects"],
         "descriptors": ["projectile", "effect"]
       }
@@ -86,7 +86,7 @@
       "surfaces": {
         "resources": ["genericDefense.session.state"],
         "events": ["genericDefense.reset", "genericDefense.select", "genericDefense.wave.start", "genericDefense.build.requested", "genericDefense.upgrade.requested", "genericDefense.command.rejected"],
-        "methods": ["genericDefense.startWave", "genericDefense.build", "genericDefense.upgrade", "genericDefense.select", "genericDefense.cycleBlueprint", "genericDefense.restart", "genericDefense.getSnapshot"],
+        "methods": ["n.genericDefense.sessionFacade.startWave", "n.genericDefense.sessionFacade.build", "n.genericDefense.sessionFacade.upgrade", "n.genericDefense.sessionFacade.select", "n.genericDefense.sessionFacade.cycleBlueprint", "n.genericDefense.sessionFacade.restart", "n.genericDefense.sessionFacade.getSnapshot"],
         "snapshots": ["session", "level", "map", "economy", "structures", "agents", "combat", "render"],
         "descriptors": []
       }
@@ -97,7 +97,7 @@
       "surfaces": {
         "resources": ["genericDefense.render.state"],
         "events": [],
-        "methods": ["defenseRender.getState", "defenseRender.getSnapshot", "defensePresentationStack.getSnapshot"],
+        "methods": ["n.genericDefense.renderDescriptors.getState", "n.genericDefense.renderDescriptors.getSnapshot", "defensePresentationStack.getSnapshot"],
         "snapshots": ["render.hud", "render.descriptors", "render.world"],
         "descriptors": ["path", "vital", "build-slot", "structure", "agent", "projectile", "effect"]
       }
@@ -108,23 +108,23 @@
       "frame": 0,
       "source": "route placement host",
       "method": "placementProjector.confirm",
-      "bridgedMethod": "genericDefense.build",
+      "bridgedMethod": "n.genericDefense.sessionFacade.build",
       "args": ["slot-a", "bolt"],
       "commandIdPattern": "place:<blueprint>:<frame>"
     },
     {
       "frame": 1,
       "source": "route keyboard host",
-      "method": "defenseBuild.upgrade",
-      "bridgedMethod": "genericDefense.upgrade",
+      "method": "n.genericDefense.sessionFacade.upgrade",
+      "bridgedMethod": "n.genericDefense.sessionFacade.upgrade",
       "args": ["structure-1"],
       "commandIdPattern": "upgrade:<frame>"
     },
     {
       "frame": 2,
       "source": "route keyboard host",
-      "method": "defenseWaves.startWave",
-      "bridgedMethod": "genericDefense.startWave",
+      "method": "n.genericDefense.sessionFacade.startWave",
+      "bridgedMethod": "n.genericDefense.sessionFacade.startWave",
       "args": [{ "waveNumber": 1 }],
       "commandIdPattern": "wave:<frame>"
     },
@@ -132,7 +132,7 @@
       "frame": 30,
       "source": "route presentation host",
       "method": "defensePresentationStack.getSnapshot",
-      "bridgedMethod": "genericDefense.getSnapshot",
+      "bridgedMethod": "n.genericDefense.sessionFacade.getSnapshot",
       "args": [],
       "commandIdPattern": "snapshot:<frame>"
     }
@@ -140,7 +140,7 @@
   "expectedAssertions": {
     "resources": ["genericDefense.map", "genericDefense.economy", "genericDefense.structures", "genericDefense.agents", "genericDefense.combat", "genericDefense.render"],
     "events": ["BuildRequested", "StructureBuilt", "EconomyDebit", "WaveStarted", "EnemyKilled", "WaveCompleted"],
-    "methods": ["genericDefense.build", "genericDefense.upgrade", "genericDefense.startWave", "genericDefense.getSnapshot"],
+    "methods": ["n.genericDefense.sessionFacade.build", "n.genericDefense.sessionFacade.upgrade", "n.genericDefense.sessionFacade.startWave", "n.genericDefense.sessionFacade.getSnapshot", "n.genericDefense.renderDescriptors.getSnapshot"],
     "snapshots": ["session.status", "economy.currency", "map.vital.health", "render.hud.status"],
     "descriptors": ["path", "vital", "build-slot", "structure", "effect"]
   },
@@ -172,9 +172,10 @@
     }
   ],
   "localJsReductionSignal": [
-    "Browser boot now imports the ProtoKits generic-defense AAA DSK bridge and requests the seven named DSK aliases instead of composing the entire broad compatibility facade.",
-    "The route still keeps small host convenience facades for foundation, build, wave, and scale APIs so existing browser input/UI bridges remain compatible while the DSK alias migration settles.",
+    "Browser boot imports the ProtoKits generic-defense AAA DSK bridge and requests the seven named DSK aliases instead of composing the entire broad compatibility facade.",
+    "The browser host now reads snapshots and bridges build/upgrade/start/restart/select through engine.n.genericDefense.sessionFacade and render fallback through engine.n.genericDefense.renderDescriptors.",
+    "The route still keeps small host convenience facades for foundation, build blueprint/sell, wave preview, and scale APIs so existing browser UI affordances remain compatible while the DSK namespace migration settles.",
     "Keep route JavaScript limited to browser input bridging, canvas/HUD projection, assets, audio, and descriptor consumption."
   ],
-  "remainingGap": "The browser route now composes the seven generic-defense DSK aliases, but it still keeps minimal host convenience facades (`defenseFoundation`, `defenseBuild`, `defenseWaves`, and `defenseScale`) beside those DSK aliases so existing browser bridges keep working. Further local JavaScript shrink should replace convenience-facade calls with direct DSK semantic methods only after browser compatibility and descriptor consumption stay covered."
+  "remainingGap": "The browser route now composes the seven generic-defense DSK aliases and routes the common snapshot, build, upgrade, wave, restart, and selection bridge calls through engine.n.genericDefense.sessionFacade. It still keeps minimal host convenience facades (`defenseFoundation`, `defenseBuild` for setBlueprint/sell, `defenseWaves` for preview, and `defenseScale`) beside those DSK aliases so existing browser UI bridges keep working. Further local JavaScript shrink should replace remaining convenience-facade calls only after browser compatibility and descriptor consumption stay covered."
 }
