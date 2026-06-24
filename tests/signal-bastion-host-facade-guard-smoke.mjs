@@ -10,7 +10,28 @@ const renderer = readFileSync("games/signal-bastion/src/renderer-canvas.js", "ut
 const routeReplay = replayManifest.canonicalRouteReplays.find((entry) => entry.canonicalId === "signal-bastion");
 assert.ok(routeReplay, "Signal Bastion should remain in the replay manifest");
 assert.equal(spec.executionStatus, "executable-smoked-protokit-backed", "host facade guard should build on the executable route replay closure");
-assert.ok(spec.remainingGap.includes("host convenience facades"), "spec should keep the remaining convenience-facade reduction gap explicit");
+assert.match(spec.remainingGap, /presentation bridge hardening/, "spec should move the remaining shrink gap to presentation bridge hardening after host facade closures");
+for (const staleGap of [
+  /defenseFoundation/i,
+  /defenseScale/i,
+  /defenseWaves/i,
+  /defenseBuild/i,
+  /foundation plus build/i,
+  /only `setBlueprint` \/ `sell` remain/i
+]) {
+  assert.doesNotMatch(spec.remainingGap, staleGap, `remaining gap should not re-open closed browser-host facade seam ${staleGap}`);
+}
+for (const closedSignal of [
+  /wave preview/i,
+  /scale\/budget snapshot/i,
+  /foundation debug snapshot/i,
+  /setBlueprint\/sell/i
+]) {
+  assert.ok(
+    spec.localJsReductionSignal.some((entry) => closedSignal.test(entry)),
+    `localJsReductionSignal should preserve the closed Signal Bastion seam ${closedSignal}`
+  );
+}
 assert.deepEqual(routeReplay.missingExecutableFixtures ?? [], [], "Signal Bastion should not regress to a missing executable replay fixture");
 
 const expectedBoundaryIds = spec.protokitBoundaries.map((boundary) => boundary.id);
