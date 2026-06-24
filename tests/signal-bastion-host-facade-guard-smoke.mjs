@@ -77,6 +77,7 @@ for (const semanticHostMethod of [
   "sessionFacade()?.restart?.(",
   "sessionFacade()?.select?.(",
   "getSignalBastionSessionFacade(engine)?.getSnapshot?.()",
+  "getSignalBastionWavePreview(engine)",
   "engine.defensePresentationStack?.getSnapshot?.()"
 ]) {
   assert.ok(browserHostSources.includes(semanticHostMethod), `browser host should keep semantic bridge call ${semanticHostMethod}`);
@@ -85,6 +86,7 @@ for (const semanticHostMethod of [
 for (const legacyBypass of [
   /engine\.genericDefense\./,
   /engine\.defenseWaves\?\.startWave\?\.\(/,
+  /engine\.defenseWaves\?\.previewNextWave\?\.\(/,
   /engine\.defenseBuild\?\.upgrade\?\.\(/
 ]) {
   assert.doesNotMatch(browserHostSources, legacyBypass, `browser host should route migrated calls through engine.n.genericDefense instead of ${legacyBypass}`);
@@ -93,7 +95,6 @@ for (const legacyBypass of [
 for (const remainingConvenience of [
   "engine.defenseBuild?.setBlueprint?.(",
   "engine.defenseBuild?.sell?.(",
-  "engine.defenseWaves?.previewNextWave?.(",
   "engine.defenseFoundation?.getSnapshot?.(",
   "engine.defenseScale?.getBudgetSnapshot?.("
 ]) {
