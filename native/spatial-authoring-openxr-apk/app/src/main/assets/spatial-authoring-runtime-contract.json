@@ -1,39 +1,32 @@
 {
-  "appId": "vr-platformer-board-openxr",
-  "version": "0.4.0",
+  "appId": "endless-vr-platformer-board-openxr",
+  "version": "0.5.0",
   "runtime": "native-openxr",
-  "contract": "vr-platformer-board.manifest.v1",
+  "contract": "endless-vr-platformer-board.manifest.v1",
   "sourcePackage": "@luminarylabs/nexusrealtime-protokits/vr-platformer-kit-suite",
   "bridge": {
-    "status": "native-host-renders-vr-platformer-board",
-    "rule": "Native OpenXR host owns headset session, stereo images, input bridge, and drawing; ProtoKits define platformer and spatial-board domains.",
+    "status": "native-host-renders-endless-eye-level-platformer-board",
+    "rule": "Native OpenXR host owns headset session, stereo images, trigger input, click burst input, and drawing; ProtoKit domains define the endless platformer and spatial board contract.",
     "requiredKits": [
-      "platformer-level-domain-kit",
       "platformer-avatar-domain-kit",
       "platformer-physics-system-kit",
-      "platformer-collision-domain-kit",
-      "platformer-object-domain-kit",
-      "platformer-camera-domain-kit",
       "platformer-render-descriptor-kit",
-      "platformer-objective-sequence-kit",
+      "platformer-effects-domain-kit",
       "xr-pose-domain-kit",
       "xr-input-adapter-kit",
-      "spatial-anchor-domain-kit",
       "spatial-game-board-domain-kit",
-      "xr-comfort-domain-kit",
       "stereoscopic-render-domain-kit",
       "xr-platformer-render-adapter-kit"
     ]
   },
   "controls": {
-    "stick": "move left/right",
-    "primary": "jump",
-    "secondary": "reset"
+    "trigger": "jump only",
+    "click": "burst particle effect on the 2D board"
   },
   "board": {
-    "id": "platformer-board",
-    "positionMeters": [0.0, 1.35, -2.0],
-    "sizeMeters": [1.72, 1.02],
-    "gameResolution": [320, 180]
+    "id": "endless-platformer-board",
+    "mode": "endless-auto-runner",
+    "positionMeters": [0.0, 1.55, -2.0],
+    "height": "eye-level"
   }
 }
