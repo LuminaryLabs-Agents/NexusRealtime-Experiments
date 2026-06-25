@@ -2,6 +2,13 @@
 
 Goal: grow reusable ProtoKit domain layers while shrinking local experiment JavaScript.
 
+Agent operating contract:
+
+- Start each agent turn at `.agent/START_HERE.md`.
+- Treat `.agent/cycle-state.md` as the current project state.
+- Use `.agent/turn-ledger/` for meaningful per-turn records.
+- Keep changes bounded to the current ledge unless explicitly directed.
+
 Constraints:
 
 - Review `.agent/` before decisions.
@@ -18,6 +25,8 @@ Current pruning focus: keep generated gallery seed/backlog routes distinct from 
 Current validation focus: guard `experiments/domain-kit-cutover-manifest.json`, `experiments/twenty-experiment-seeder-map.json`, `experiments/canonical-route-pruning-map.json`, `experiments/canonical-route-replay-manifest.json`, `experiments/headless-lane-replay-contracts.json`, `experiments/signal-bastion-route-domain-replay.json`, `experiments/next-ledge-route-progress-replay.json`, `experiments/next-ledge-route-cargo-extraction-plan.json`, `experiments/executable-route-replay-import-gates.json`, the Signal Bastion strategic-pressure bridge/spec/import-gate/executable/facade/static/placement/presentation smokes, and the Next Ledge route/cargo, route-progress spec, route-cargo-extraction plan, seeder map, and canonical replay manifest smokes against drift from generated gallery routes, route folders, non-empty `domainCutover`, bridge/preset ownership notes, variant/backlog pressure, renderer-free DSK surfaces, fixed-tick replay contracts, local JavaScript reduction opportunities, package-wiring assumptions, broad compatibility-facade regression, legacy `engine.genericDefense` browser calls, accidental route-local simulation ownership, stale route-checkpoint/cargo-delivery placeholders, missing route-progress namespace consumption, stale seeder claims about already-closed Signal Bastion host facades, premature route-cargo-extraction replay claims before the route consumes cargo/resource/pressure DSKs, and presentation bridge drift where Canvas/HUD/pointer projection starts owning reusable generic-defense state or descriptor generation.
 
 Last meaningful cycle report: `.agent/cycle-reports/2026-06-24-twenty-experiment-seeder-1325.md`.
+
+Latest Agent Ledger Bootstrap update: `.agent/START_HERE.md`, `.agent/PROCESS.md`, `.agent/turn-ledger/README.md`, `.agent/templates/ledger-entry-template.md`, and `.agent/turn-ledger/2026-06-25-agent-ledger-bootstrap.md` now establish `.agent/` as the repo-local operating memory and per-turn decision ledger. This is documentation/process-only; no route code, tests, canonical route lists, ProtoKit imports, runtime behavior, or gameplay behavior changed.
 
 Latest Twenty Experiment Seeder update: `experiments/twenty-experiment-seeder-map.json`, `tests/twenty-experiment-seeder-map-smoke.mjs`, `experiments/canonical-route-replay-manifest.json`, and `tests/canonical-route-replay-manifest-smoke.mjs` now align the portfolio map with current downstream state. `next-ledge` is recorded as a partial `generic-route-progress-kit` consumer, while the remaining delivery/extraction seed pressure is cargo/resource/pressure consumption through `generic-route-cargo-extraction-kit`. `signal-bastion` no longer carries closed foundation, wave, scale, setBlueprint, or sell seams as seeder shrink targets; its next seeder pressure is presentation bridge hardening while it remains the only executable route-domain replay lane. This is manifest/test/agent alignment only; no reusable implementation moved into Experiments and no new local JavaScript shrink is claimed by this patch.
 
