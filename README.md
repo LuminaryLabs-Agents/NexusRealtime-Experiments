@@ -2,6 +2,19 @@
 
 Browser experiments that compose NexusRealtime Core and ProtoKits into playable validation slices.
 
+## Agent Operating Memory
+
+This repo uses `.agent/` as repo-local project memory.
+
+Before making architecture, route, pruning, kit, experiment, validation, replay, or test changes, read:
+
+1. `.agent/START_HERE.md`
+2. `.agent/cycle-state.md`
+3. `.agent/route-canonicalization.md` when route-related
+4. latest relevant `.agent/cycle-reports/*`
+
+Agent work should leave either a cycle-state update, a cycle report, or a turn-ledger entry in `.agent/turn-ledger/`.
+
 ## Canonical route rule
 
 Every playable game or experiment should have one base-name route. Do not add V1/V2 gallery cards. Fold successful variants back into the base folder and remove versioned playable routes only after the unified implementation and tests are already in place.
