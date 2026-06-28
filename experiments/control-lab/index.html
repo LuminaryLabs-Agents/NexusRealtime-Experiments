@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Control Lab validates camera-relative WASD movement, pointer aim, quaternion facing, soft target camera, and debug vectors before games consume the shared control kits." />
+  <title>Control Lab · NexusRealtime</title>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #090b10; color: #f5f1e8; font-family: system-ui, sans-serif; }
+    canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; }
+    aside { position: fixed; left: 16px; top: 16px; max-width: 520px; padding: 14px; border: 1px solid #ffffff22; border-radius: 16px; background: #0c1018cc; box-shadow: 0 24px 70px #0007; }
+    strong { color: #ffe08a; }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <aside><strong>Control Lab</strong><br />WASD camera-relative movement · mouse aim · Shift dash · F2 debug vectors. This is the known-good control calibration route.</aside>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
