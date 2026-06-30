@@ -1,0 +1,30 @@
+{
+  "id": "the-cavalry-of-rome",
+  "title": "The Cavalry of Rome",
+  "status": "experiment-seed",
+  "canonicalRouteClaim": false,
+  "deterministicReplayClaim": false,
+  "designIntent": "Terrain world-map movement that enters original formation-command encounters using light, medium, and heavy troop classes.",
+  "protectedExpressionGuardrails": [
+    "Do not copy tabletop scenario layouts, card systems, dice faces, command sections, rule text, or unit-stat tables.",
+    "Keep encounter tactics based on morale, cohesion, fatigue, terrain pressure, posture, command timing, and cavalry momentum.",
+    "Use Roman-history flavor as original content, not as a digital recreation of a board game ruleset."
+  ],
+  "currentLocalSurfaces": [
+    "campaign map content and click-to-move march state",
+    "formation command resolver",
+    "canvas terrain and encounter renderer",
+    "GameHost debug/control facade"
+  ],
+  "futureProtoKitCandidates": [
+    "campaign-map-kit",
+    "terrain-region-kit",
+    "army-march-kit",
+    "formation-command-kit",
+    "morale-cohesion-kit",
+    "encounter-director-kit",
+    "battlefield-objective-kit",
+    "fixed-tick-replay-harness"
+  ],
+  "nextLedge": "Extract the formation resolver into a DOM-free module smoke and prove identical command sequences produce identical outcomes."
+}
