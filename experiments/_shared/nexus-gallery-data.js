@@ -2,7 +2,7 @@ export const galleryConfig = Object.freeze({
   title: "Experiments",
   subtitle: "NexusRealtime playable routes",
   repoUrl: "https://github.com/LuminaryLabs-Agents/NexusRealtime-Experiments",
-  hint: "Browse the 10 collective experiment cards. Older removed routes live under deprecated/."
+  hint: "Browse the 11 collective experiment cards. Older removed routes live under deprecated/."
 });
 
 export const games = Object.freeze([
@@ -60,6 +60,17 @@ export const games = Object.freeze([
     playLabel: "Play experiment",
     tags: [{ label: "Field Engineer", tone: "gold" }, { label: "Systems", tone: "green" }, { label: "3D", tone: "blue" }],
     description: "Field-engineer slice for scan, harvest, build, pressure, gates, route, cargo, beacon, feedback, and debug/replay surfaces."
+  },
+  {
+    id: "the-cavalry-of-rome",
+    tab: "experiments",
+    title: "The Cavalry of Rome",
+    route: "./apps/the-cavalry-of-rome/",
+    kind: "experiment",
+    visual: "strategy",
+    playLabel: "Play experiment",
+    tags: [{ label: "Rome", tone: "gold" }, { label: "Formation", tone: "green" }, { label: "Tactics", tone: "blue" }],
+    description: "Terrain campaign-map seed with click-to-move armies and original formation-command encounters built around morale, cohesion, fatigue, terrain pressure, and cavalry momentum."
   },
   {
     id: "signal-bastion",
