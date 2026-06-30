@@ -1,30 +1,86 @@
 {
   "id": "the-cavalry-of-rome",
   "title": "The Cavalry of Rome",
-  "status": "experiment-seed",
+  "status": "visual-experiment-seed",
   "canonicalRouteClaim": false,
   "deterministicReplayClaim": false,
-  "designIntent": "Terrain world-map movement that enters original formation-command encounters using light, medium, and heavy troop classes.",
+  "designIntent": "DSK-composed WebGPU-first visual route: scan over a 3D Roman terrain map, hover large highlighted regions, click to trigger a cinematic dive, and reveal a low-poly battlefield tableau.",
+  "liveEndpoint": "apps/the-cavalry-of-rome/",
+  "existingDskStack": [
+    "gamehost-standard-kit",
+    "action-input-kit",
+    "generic-affordance-descriptor-kit",
+    "generic-route-progress-kit",
+    "zone-field-kit",
+    "camera-cinematic-maker-kit",
+    "visual-fidelity-maker-kit",
+    "scenario-qa-harness"
+  ],
   "protectedExpressionGuardrails": [
     "Do not copy tabletop scenario layouts, card systems, dice faces, command sections, rule text, or unit-stat tables.",
-    "Keep encounter tactics based on morale, cohesion, fatigue, terrain pressure, posture, command timing, and cavalry momentum.",
-    "Use Roman-history flavor as original content, not as a digital recreation of a board game ruleset."
+    "Keep the route visual-first until the cinematic terrain and battlefield proof is stable.",
+    "Use Roman-history flavor as original visual composition, not as a digital recreation of a board-game ruleset."
   ],
   "currentLocalSurfaces": [
-    "campaign map content and click-to-move march state",
-    "formation command resolver",
-    "canvas terrain and encounter renderer",
-    "GameHost debug/control facade"
+    "Roman terrain art direction",
+    "region ellipse placement and labels",
+    "WebGPU terrain/overlay/low-poly soldier renderer",
+    "cinematic camera interpolation",
+    "Canvas fallback renderer"
   ],
-  "futureProtoKitCandidates": [
-    "campaign-map-kit",
-    "terrain-region-kit",
-    "army-march-kit",
-    "formation-command-kit",
-    "morale-cohesion-kit",
-    "encounter-director-kit",
-    "battlefield-objective-kit",
-    "fixed-tick-replay-harness"
+  "rendererOwnership": {
+    "webgpu": "presentation-only",
+    "canvasFallback": "presentation-only",
+    "dskOwned": [
+      "route progress descriptors",
+      "region affordance descriptors",
+      "zone field occupancy state",
+      "camera cinematic descriptors",
+      "visual fidelity report",
+      "scenario QA state",
+      "GameHost proof contract"
+    ]
+  },
+  "futureProtoKitCandidatesFromCustomLogic": [
+    {
+      "id": "campaign-terrain-visual-kit",
+      "source": "procedural terrain mesh and terrain color logic",
+      "reason": "Reusable visual terrain foundation for campaign-map routes."
+    },
+    {
+      "id": "terrain-region-highlight-kit",
+      "source": "large region overlay generation and hover highlighting",
+      "reason": "Reusable replacement for point-node strategy maps."
+    },
+    {
+      "id": "map-to-scene-camera-transition-kit",
+      "source": "world-map scan camera and cinematic dive interpolation",
+      "reason": "Reusable select-region-to-local-scene transition."
+    },
+    {
+      "id": "low-poly-formation-tableau-kit",
+      "source": "instanced low-poly soldier and banner layout generation",
+      "reason": "Reusable army-tableau visualization without combat simulation."
+    },
+    {
+      "id": "webgpu-visual-scene-adapter-kit",
+      "source": "WebGPU presentation adapter, terrain buffers, depth setup, and fallback seam",
+      "reason": "Reusable renderer adapter if more routes adopt WebGPU-first visuals."
+    },
+    {
+      "id": "battlefield-atmosphere-descriptor-kit",
+      "source": "field fog, formation mood, banners, and pre-battle atmosphere descriptors",
+      "reason": "Reusable ambience layer for non-combat battlefield reveals."
+    }
   ],
-  "nextLedge": "Extract the formation resolver into a DOM-free module smoke and prove identical command sequences produce identical outcomes."
+  "intentionallyOmitted": [
+    "combat rules",
+    "troop stats",
+    "campaign economy",
+    "movement graph",
+    "encounter resolution",
+    "enemy AI",
+    "large JSON datasets"
+  ],
+  "nextLedge": "Add a browser-backed route smoke for the live endpoint and then extract terrain-region highlight descriptors into a DOM-free proof seam."
 }
