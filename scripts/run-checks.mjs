@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 const fullCheckSuites = [
   "tests/js-syntax-smoke.mjs",
   "tests/static-site-smoke.mjs",
+  "tests/cavalry-of-rome-visual-static-smoke.mjs",
   "tests/content-smoke.mjs",
   "tests/next-ledge-grapple-static-smoke.mjs",
   "tests/canonical-game-routes-smoke.mjs",
@@ -48,6 +49,7 @@ const fullCheckSuites = [
 const deployCheckSuites = [
   "tests/js-syntax-smoke.mjs",
   "tests/static-site-smoke.mjs",
+  "tests/cavalry-of-rome-visual-static-smoke.mjs",
   "tests/canonical-game-routes-smoke.mjs",
   "tests/domain-cutover-manifest-smoke.mjs",
   "tests/canonical-route-pruning-map-smoke.mjs",
