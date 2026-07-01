@@ -88,12 +88,31 @@ function alphaFor(age) {
   return Math.max(0, 1 - (age - holdUntil) / DICE_TIMING.fadeFor);
 }
 
+function coverLegacyDiceArea(size, alpha) {
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, alpha * 0.96);
+  const cx = size.w * 0.50;
+  const cy = size.h * 0.405;
+  const w = size.w * 0.74;
+  const h = size.h * 0.32;
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.62);
+  g.addColorStop(0, "rgba(7,14,7,.98)");
+  g.addColorStop(0.52, "rgba(7,14,7,.93)");
+  g.addColorStop(0.78, "rgba(7,14,7,.66)");
+  g.addColorStop(1, "rgba(7,14,7,0)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + h * 0.10, w * 0.58, h * 0.45, 0, 0, TAU);
+  ctx.fill();
+  ctx.restore();
+}
+
 function drawBoardPatch(cx, cy, w, h, alpha) {
   ctx.save();
   ctx.globalAlpha = alpha;
   const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * .75);
-  g.addColorStop(0, "rgba(8,14,8,.92)");
-  g.addColorStop(.62, "rgba(8,14,8,.64)");
+  g.addColorStop(0, "rgba(8,14,8,.96)");
+  g.addColorStop(.62, "rgba(8,14,8,.72)");
   g.addColorStop(1, "rgba(8,14,8,0)");
   ctx.fillStyle = g;
   ctx.beginPath();
@@ -125,7 +144,7 @@ function drawDie(cx, cy, s, face, age, seed) {
 
 function drawContactShadow(s) {
   ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,.38)";
+  ctx.fillStyle = "rgba(0,0,0,.40)";
   ctx.beginPath();
   ctx.ellipse(s * .22, s * 1.22, s * 1.08, s * .24, -0.10, 0, TAU);
   ctx.fill();
@@ -223,6 +242,7 @@ function frame() {
       activeRoll = null;
       lastSignature = "";
     } else {
+      coverLegacyDiceArea(size, alpha);
       activeRoll.rolls.forEach((roll, index) => drawRoll(size, roll, index, activeRoll.rolls.length, age, alpha));
     }
   }
