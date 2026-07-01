@@ -26,12 +26,13 @@
       <section class="panel"><h1>The Cavalry of Rome</h1><p id="status" aria-live="polite">Loading realistic terrain…</p><p id="readout"></p></section>
       <section id="commandBar" class="panel" aria-label="Formation commands" hidden></section>
     </aside>
-    <footer id="footer" class="panel">Realistic terrain pass: WASD/drag pan, wheel zoom, hover a region, click to dive, R reset.</footer>
+    <footer id="footer" class="panel">Procedural vegetation pass: WASD/drag pan, wheel zoom, hover a region, click to dive, R reset.</footer>
   </main>
   <script type="module">
     import { attachNexusRealtimePageLoader } from "../../experiments/_shared/nexus-realtime-page-loader.js";
     attachNexusRealtimePageLoader({ title: "The Cavalry of Rome", loadingLabel: "Loading The Cavalry of Rome" });
   </script>
   <script type="module" src="../../experiments/The%20Cavalry%20of%20Rome/src/main-realistic.js"></script>
+  <script type="module" src="../../experiments/The%20Cavalry%20of%20Rome/src/vegetation-pass.js"></script>
 </body>
 </html>
