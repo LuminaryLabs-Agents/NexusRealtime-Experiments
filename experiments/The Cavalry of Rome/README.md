@@ -17,6 +17,7 @@ This slice intentionally drops campaign/combat business logic. It is a **DSK-com
 - Clicking a region triggers a cinematic world-map-to-battlefield zoom.
 - Battlefield reveal shows fuller primitive-built soldiers: legs, boots, torso, cuirass, arms, head, helmet, crest, shield, spear, capes, banners, and shadows.
 - Existing DSKs provide route progress, input, affordance descriptors, zone fields, camera descriptors, visual fidelity proof, scenario QA, and GameHost contract state.
+- Visible HUD/footer/control UI has been removed from the in-game presentation. Hidden DOM hooks remain only so runtime status writes do not break.
 
 ## Active modules
 
@@ -50,6 +51,24 @@ WASD / arrow keys pan the map
 Mouse wheel zooms the map
 R resets to the world-map scan
 ```
+
+These controls are intentionally undocumented on screen during play. The current game presentation is canvas-only.
+
+## Fidelity rule
+
+Every future gameplay iteration should also improve visual fidelity as a secondary goal. Do not regress terrain density, vegetation, lighting mood, region readability, soldier fidelity, or cinematic composition while adding mechanics.
+
+## Gameplay-first next step
+
+The first gameplay-readiness step is now complete:
+
+```txt
+remove visible in-game UI
+keep canvas-only presentation
+preserve DSK/GameHost debug surfaces invisibly
+```
+
+The next gameplay steps can add interaction through the scene itself rather than through panels, buttons, labels, or HUD widgets.
 
 ## Fidelity focus
 
@@ -91,4 +110,4 @@ battlefield-atmosphere-descriptor-kit
 
 ## Next ledge
 
-Add a browser-backed route smoke that opens the live endpoint, pans the map, validates `proceduralVegetation` counts from `GameHost.getSnapshot()`, selects a large region, waits for the battlefield tableau, and verifies the vegetation overlay remains presentation-only.
+Add a browser-backed route smoke that opens the live endpoint, verifies no visible HUD/footer surfaces are present, pans the map, validates `proceduralVegetation` counts from `GameHost.getSnapshot()`, selects a large region, waits for the battlefield tableau, and verifies the vegetation overlay remains presentation-only.
