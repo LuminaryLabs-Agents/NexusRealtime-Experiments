@@ -18,6 +18,7 @@
     <canvas id="game" role="application" aria-label="The Cavalry of Rome realistic terrain canvas"></canvas>
   </main>
   <script>
+    var selectedUnitId = null;
     (() => {
       const sinks = new Map([
         ["#status", { textContent: "" }],
