@@ -6,20 +6,13 @@ let canvas = null;
 let ctx = null;
 let activeRoll = null;
 let lastSignature = "";
+let rollApBlocked = false;
 
 function ensureCanvas() {
   if (canvas) return canvas;
   canvas = document.createElement("canvas");
   canvas.id = "cavalry-dice-visual-fix-canvas";
-  Object.assign(canvas.style, {
-    position: "fixed",
-    inset: "0",
-    width: "100%",
-    height: "100%",
-    zIndex: "64",
-    pointerEvents: "none",
-    display: "none"
-  });
+  Object.assign(canvas.style, { position: "fixed", inset: "0", width: "100%", height: "100%", zIndex: "64", pointerEvents: "none", display: "none" });
   document.querySelector("#app")?.append(canvas);
   ctx = canvas.getContext("2d");
 
@@ -31,11 +24,20 @@ function ensureCanvas() {
       opacity: .46 !important;
       filter: grayscale(.85) saturate(.55) !important;
       transform: none !important;
+      cursor: not-allowed !important;
     }
     .cavalry-action-card[data-action-id="rollAp"][data-spent="true"] .cavalry-card-cost { color: rgba(230,230,230,.72) !important; }
     .cavalry-action-card[data-action-id="rollAp"][data-spent="true"] .cavalry-card-cost::before { background: #777 !important; box-shadow: none !important; }
   `;
   document.head.append(style);
+
+  document.addEventListener("click", (event) => {
+    const card = event.target?.closest?.('[data-action-id="rollAp"]');
+    if (!card || !rollApBlocked) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+  }, true);
   return canvas;
 }
 
@@ -44,23 +46,21 @@ function resize() {
   const ratio = Math.max(1, Math.min(2, devicePixelRatio || 1));
   const w = Math.max(1, Math.floor(canvas.clientWidth * ratio));
   const h = Math.max(1, Math.floor(canvas.clientHeight * ratio));
-  if (canvas.width !== w || canvas.height !== h) {
-    canvas.width = w;
-    canvas.height = h;
-  }
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   return { w, h };
 }
 
-function tactical() {
-  return globalThis.GameHost?.getTacticalGameplaySnapshot?.() ?? globalThis.GameHost?.getSnapshot?.()?.tacticalGameplay ?? null;
-}
+function tactical() { return globalThis.GameHost?.getTacticalGameplaySnapshot?.() ?? globalThis.GameHost?.getSnapshot?.()?.tacticalGameplay ?? null; }
 
 function updateRollApCard(snapshot) {
   const card = document.querySelector('[data-action-id="rollAp"]');
   if (!card) return;
   const spent = Boolean(snapshot) && snapshot.side === "player" && !snapshot.canRollInPlace;
+  const locked = spent || snapshot?.side === "enemy" || Boolean(snapshot?.activeManeuver) || Boolean(snapshot?.gameOver);
+  rollApBlocked = locked;
   card.dataset.spent = spent ? "true" : "false";
-  if (spent) card.setAttribute("aria-disabled", "true");
+  card.disabled = locked;
+  card.setAttribute("aria-disabled", locked ? "true" : "false");
 }
 
 function rollSignature(dice) {
@@ -72,33 +72,28 @@ function syncRoll(snapshot) {
   const sig = rollSignature(snapshot?.dice);
   if (sig && sig !== lastSignature) {
     lastSignature = sig;
-    activeRoll = {
-      startedAt: performance.now(),
-      reason: snapshot.dice.reason,
-      rolls: snapshot.dice.rolls.map((r) => ({ ...r, faces: [...(r.faces ?? [])] }))
-    };
+    activeRoll = { startedAt: performance.now(), reason: snapshot.dice.reason, rolls: snapshot.dice.rolls.map((r) => ({ ...r, faces: [...(r.faces ?? [])] })) };
   }
   if (!sig && !activeRoll) lastSignature = "";
 }
 
 function alphaFor(age) {
   const holdUntil = DICE_TIMING.landAt + DICE_TIMING.holdFor;
-  const fadeUntil = holdUntil + DICE_TIMING.fadeFor;
   if (age <= holdUntil) return 1;
   return Math.max(0, 1 - (age - holdUntil) / DICE_TIMING.fadeFor);
 }
 
-function coverLegacyDiceArea(size, alpha) {
+function coverLegacyDiceArea(size, alpha = 1) {
   ctx.save();
-  ctx.globalAlpha = Math.min(1, alpha * 0.96);
+  ctx.globalAlpha = Math.min(1, alpha);
   const cx = size.w * 0.50;
   const cy = size.h * 0.405;
   const w = size.w * 0.74;
   const h = size.h * 0.32;
   const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.62);
-  g.addColorStop(0, "rgba(7,14,7,.98)");
-  g.addColorStop(0.52, "rgba(7,14,7,.93)");
-  g.addColorStop(0.78, "rgba(7,14,7,.66)");
+  g.addColorStop(0, "rgba(7,14,7,.99)");
+  g.addColorStop(0.52, "rgba(7,14,7,.96)");
+  g.addColorStop(0.78, "rgba(7,14,7,.70)");
   g.addColorStop(1, "rgba(7,14,7,0)");
   ctx.fillStyle = g;
   ctx.beginPath();
@@ -132,7 +127,6 @@ function drawDie(cx, cy, s, face, age, seed) {
   const y = cy - (landed ? 0 : Math.abs(Math.sin(rollT * TAU * 3.2 + seed)) * s * .62 * (1 - e));
   const rotation = landed ? 0 : (1 - e) * (seed % 2 ? -.55 : .55);
   const shownFace = landed ? face : ((face + Math.floor(rollT * 30 + seed * 2)) % 6) + 1;
-
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(rotation);
@@ -163,7 +157,6 @@ function drawDieBody(s) {
   ctx.lineTo(-s, -s + r);
   ctx.closePath();
   ctx.fill();
-
   ctx.fillStyle = "#6d1b13";
   ctx.beginPath();
   ctx.moveTo(s, -s + r);
@@ -172,7 +165,6 @@ function drawDieBody(s) {
   ctx.lineTo(s, s - r);
   ctx.closePath();
   ctx.fill();
-
   const g = ctx.createLinearGradient(-s, -s, s, s);
   g.addColorStop(0, "#f69a60");
   g.addColorStop(.5, "#b93222");
@@ -184,7 +176,6 @@ function drawDieBody(s) {
   ctx.roundRect(-s, -s, s * 2, s * 2, r);
   ctx.fill();
   ctx.stroke();
-
   ctx.strokeStyle = "rgba(255,255,255,.20)";
   ctx.lineWidth = Math.max(1, s * .030);
   ctx.beginPath();
@@ -194,20 +185,9 @@ function drawDieBody(s) {
 }
 
 function drawPips(s, face) {
-  const spots = {
-    1: [[0, 0]],
-    2: [[-.34, -.34], [.34, .34]],
-    3: [[-.34, -.34], [0, 0], [.34, .34]],
-    4: [[-.34, -.34], [.34, .34], [-.34, .34], [.34, -.34]],
-    5: [[-.34, -.34], [.34, .34], [-.34, .34], [.34, -.34], [0, 0]],
-    6: [[-.34, -.34], [.34, .34], [-.34, .34], [.34, -.34], [-.34, 0], [.34, 0]]
-  }[face] ?? [];
+  const spots = { 1: [[0, 0]], 2: [[-.34, -.34], [.34, .34]], 3: [[-.34, -.34], [0, 0], [.34, .34]], 4: [[-.34, -.34], [.34, .34], [-.34, .34], [.34, -.34]], 5: [[-.34, -.34], [.34, .34], [-.34, .34], [.34, -.34], [0, 0]], 6: [[-.34, -.34], [.34, .34], [-.34, .34], [.34, -.34], [-.34, 0], [.34, 0]] }[face] ?? [];
   ctx.fillStyle = "#170806";
-  for (const [dx, dy] of spots) {
-    ctx.beginPath();
-    ctx.arc(dx * s, dy * s, s * .082, 0, TAU);
-    ctx.fill();
-  }
+  for (const [dx, dy] of spots) { ctx.beginPath(); ctx.arc(dx * s, dy * s, s * .082, 0, TAU); ctx.fill(); }
 }
 
 function drawRoll(size, roll, index, count, age, alpha) {
@@ -229,21 +209,25 @@ function frame() {
   ensureCanvas();
   const snapshot = tactical();
   updateRollApCard(snapshot);
+  const legacySig = rollSignature(snapshot?.dice);
   syncRoll(snapshot);
   const page = globalThis.GameHost?.getSnapshot?.() ?? {};
-  const active = page.mode === "battlefield" && activeRoll;
+  const active = page.mode === "battlefield" && (activeRoll || legacySig);
   canvas.style.display = active ? "block" : "none";
   if (active) {
     const size = resize();
     ctx.clearRect(0, 0, size.w, size.h);
-    const age = performance.now() - activeRoll.startedAt;
-    const alpha = alphaFor(age);
-    if (alpha <= 0) {
-      activeRoll = null;
-      lastSignature = "";
-    } else {
-      coverLegacyDiceArea(size, alpha);
-      activeRoll.rolls.forEach((roll, index) => drawRoll(size, roll, index, activeRoll.rolls.length, age, alpha));
+    if (!activeRoll && legacySig) {
+      coverLegacyDiceArea(size, 1);
+    } else if (activeRoll) {
+      const age = performance.now() - activeRoll.startedAt;
+      const alpha = alphaFor(age);
+      if (alpha <= 0) {
+        activeRoll = null;
+      } else {
+        coverLegacyDiceArea(size, 1);
+        activeRoll.rolls.forEach((roll, index) => drawRoll(size, roll, index, activeRoll.rolls.length, age, alpha));
+      }
     }
   }
   requestAnimationFrame(frame);
