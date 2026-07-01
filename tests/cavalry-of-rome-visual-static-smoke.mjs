@@ -76,6 +76,17 @@ assert.ok(hexBattlefield.includes("unit?.army === \"rome\" ? unit.id : null"), "
 assert.ok(hexBattlefield.includes("selectableArmy: \"rome\""), "hex pass should expose Rome as the selectable army");
 assert.ok(hexBattlefield.includes("getHexBattlefieldSnapshot"), "hex pass should expose a GameHost battlefield snapshot");
 assert.ok(hexBattlefield.includes("rome-perspective-hex-battlefield-no-ui"), "hex pass should document the Rome-perspective no-UI view");
+assert.ok(hexBattlefield.includes("webgl2-shaded-layered-hex-interiors"), "hex pass should document WebGL2 shaded interiors");
+assert.ok(hexBattlefield.includes("getContext(\"webgl2\""), "hex pass should request a WebGL2 context");
+assert.ok(hexBattlefield.includes("compileShader"), "hex pass should compile custom shaders");
+assert.ok(hexBattlefield.includes("#version 300 es"), "hex pass should use GLSL ES 3.00 shaders");
+assert.ok(hexBattlefield.includes("fbm(vec2 p)"), "hex shader should use procedural FBM detail");
+assert.ok(hexBattlefield.includes("hexEdge"), "hex shader should use hex edge/rim calculations");
+assert.ok(hexBattlefield.includes("terrainBase"), "hex shader should shade terrain by terrain class");
+assert.ok(hexBattlefield.includes("ripple"), "hex shader should include water ripple detail");
+assert.ok(hexBattlefield.includes("contour"), "hex shader should include hill contour detail");
+assert.ok(hexBattlefield.includes("rail"), "hex shader should include fence rail detail");
+assert.ok(hexBattlefield.includes("canvas2d-fallback-tiles"), "hex pass should fall back to Canvas2D if WebGL2 is unavailable");
 
 assert.ok(endpoint.includes("../../experiments/The%20Cavalry%20of%20Rome/src/main-realistic.js"), "live endpoint should load the realistic Cavalry module");
 assert.ok(endpoint.includes("../../experiments/The%20Cavalry%20of%20Rome/src/vegetation-pass.js"), "live endpoint should load the procedural vegetation pass");
