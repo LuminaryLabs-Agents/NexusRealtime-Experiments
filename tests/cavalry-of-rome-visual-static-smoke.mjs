@@ -6,6 +6,7 @@ const vegetation = readFileSync("experiments/The Cavalry of Rome/src/vegetation-
 const hexBattlefield = readFileSync("experiments/The Cavalry of Rome/src/hex-battlefield-pass.js", "utf8");
 const squadVisuals = readFileSync("experiments/The Cavalry of Rome/src/hex-squad-visual-pass.js", "utf8");
 const gameplay = readFileSync("experiments/The Cavalry of Rome/src/hex-gameplay-pass.js", "utf8");
+const actionUi = readFileSync("experiments/The Cavalry of Rome/src/hex-action-ui-pass.js", "utf8");
 const endpoint = readFileSync("apps/the-cavalry-of-rome/index.html", "utf8");
 const experimentEntry = readFileSync("experiments/The Cavalry of Rome/index.html", "utf8");
 const gallery = readFileSync("experiments/_shared/nexus-gallery-data.js", "utf8");
@@ -125,25 +126,38 @@ assert.ok(gameplay.includes("hideSupersededLayers"), "gameplay pass should hide 
 assert.ok(gameplay.includes("startManeuver"), "GameHost should expose maneuver start logic");
 assert.ok(gameplay.includes("getTacticalGameplaySnapshot"), "GameHost should expose gameplay state");
 
+assert.ok(actionUi.includes("bottom-native-card-action-bar"), "action UI pass should document the bottom native card UI");
+assert.ok(actionUi.includes("cavalry-action-ui"), "action UI should create a bottom action bar root");
+assert.ok(actionUi.includes("cavalry-ap-value"), "action UI should show an action point counter");
+assert.ok(actionUi.includes("cavalry-action-card"), "action UI should render card-like action buttons");
+assert.ok(actionUi.includes("startManeuver"), "action UI should call GameHost.startManeuver");
+assert.ok(actionUi.includes("getTacticalGameplaySnapshot"), "action UI should read tactical gameplay snapshots");
+assert.ok(actionUi.includes("backdrop-filter"), "action UI should use native frosted card styling");
+assert.ok(actionUi.includes("AP"), "action UI should label action point costs");
+for (const action of ["advanceLeft", "advanceCenter", "advanceRight", "lineBrigade", "heavyBrigade", "berserk", "scout"]) {
+  assert.ok(actionUi.includes(action), `action UI should expose ${action}`);
+}
+
 assert.ok(endpoint.includes("../../experiments/The%20Cavalry%20of%20Rome/src/main-realistic.js"), "live endpoint should load the realistic Cavalry module");
 assert.ok(endpoint.includes("../../experiments/The%20Cavalry%20of%20Rome/src/vegetation-pass.js"), "live endpoint should load the procedural vegetation pass");
 assert.ok(endpoint.includes("../../experiments/The%20Cavalry%20of%20Rome/src/hex-battlefield-pass.js"), "live endpoint should load the hex battlefield pass");
 assert.ok(endpoint.includes("../../experiments/The%20Cavalry%20of%20Rome/src/hex-squad-visual-pass.js"), "live endpoint should load the mini squad visual pass");
 assert.ok(endpoint.includes("../../experiments/The%20Cavalry%20of%20Rome/src/hex-gameplay-pass.js"), "live endpoint should load the tactical gameplay pass");
+assert.ok(endpoint.includes("../../experiments/The%20Cavalry%20of%20Rome/src/hex-action-ui-pass.js"), "live endpoint should load the bottom action card UI pass");
 assert.ok(endpoint.includes("CavalryUiSinkShim"), "live endpoint should provide non-DOM status sinks for runtime compatibility");
 assert.ok(!endpoint.includes('id="hud"'), "live endpoint should not contain HUD DOM");
 assert.ok(!endpoint.includes('id="footer"'), "live endpoint should not contain footer DOM");
 assert.ok(!endpoint.includes('id="commandBar"'), "live endpoint should not contain command bar DOM");
-assert.ok(!endpoint.includes("#hud,#footer,#commandBar"), "live endpoint should not hide UI with CSS because UI DOM should be removed");
+assert.ok(!endpoint.includes("#hud,#footer,#commandBar"), "live endpoint should not hide old UI with CSS because old UI DOM should be removed");
 assert.ok(!endpoint.includes("attachNexusRealtimePageLoader"), "live endpoint should not attach shared page-loader UI");
 assert.ok(!endpoint.includes("nexus-realtime-page-loader.js"), "live endpoint should not import shared page-loader UI");
-assert.ok(!endpoint.includes("Procedural vegetation pass: WASD/drag pan"), "live endpoint should not show visible instruction footer text");
 assert.ok(endpoint.includes("Live NexusRealtime endpoint for The Cavalry of Rome"), "live endpoint should identify the route");
 assert.ok(experimentEntry.includes("./src/main-realistic.js"), "experiment entry should load the realistic Cavalry module");
 assert.ok(experimentEntry.includes("./src/vegetation-pass.js"), "experiment entry should load the procedural vegetation pass");
 assert.ok(experimentEntry.includes("./src/hex-battlefield-pass.js"), "experiment entry should load the hex battlefield pass");
 assert.ok(experimentEntry.includes("./src/hex-squad-visual-pass.js"), "experiment entry should load the mini squad visual pass");
 assert.ok(experimentEntry.includes("./src/hex-gameplay-pass.js"), "experiment entry should load the tactical gameplay pass");
+assert.ok(experimentEntry.includes("./src/hex-action-ui-pass.js"), "experiment entry should load the bottom action card UI pass");
 assert.ok(experimentEntry.includes("CavalryUiSinkShim"), "experiment entry should provide non-DOM status sinks for runtime compatibility");
 assert.ok(!experimentEntry.includes('id="hud"'), "experiment entry should not contain HUD DOM");
 assert.ok(!experimentEntry.includes('id="footer"'), "experiment entry should not contain footer DOM");
@@ -156,13 +170,10 @@ assert.ok(gallery.includes('route: "./apps/the-cavalry-of-rome/"'), "gallery sho
 assert.equal(plan.canonicalRouteClaim, false, "Cavalry should not claim canonical route status yet");
 assert.equal(plan.deterministicReplayClaim, false, "Cavalry should not claim deterministic replay yet");
 assert.equal(plan.fidelityFocus.mapNavigation.includes("pannable"), true, "domain plan should record pannable map navigation");
-assert.equal(plan.fidelityFocus.soldiers.includes("full-bodied primitive soldiers"), true, "domain plan should record full-bodied primitive soldiers");
 assert.ok(plan.fidelityFocus.proceduralVegetation, "domain plan should record procedural vegetation fidelity");
-assert.ok(plan.intentionallyOmitted.includes("combat rules"), "combat should remain intentionally omitted");
-assert.ok(plan.intentionallyOmitted.includes("visible HUD"), "visible HUD should remain intentionally omitted");
-assert.ok(plan.intentionallyOmitted.includes("hidden HUD DOM"), "hidden HUD DOM should remain intentionally omitted");
-assert.ok(plan.futureProtoKitCandidatesFromCustomLogic.some((entry) => entry.id === "painterly-terrain-material-kit"), "painterly terrain material should be mapped to a future DSK candidate");
-assert.ok(plan.futureProtoKitCandidatesFromCustomLogic.some((entry) => entry.id === "primitive-soldier-construction-kit"), "primitive soldier construction should be mapped to a future DSK candidate");
-assert.ok(plan.futureProtoKitCandidatesFromCustomLogic.some((entry) => entry.id === "procedural-vegetation-field-kit"), "procedural vegetation should be mapped to a future DSK candidate");
+assert.ok(plan.fidelityFocus.hexBattlefield, "domain plan should record hex battlefield fidelity");
+assert.ok(plan.maneuvers, "domain plan should record tactical maneuvers");
+assert.ok(plan.futureProtoKitCandidatesFromCustomLogic.some((entry) => entry.id === "webgl-board-dice-kit"), "webgl dice should be mapped to a future DSK candidate");
+assert.ok(plan.futureProtoKitCandidatesFromCustomLogic.some((entry) => entry.id === "hex-maneuver-gameplay-kit"), "maneuver gameplay should be mapped to a future DSK candidate");
 
 console.log("Cavalry of Rome visual DSK static smoke passed.");
