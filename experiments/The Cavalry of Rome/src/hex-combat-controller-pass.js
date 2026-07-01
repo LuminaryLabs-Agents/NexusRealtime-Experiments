@@ -1,147 +1,102 @@
-const COMBAT_STYLE = "full-2d6-combat-ap-carryover-controller";
-const HEX_GRID = Object.freeze({ cols: 11, rows: 9 });
-const HEX_Y_SCALE = 0.72;
-const SQRT3 = Math.sqrt(3);
+const COMBAT_STYLE = "direct-dice-ap-lockout-controller";
 const TAU = Math.PI * 2;
-const CLASS_COLORS = Object.freeze({ light: "#3fad4f", medium: "#2f70d1", heavy: "#b93026" });
-const BAND_COLORS = Object.freeze({ rome: "#c8231f", etruscan: "#d6aa3c", samnite: "#f0e6cf", greek: "#7a54bd", gallic: "#111318" });
-const TERRAIN = Object.freeze({ grass: "grass", water: "water", hill: "hill", fence: "fence" });
-const RANK = Object.freeze({ light: 0, medium: 1, heavy: 2 });
-const STARTING_STRENGTH = Object.freeze({ light: 5, medium: 7, heavy: 9 });
-const MANEUVERS = Object.freeze({
-  attack: { id: "attack", label: "Attack", cost: 1, kind: "attack" },
-  advanceLeft: { id: "advanceLeft", label: "Advance Left", cost: 1, kind: "advance", section: "left" },
-  advanceCenter: { id: "advanceCenter", label: "Advance Center", cost: 1, kind: "advance", section: "center" },
-  advanceRight: { id: "advanceRight", label: "Advance Right", cost: 1, kind: "advance", section: "right" },
-  lineBrigade: { id: "lineBrigade", label: "Line Brigade", cost: 2, kind: "lineBrigade" },
-  heavyBrigade: { id: "heavyBrigade", label: "Heavy Brigade", cost: 3, kind: "heavyBrigade" },
-  berserk: { id: "berserk", label: "Berserk", cost: 4, kind: "berserk" },
-  scout: { id: "scout", label: "Scout", cost: 4, kind: "scout" }
-});
+const DICE_TIMING = Object.freeze({ landAt: 1500, holdFor: 3000, fadeFor: 900 });
+const MANEUVERS = Object.freeze([
+  { id: "attack", label: "Attack", cost: 1, kind: "attack" },
+  { id: "advanceLeft", label: "Advance Left", cost: 1, kind: "advance", section: "left" },
+  { id: "advanceCenter", label: "Advance Center", cost: 1, kind: "advance", section: "center" },
+  { id: "advanceRight", label: "Advance Right", cost: 1, kind: "advance", section: "right" },
+  { id: "lineBrigade", label: "Line Brigade", cost: 2, kind: "lineBrigade" },
+  { id: "heavyBrigade", label: "Heavy Brigade", cost: 3, kind: "heavyBrigade" },
+  { id: "berserk", label: "Berserk", cost: 4, kind: "berserk" },
+  { id: "scout", label: "Scout", cost: 4, kind: "scout" }
+]);
+const MANEUVER_BY_ID = new Map(MANEUVERS.map((m) => [m.id, m]));
 const KEY_TO_MANEUVER = Object.freeze({ "1": "advanceLeft", "2": "advanceCenter", "3": "advanceRight", "4": "lineBrigade", "5": "heavyBrigade", "6": "berserk", "7": "scout", "8": "attack" });
-const DICE_TIMING = Object.freeze({ landAt: 2200, holdFor: 3000, fadeFor: 1100 });
-
-const enemyPolicy = {
-  requested: "rag-onnx-enemy-policy",
-  modelUrl: "./models/cavalry-enemy-policy.onnx",
-  runtime: "rag-memory-fallback",
-  status: "onnx-runtime-or-model-not-loaded",
-  memory: ["Counter the last maneuver.", "Attack weakened exposed units.", "Prefer range-two light pokes when safe.", "Avoid water and hold useful anchors."],
-  recentTurns: []
-};
 
 const state = {
-  initialized: false,
-  regionId: null,
   turn: 1,
   side: "player",
   actionPoints: 0,
   canRollActionPoints: true,
   activeManeuver: null,
   phase: "idle",
-  remainingMoves: 0,
-  selectedUnitId: null,
-  originalLineIds: new Set(),
-  movedUnitIds: new Set(),
-  reachable: [],
-  attackTargets: [],
-  hoveredHexId: null,
-  hoveredUnitId: null,
-  lastPlayerManeuver: null,
-  lastEnemyPlan: null,
-  enemyIntent: [],
-  lastCombat: null,
   gameOver: null,
   dice: { rolls: [], reason: "", startedAt: 0, landAt: DICE_TIMING.landAt, holdUntil: DICE_TIMING.landAt + DICE_TIMING.holdFor, fadeUntil: DICE_TIMING.landAt + DICE_TIMING.holdFor + DICE_TIMING.fadeFor, active: false }
 };
 
 let canvas = null;
 let ctx = null;
-let cachedField = null;
-let cachedRegionId = null;
+let originalStartManeuver = null;
+let originalPassTurn = null;
+let originalConcedeBattle = null;
+let originalGetSnapshot = null;
 let patchAttempts = 0;
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, Number.isFinite(Number(v)) ? Number(v) : min));
 function randomUint32() { if (globalThis.crypto?.getRandomValues) { const b = new Uint32Array(1); crypto.getRandomValues(b); return b[0]; } return Math.floor(Math.random() * 0x100000000); }
-function random01() { return randomUint32() / 0x100000000; }
 function rollDie() { const range = 0x100000000; const limit = range - (range % 6); let value = randomUint32(); while (value >= limit) value = randomUint32(); return (value % 6) + 1; }
 function roll2d6() { return [rollDie(), rollDie()]; }
 function sum(faces) { return faces.reduce((a, b) => a + b, 0); }
-function showDice(rolls, reason) {
-  const landAt = DICE_TIMING.landAt;
-  const holdUntil = landAt + DICE_TIMING.holdFor;
-  const fadeUntil = holdUntil + DICE_TIMING.fadeFor;
-  state.dice = { rolls, reason, startedAt: performance.now(), landAt, holdUntil, fadeUntil, active: true };
+function showDice(rolls, reason) { const landAt = DICE_TIMING.landAt; const holdUntil = landAt + DICE_TIMING.holdFor; const fadeUntil = holdUntil + DICE_TIMING.fadeFor; state.dice = { rolls, reason, startedAt: performance.now(), landAt, holdUntil, fadeUntil, active: true }; }
+
+function rollActionPointsInPlace() {
+  if (state.gameOver || state.activeManeuver || state.side !== "player" || !state.canRollActionPoints) return false;
+  const faces = roll2d6();
+  const gained = sum(faces);
+  state.actionPoints += gained;
+  state.canRollActionPoints = false;
+  showDice([{ label: "AP", faces, total: gained, advantage: 0 }], "actionPoints");
+  return { faces, gained, total: state.actionPoints };
 }
-function rollActionPointsInPlace() { if (state.gameOver || state.activeManeuver || state.side !== "player" || !state.canRollActionPoints) return false; const faces = roll2d6(); state.actionPoints += sum(faces); state.canRollActionPoints = false; state.phase = "idle"; state.selectedUnitId = null; state.reachable = []; state.attackTargets = []; showDice([{ label: "AP", faces, total: sum(faces), advantage: 0 }], "actionPoints"); return { faces, gained: sum(faces), total: state.actionPoints }; }
 
-function enemyBandForRegion(regionId = "") { if (regionId.includes("etruria")) return BAND_COLORS.etruscan; if (regionId.includes("samnium")) return BAND_COLORS.samnite; if (regionId.includes("graecia") || regionId.includes("campania")) return BAND_COLORS.greek; if (regionId.includes("cisalpine")) return BAND_COLORS.gallic; return "#d6aa3c"; }
-function createUnit(id, army, troopType, col, row, facing = "north", bandColor = BAND_COLORS.rome) { return { id, army, troopType, col, row, facing, bandColor, bodyColor: CLASS_COLORS[troopType], strength: STARTING_STRENGTH[troopType], maxStrength: STARTING_STRENGTH[troopType] }; }
-function fallbackUnits(regionId) { const e = enemyBandForRegion(regionId); return [
-  createUnit("rome-medium-fl", "rome", "medium", 2, 6), createUnit("rome-light-c1", "rome", "light", 4, 6), createUnit("rome-light-c2", "rome", "light", 5, 6), createUnit("rome-light-c3", "rome", "light", 6, 6), createUnit("rome-medium-fr", "rome", "medium", 8, 6), createUnit("rome-medium-l", "rome", "medium", 3, 7), createUnit("rome-light-r", "rome", "light", 5, 7), createUnit("rome-medium-r", "rome", "medium", 7, 7), createUnit("rome-heavy-bl", "rome", "heavy", 2, 8), createUnit("rome-heavy-bc", "rome", "heavy", 5, 8), createUnit("rome-heavy-br", "rome", "heavy", 8, 8), createUnit("rome-light-reserve", "rome", "light", 5, 5),
-  createUnit("enemy-light-l", "enemy", "light", 3, 2, "south", e), createUnit("enemy-medium-l", "enemy", "medium", 4, 2, "south", e), createUnit("enemy-medium-c", "enemy", "medium", 5, 2, "south", e), createUnit("enemy-medium-r", "enemy", "medium", 6, 2, "south", e), createUnit("enemy-light-r", "enemy", "light", 7, 2, "south", e), createUnit("enemy-light-screen-l", "enemy", "light", 4, 1, "south", e), createUnit("enemy-light-screen-r", "enemy", "light", 6, 1, "south", e), createUnit("enemy-heavy-l", "enemy", "heavy", 3, 3, "south", e), createUnit("enemy-heavy-r", "enemy", "heavy", 7, 3, "south", e), createUnit("enemy-medium-reserve", "enemy", "medium", 5, 3, "south", e)
-]; }
-function terrainForFallback(col, row) { const n = Math.sin(col * 12.7 + row * 45.3) * 43758.5453; const f = n - Math.floor(n); if (f > 0.88 && row > 1 && row < 7) return TERRAIN.water; if (f > 0.68) return TERRAIN.hill; if ((row === 3 || row === 5) && f > 0.42 && f < 0.6) return TERRAIN.fence; return TERRAIN.grass; }
-function fallbackTiles() { const tiles = []; for (let row = 0; row < HEX_GRID.rows; row += 1) for (let col = 0; col < HEX_GRID.cols; col += 1) tiles.push({ id: `h-${col}-${row}`, col, row, terrainType: terrainForFallback(col, row) }); return tiles; }
-function hydrateUnits(field) { field.units?.forEach((u) => { if (!Number.isFinite(u.maxStrength)) u.maxStrength = STARTING_STRENGTH[u.troopType] ?? 6; if (!Number.isFinite(u.strength)) u.strength = u.maxStrength; if (!u.bodyColor) u.bodyColor = CLASS_COLORS[u.troopType]; if (!u.bandColor) u.bandColor = u.army === "rome" ? BAND_COLORS.rome : "#d6aa3c"; }); return field; }
-function getField(snapshot = {}) { const direct = globalThis.GameHost?.getHexBattlefieldSnapshot?.(); if (direct?.units?.length && direct?.tiles?.length) return hydrateUnits(direct); const regionId = snapshot.selectedRegionId ?? snapshot.hoveredRegionId ?? "latium"; if (!cachedField || cachedRegionId !== regionId) { cachedField = hydrateUnits({ id: `combat-${regionId}`, regionId, units: fallbackUnits(regionId), tiles: fallbackTiles(), cols: HEX_GRID.cols, rows: HEX_GRID.rows }); cachedRegionId = regionId; } return cachedField; }
+function startManeuver(id) {
+  const maneuver = MANEUVER_BY_ID.get(id);
+  if (!maneuver || state.gameOver || state.activeManeuver || state.side !== "player" || state.actionPoints < maneuver.cost) return false;
+  state.actionPoints -= maneuver.cost;
+  state.activeManeuver = id;
+  state.phase = id;
+  const result = originalStartManeuver?.(id);
+  if (result === false) {
+    state.actionPoints += maneuver.cost;
+    state.activeManeuver = null;
+    state.phase = "idle";
+    return false;
+  }
+  state.activeManeuver = null;
+  state.phase = "idle";
+  return result ?? true;
+}
 
-function ensureCanvas() { if (canvas) return canvas; canvas = document.createElement("canvas"); canvas.id = "cavalry-combat-controller-canvas"; Object.assign(canvas.style, { position: "fixed", inset: "0", width: "100%", height: "100%", zIndex: "16", pointerEvents: "none", display: "none" }); document.querySelector("#app")?.append(canvas); ctx = canvas.getContext("2d"); canvas.addEventListener("pointermove", onPointerMove); canvas.addEventListener("pointerdown", onPointerDown); return canvas; }
-function resize() { ensureCanvas(); const ratio = Math.max(1, Math.min(2, devicePixelRatio || 1)); const w = Math.max(1, Math.floor(canvas.clientWidth * ratio)); const h = Math.max(1, Math.floor(canvas.clientHeight * ratio)); if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; } return { w, h, ratio }; }
-function boardMetrics(size) { const usableW = size.w * 0.88, usableH = size.h * 0.80; const r = Math.min(usableW / (SQRT3 * (HEX_GRID.cols + 0.5)), usableH / (HEX_Y_SCALE * (1.5 * (HEX_GRID.rows - 1) + 2))); const boardW = SQRT3 * r * (HEX_GRID.cols + 0.5), boardH = HEX_Y_SCALE * r * (1.5 * (HEX_GRID.rows - 1) + 2); return { r, originX: (size.w - boardW) * 0.5 + SQRT3 * r * 0.5, originY: size.h * 0.06 + Math.max(0, usableH - boardH) * 0.08, yScale: HEX_Y_SCALE }; }
-function projectHex(col, row, size) { const m = boardMetrics(size); return { x: m.originX + SQRT3 * m.r * (col + (row % 2 ? 0.5 : 0)), y: m.originY + m.yScale * m.r * (1 + row * 1.5), r: m.r, yScale: m.yScale }; }
-function nearestHex(clientX, clientY) { const rect = canvas.getBoundingClientRect(); const size = { w: canvas.width, h: canvas.height }; const x = (clientX - rect.left) * (canvas.width / Math.max(1, rect.width)); const y = (clientY - rect.top) * (canvas.height / Math.max(1, rect.height)); let best = null, bestD = Infinity; for (let row = 0; row < HEX_GRID.rows; row += 1) for (let col = 0; col < HEX_GRID.cols; col += 1) { const p = projectHex(col, row, size); const d = Math.hypot((x - p.x), (y - p.y) / p.yScale) / Math.max(1, p.r); if (d < bestD) { best = { col, row, id: `h-${col}-${row}` }; bestD = d; } } return bestD < 0.94 ? best : null; }
-function tileAt(f, c, r) { return f.tiles?.find((t) => t.col === c && t.row === r) ?? null; }
-function unitAt(f, c, r) { return f.units?.find((u) => u.col === c && u.row === r && !u.routed && u.strength > 0) ?? null; }
-function unitById(f, id) { return f.units?.find((u) => u.id === id) ?? null; }
-function liveUnits(f, army) { return f.units.filter((u) => u.army === army && !u.routed && u.strength > 0); }
-function isRomeUnit(u) { return u?.army === "rome" && !u.routed && u.strength > 0; }
-function isEnemyUnit(u) { return u?.army === "enemy" && !u.routed && u.strength > 0; }
-function isWater(t) { return t?.terrainType === TERRAIN.water || t?.label === TERRAIN.water; }
-function isStopTerrain(t) { return t?.terrainType === TERRAIN.hill || t?.terrainType === TERRAIN.fence || t?.label === TERRAIN.hill || t?.label === TERRAIN.fence; }
-function inBounds(c, r) { return c >= 0 && c < HEX_GRID.cols && r >= 0 && r < HEX_GRID.rows; }
-function sectionForCol(c) { if (c <= 3) return "left"; if (c >= 7) return "right"; return "center"; }
-function isOccupied(f, c, r) { return Boolean(unitAt(f, c, r)); }
-function neighbors(c, r) { const odd = r % 2 === 1; const dirs = odd ? [[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]] : [[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]; return dirs.map(([dc, dr]) => ({ col: c + dc, row: r + dr })).filter((h) => inBounds(h.col, h.row)); }
-function distance(a, b) { const q = [{ col: a.col, row: a.row, d: 0 }]; const seen = new Set([`${a.col},${a.row}`]); while (q.length) { const n = q.shift(); if (n.col === b.col && n.row === b.row) return n.d; for (const nx of neighbors(n.col, n.row)) { const k = `${nx.col},${nx.row}`; if (!seen.has(k)) { seen.add(k); q.push({ ...nx, d: n.d + 1 }); } } } return 99; }
-function reachableHexes(f, u, maxSteps) { const seen = new Set([`${u.col},${u.row}`]); const q = [{ col: u.col, row: u.row, steps: 0 }]; const out = []; while (q.length) { const cur = q.shift(); if (cur.steps >= maxSteps || (cur.steps > 0 && isStopTerrain(tileAt(f, cur.col, cur.row)))) continue; for (const nx of neighbors(cur.col, cur.row)) { const k = `${nx.col},${nx.row}`; if (seen.has(k)) continue; const t = tileAt(f, nx.col, nx.row); if (!t || isWater(t) || isOccupied(f, nx.col, nx.row)) continue; const e = { ...nx, id: `h-${nx.col}-${nx.row}`, steps: cur.steps + 1 }; seen.add(k); out.push(e); q.push(e); } } return out; }
-function rankAdvantage(a, d) { const diff = (RANK[a.troopType] ?? 0) - (RANK[d.troopType] ?? 0); if (diff >= 2) return 5; if (diff === 1) return 2; if (diff === 0) return 0; if (diff === -1) return -2; return -5; }
-function rangePenalty(a, range) { if (range <= 1) return 0; return a.troopType === "light" ? -4 : -6; }
-function attackableTargets(f, attacker) { return f.units.filter((u) => u.army !== attacker.army && !u.routed && u.strength > 0).map((target) => ({ target, range: distance(attacker, target) })).filter(({ range }) => range === 1 || range === 2).map(({ target, range }) => ({ id: target.id, col: target.col, row: target.row, range })); }
-function checkGameOver(f) { if (liveUnits(f, "rome").length <= 0) state.gameOver = { winner: "enemy", reason: "rome-wiped-out" }; if (liveUnits(f, "enemy").length <= 0) state.gameOver = { winner: "rome", reason: "enemy-wiped-out" }; return state.gameOver; }
-function resolveCombat(f, attacker, defender, range = 1) { if (!attacker || !defender || state.gameOver) return false; const aFaces = roll2d6(), dFaces = roll2d6(); const advantage = rankAdvantage(attacker, defender) + rangePenalty(attacker, range); const attackerTotal = sum(aFaces) + advantage; const defenderTotal = sum(dFaces); const diff = Math.abs(attackerTotal - defenderTotal); let winner = "draw", loser = null; if (attackerTotal > defenderTotal) { winner = attacker.army; loser = defender; } else if (defenderTotal > attackerTotal) { winner = defender.army; loser = attacker; } if (loser && diff > 0) { loser.strength = Math.max(0, loser.strength - diff); if (loser.strength <= 0) loser.routed = true; } state.lastCombat = { attackerId: attacker.id, defenderId: defender.id, range, advantage, attackerRoll: aFaces, defenderRoll: dFaces, attackerTotal, defenderTotal, damage: loser ? diff : 0, damagedUnitId: loser?.id ?? null, winner, turn: state.turn }; showDice([{ label: attacker.army === "rome" ? "ROME" : "ENEMY", faces: aFaces, total: attackerTotal, advantage }, { label: defender.army === "rome" ? "ROME" : "ENEMY", faces: dFaces, total: defenderTotal, advantage: 0 }], "combat"); checkGameOver(f); return state.lastCombat; }
-function resetForRegion(regionId) { state.initialized = true; state.regionId = regionId; state.turn = 1; state.side = "player"; state.actionPoints = 0; state.canRollActionPoints = true; state.activeManeuver = null; state.phase = "idle"; state.remainingMoves = 0; state.selectedUnitId = null; state.originalLineIds = new Set(); state.movedUnitIds = new Set(); state.reachable = []; state.attackTargets = []; state.gameOver = null; }
-function eligibleUnits(f) { const m = state.activeManeuver; if (!m) return f.units.filter(isRomeUnit); if (m.kind === "advance") return f.units.filter((u) => isRomeUnit(u) && sectionForCol(u.col) === m.section && !state.movedUnitIds.has(u.id)); if (m.kind === "heavyBrigade") return f.units.filter((u) => isRomeUnit(u) && u.troopType === "heavy" && !state.movedUnitIds.has(u.id)); if (m.kind === "lineBrigade") return f.units.filter((u) => isRomeUnit(u) && state.originalLineIds.has(u.id) && !state.movedUnitIds.has(u.id)); if (m.kind === "attack" || m.kind === "berserk" || m.kind === "scout") return f.units.filter((u) => isRomeUnit(u) && !state.movedUnitIds.has(u.id)); return f.units.filter(isRomeUnit); }
-function startManeuver(id, f = getField(globalThis.GameHost?.getSnapshot?.() ?? {})) { const m = MANEUVERS[id]; if (!m || !f || state.gameOver || state.activeManeuver || state.side !== "player" || state.actionPoints < m.cost) return false; state.actionPoints -= m.cost; state.activeManeuver = m; state.phase = m.kind === "attack" ? "pickAttacker" : m.kind === "lineBrigade" ? "pickLine" : "pickUnit"; state.selectedUnitId = null; state.originalLineIds = new Set(); state.movedUnitIds = new Set(); state.reachable = []; state.attackTargets = []; state.remainingMoves = m.kind === "advance" ? f.units.filter((u) => isRomeUnit(u) && sectionForCol(u.col) === m.section).length : 1; return true; }
-function connectedLineGroup(f, seed) { const g = [], seen = new Set(), q = [seed]; while (q.length && g.length < 8) { const u = q.shift(); if (!isRomeUnit(u) || seen.has(u.id)) continue; seen.add(u.id); g.push(u); for (const h of neighbors(u.col, u.row)) { const a = unitAt(f, h.col, h.row); if (isRomeUnit(a) && !seen.has(a.id)) q.push(a); } } return g; }
-function cancelSelectionOnly() { state.phase = state.activeManeuver ? state.activeManeuver.kind === "attack" ? "pickAttacker" : (state.activeManeuver.kind === "lineBrigade" && !state.originalLineIds.size ? "pickLine" : "pickUnit") : "idle"; state.selectedUnitId = null; state.reachable = []; state.attackTargets = []; }
-function completePlayerManeuver(f) { const last = state.activeManeuver?.id ?? "pass"; state.lastPlayerManeuver = last; state.activeManeuver = null; state.phase = "enemyTurn"; state.selectedUnitId = null; state.originalLineIds = new Set(); state.movedUnitIds = new Set(); state.reachable = []; state.attackTargets = []; state.turn += 1; setTimeout(() => runEnemyTurn(f, last), 320); }
-function passTurn() { if (state.side !== "player" || state.gameOver) return false; completePlayerManeuver(getField(globalThis.GameHost?.getSnapshot?.() ?? {})); return true; }
-function concede() { state.gameOver = { winner: "enemy", reason: "player-conceded" }; state.phase = "conceded"; return true; }
-function selectUnit(f, u) { if (!isRomeUnit(u) || !state.activeManeuver) return false; const m = state.activeManeuver; if (m.kind === "lineBrigade" && !state.originalLineIds.size) state.originalLineIds = new Set(connectedLineGroup(f, u).map((x) => x.id)); if (!eligibleUnits(f).some((x) => x.id === u.id)) return false; state.selectedUnitId = u.id; if (m.kind === "attack") { state.phase = "attack"; state.attackTargets = attackableTargets(f, u); state.reachable = []; return true; } state.phase = "move"; state.reachable = reachableHexes(f, u, m.kind === "scout" ? 3 : m.kind === "berserk" ? 2 : u.troopType === "light" ? 2 : 1); state.attackTargets = []; return true; }
-function afterMoveOrAction(f) { if (!state.activeManeuver) return; if (state.activeManeuver.kind === "advance") { state.remainingMoves = eligibleUnits(f).length; if (state.remainingMoves <= 0) completePlayerManeuver(f); else cancelSelectionOnly(); return; } if (state.activeManeuver.kind === "scout" || state.activeManeuver.kind === "attack" || !eligibleUnits(f).length) completePlayerManeuver(f); else cancelSelectionOnly(); }
-function moveSelected(f, target) { const u = unitById(f, state.selectedUnitId); if (!u || !state.reachable.some((h) => h.col === target.col && h.row === target.row)) return false; u.col = target.col; u.row = target.row; state.movedUnitIds.add(u.id); state.reachable = []; if (state.activeManeuver?.kind === "berserk") { const targets = attackableTargets(f, u).filter((t) => t.range <= 1); if (targets.length) { state.phase = "attack"; state.attackTargets = targets; return true; } } if (isStopTerrain(tileAt(f, target.col, target.row))) { completePlayerManeuver(f); return true; } afterMoveOrAction(f); return true; }
-function attackTarget(f, defender) { const attacker = unitById(f, state.selectedUnitId); if (!attacker || !defender) return false; const target = attackableTargets(f, attacker).find((t) => t.id === defender.id); if (!target) return false; resolveCombat(f, attacker, defender, target.range); state.movedUnitIds.add(attacker.id); if (state.activeManeuver?.kind === "berserk" || state.activeManeuver?.kind === "attack") completePlayerManeuver(f); else afterMoveOrAction(f); return true; }
-function runEnemyTurn(f, last) { if (state.gameOver) return; state.side = "enemy"; state.phase = "enemyTurn"; const enemies = liveUnits(f, "enemy").sort(() => random01() - 0.5); const moves = []; for (const u of enemies.slice(0, clamp(2 + Math.floor(random01() * 3), 1, 4))) { const target = attackableTargets(f, u).sort((a, b) => (unitById(f, a.id)?.strength ?? 9) - (unitById(f, b.id)?.strength ?? 9))[0]; if (target && random01() > 0.25) { const d = unitById(f, target.id); resolveCombat(f, u, d, target.range); moves.push({ unitId: u.id, attack: target }); continue; } const options = reachableHexes(f, u, u.troopType === "light" ? 2 : 1); const scored = options.map((h) => ({ h, score: scoreEnemyMove(f, u, h, last) })).sort((a, b) => b.score - a.score); if (scored[0]) { const from = { col: u.col, row: u.row }; u.col = scored[0].h.col; u.row = scored[0].h.row; moves.push({ unitId: u.id, from, to: scored[0].h }); } } enemyPolicy.recentTurns.push({ turn: state.turn, lastManeuver: last, moves }); if (enemyPolicy.recentTurns.length > 12) enemyPolicy.recentTurns.shift(); state.lastEnemyPlan = { policy: enemyPolicy.runtime, moves }; state.enemyIntent = moves.map((m) => ({ id: m.unitId, col: m.to?.col ?? m.attack?.col, row: m.to?.row ?? m.attack?.row, startedAt: performance.now() })); checkGameOver(f); setTimeout(() => { if (!state.gameOver) { state.side = "player"; state.phase = "idle"; state.canRollActionPoints = true; } }, 820); }
-function scoreEnemyMove(f, u, h, last) { const t = tileAt(f, h.col, h.row); if (!t || isWater(t) || isOccupied(f, h.col, h.row)) return -999; const rome = liveUnits(f, "rome"); const closest = Math.min(...rome.map((r) => distance(h, r))); const sec = sectionForCol(h.col); const counter = last === "advanceLeft" && sec === "left" ? 1.2 : last === "advanceRight" && sec === "right" ? 1.2 : last === "advanceCenter" && sec === "center" ? 1.0 : 0; return (8 - closest) * 0.9 + counter + (isStopTerrain(t) ? 0.45 : 0) + (random01() - 0.5) * 1.8; }
-function onPointerMove(e) { const snap = globalThis.GameHost?.getSnapshot?.() ?? {}; if (snap.mode !== "battlefield" || state.side !== "player") return; const f = getField(snap), h = nearestHex(e.clientX, e.clientY), u = h ? unitAt(f, h.col, h.row) : null; state.hoveredHexId = h?.id ?? null; state.hoveredUnitId = u?.army === "rome" ? u.id : null; }
-function onPointerDown(e) { const snap = globalThis.GameHost?.getSnapshot?.() ?? {}; if (snap.mode !== "battlefield" || state.side !== "player" || state.gameOver) return; const f = getField(snap), h = nearestHex(e.clientX, e.clientY); if (!h) return; const u = unitAt(f, h.col, h.row); if (state.phase === "attack" && u && u.army !== "rome") { attackTarget(f, u); return; } if (state.selectedUnitId && state.reachable.some((x) => x.col === h.col && x.row === h.row)) { moveSelected(f, h); return; } if (isRomeUnit(u)) selectUnit(f, u); }
-function squadLayout(u) { if (u.troopType === "heavy") return [[-2,0],[-1,0],[0,0],[1,0],[2,0],[-1.5,1],[-.5,1],[.5,1],[1.5,1]]; if (u.troopType === "medium") return [[-1.5,0],[-.5,0],[.5,0],[1.5,0],[-1,1],[0,1],[1,1]]; return [[-1,0],[0,0],[1,0],[-.5,1],[.5,1]]; }
-function drawShadow(x,y,s,ys){ ctx.fillStyle="rgba(0,0,0,.20)"; ctx.beginPath(); ctx.moveTo(x-s*.22,y+s*.35*ys); ctx.lineTo(x+s*.12,y+s*.42*ys); ctx.lineTo(x+s*.76,y+s*.20*ys); ctx.lineTo(x+s*.42,y+s*.10*ys); ctx.closePath(); ctx.fill(); }
-function drawSoldier(x,y,s,u,ys,i){ drawShadow(x,y,s,ys); const armor=u.troopType==="heavy"?"#b9af93":u.troopType==="medium"?"#878d96":"#7a6b59"; ctx.save(); if(u.troopType!=="light"||i%2===0){ctx.strokeStyle="#7b5a33";ctx.lineWidth=Math.max(1,s*.08);ctx.beginPath();ctx.moveTo(x+s*.28,y-s*.02);ctx.lineTo(x+s*.34,y-s);ctx.stroke();} ctx.fillStyle="#493225"; for(const side of[-1,1]){ctx.beginPath();ctx.moveTo(x+side*s*.15,y+s*.36*ys);ctx.lineTo(x+side*s*.04,y+s*.02*ys);ctx.lineTo(x-side*s*.03,y+s*.36*ys);ctx.closePath();ctx.fill();} ctx.fillStyle=u.bodyColor;ctx.beginPath();ctx.moveTo(x-s*.25,y-s*.02);ctx.lineTo(x+s*.25,y-s*.02);ctx.lineTo(x+s*.17,y-s*.50);ctx.lineTo(x-s*.17,y-s*.50);ctx.closePath();ctx.fill();ctx.fillStyle=u.bandColor;ctx.fillRect(x-s*.23,y-s*.28,s*.46,s*.10);ctx.fillStyle=armor;ctx.beginPath();ctx.moveTo(x-s*.28,y-s*.08);ctx.lineTo(x-s*.42,y-s*.20);ctx.lineTo(x-s*.36,y-s*.44);ctx.lineTo(x-s*.07,y-s*.36);ctx.lineTo(x-s*.06,y-s*.06);ctx.closePath();ctx.fill();ctx.fillStyle=u.bandColor;ctx.fillRect(x-s*.30,y-s*.30,s*.22,s*.055);ctx.fillStyle="#d2b38a";ctx.beginPath();ctx.arc(x,y-s*.64,s*.12,0,TAU);ctx.fill();ctx.fillStyle=armor;ctx.beginPath();ctx.moveTo(x-s*.16,y-s*.68);ctx.lineTo(x+s*.16,y-s*.68);ctx.lineTo(x+s*.10,y-s*.84);ctx.lineTo(x-s*.10,y-s*.84);ctx.closePath();ctx.fill();ctx.restore();}
-function drawSquad(u,size){ const p=projectHex(u.col,u.row,size); const layout=squadLayout(u).slice(0, Math.max(1, Math.min(u.strength, STARTING_STRENGTH[u.troopType]))); const selected=state.selectedUnitId===u.id, hovered=state.hoveredUnitId===u.id; const scale=p.r*(u.troopType==="heavy"?.23:u.troopType==="medium"?.20:.18); const lift=selected?-p.r*.06:hovered?-p.r*.028:0; ctx.save(); ctx.filter=selected?"brightness(1.16) saturate(1.08)":hovered?"brightness(1.06)":"none"; layout.forEach(([lx,ly],i)=>drawSoldier(p.x+lx*scale*1.62,p.y+ly*scale*p.yScale*1.70-scale*.20+lift,scale,u,p.yScale,i)); ctx.restore(); }
-function drawHexPath(p,scale=.94){ctx.beginPath();for(let i=0;i<6;i++){const a=Math.PI/6+i*TAU/6,x=p.x+Math.cos(a)*p.r*scale,y=p.y+Math.sin(a)*p.r*p.yScale*scale;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.closePath();}
-function drawHighlights(f,size){ eligibleUnits(f).forEach((u)=>{const p=projectHex(u.col,u.row,size);drawHexPath(p,.96);ctx.strokeStyle="rgba(246,211,112,.72)";ctx.lineWidth=Math.max(2,p.r*.035);ctx.stroke();}); state.reachable.forEach((h)=>{const p=projectHex(h.col,h.row,size);drawHexPath(p,.92);ctx.fillStyle="rgba(86,211,122,.24)";ctx.fill();ctx.strokeStyle="rgba(126,244,154,.86)";ctx.lineWidth=2;ctx.stroke();}); state.attackTargets.forEach((h)=>{const p=projectHex(h.col,h.row,size);drawHexPath(p,.92);ctx.fillStyle="rgba(214,58,49,.30)";ctx.fill();ctx.strokeStyle="rgba(255,95,72,.92)";ctx.lineWidth=3;ctx.stroke();}); }
-function drawDice(size){ if(!state.dice.active)return; const age=performance.now()-state.dice.startedAt; let alpha=1; if(age>state.dice.holdUntil) alpha=clamp(1-(age-state.dice.holdUntil)/(state.dice.fadeUntil-state.dice.holdUntil),0,1); if(age>state.dice.fadeUntil){state.dice.active=false;return;} ctx.save();ctx.globalAlpha=alpha; const rolls=state.dice.rolls; rolls.forEach((roll,i)=>{ const cx=size.w*(rolls.length===1?.5:i===0?.38:.62); const cy=size.h*.40; ctx.fillStyle="rgba(0,0,0,.28)"; ctx.beginPath(); ctx.ellipse(cx,cy+size.h*.12,size.w*.11,size.h*.025,0,0,TAU); ctx.fill(); roll.faces.forEach((face,j)=>drawDie(cx+(j-.5)*size.w*.08,cy,Math.min(size.w,size.h)*.052,face,age,i+j)); ctx.fillStyle="#fff0bd"; ctx.font=`${Math.max(16,size.w*.014)}px system-ui`; ctx.textAlign="center"; ctx.fillText(`${roll.label} ${roll.total}${roll.advantage?` (${roll.advantage>0?"+":""}${roll.advantage})`:""}`,cx,cy+size.h*.105); }); ctx.restore();}
-function drawDie(x,y,s,face,age,seed){ const t=clamp(age/state.dice.landAt,0,1); const travel=Math.sin(t*Math.PI)*s*2.2*(seed%2?-1:1); const bounce=Math.abs(Math.sin(t*TAU*4+seed))*s*.55*(1-t); const spin=t<.96?((face+Math.floor(t*42+seed*3))%6)+1:face; ctx.save();ctx.translate(x+travel,y-bounce);ctx.rotate(t*TAU*3.2*(seed%2?1:-1)); const g=ctx.createLinearGradient(-s,-s,s,s);g.addColorStop(0,"#f0834f");g.addColorStop(.5,"#a52218");g.addColorStop(1,"#360b08");ctx.fillStyle=g;ctx.strokeStyle="rgba(255,224,150,.90)";ctx.lineWidth=Math.max(2,s*.05);ctx.beginPath();ctx.roundRect(-s,-s,s*2,s*2,s*.22);ctx.fill();ctx.stroke();drawPips(0,0,s,spin);ctx.restore();}
-function drawPips(x,y,s,face){ const m={1:[[0,0]],2:[[-.34,-.34],[.34,.34]],3:[[-.34,-.34],[0,0],[.34,.34]],4:[[-.34,-.34],[.34,.34],[-.34,.34],[.34,-.34]],5:[[-.34,-.34],[.34,.34],[-.34,.34],[.34,-.34],[0,0]],6:[[-.34,-.34],[.34,.34],[-.34,.34],[.34,-.34],[-.34,0],[.34,0]]}[face]||[];ctx.fillStyle="#170806";m.forEach(([dx,dy])=>{ctx.beginPath();ctx.arc(x+dx*s,y+dy*s,s*.075,0,TAU);ctx.fill();});}
-function drawGameOver(size){ if(!state.gameOver)return; ctx.save();ctx.fillStyle="rgba(0,0,0,.36)";ctx.fillRect(0,0,size.w,size.h);ctx.fillStyle="#fff0bd";ctx.font=`${Math.max(28,size.w*.035)}px system-ui`;ctx.textAlign="center";ctx.fillText(state.gameOver.winner==="rome"?"ROME WINS":"ROME DEFEATED",size.w/2,size.h*.32);ctx.restore();}
-function hideOlder(){["#cavalry-opponent-ai-canvas","#cavalry-roll-controller-canvas","#cavalry-hex-gameplay-canvas","#cavalry-webgl-dice-canvas","#cavalry-hex-squad-canvas","#cavalry-hex-unit-canvas"].forEach((id)=>{const n=document.querySelector(id);if(n){n.style.opacity="0";n.style.pointerEvents="none";}});}
-function frame(){ensureCanvas();hideOlder();const snap=globalThis.GameHost?.getSnapshot?.()??{};const active=snap.mode==="battlefield";canvas.style.display=active?"block":"none";canvas.style.pointerEvents=active?"auto":"none";if(active){const f=getField(snap);if(!state.initialized||state.regionId!==f.regionId)resetForRegion(f.regionId??"latium");const size=resize();ctx.clearRect(0,0,size.w,size.h);drawHighlights(f,size);f.units.filter((u)=>!u.routed&&u.strength>0).sort((a,b)=>a.row-b.row||a.col-b.col).forEach((u)=>drawSquad(u,size));drawDice(size);drawGameOver(size);}requestAnimationFrame(frame);}
-function onPointerMove(e){const snap=globalThis.GameHost?.getSnapshot?.()??{};if(snap.mode!=="battlefield"||state.side!=="player")return;const f=getField(snap),h=nearestHex(e.clientX,e.clientY),u=h?unitAt(f,h.col,h.row):null;state.hoveredHexId=h?.id??null;state.hoveredUnitId=u?.army==="rome"?u.id:null;}
-function onPointerDown(e){const snap=globalThis.GameHost?.getSnapshot?.()??{};if(snap.mode!=="battlefield"||state.side!=="player"||state.gameOver)return;const f=getField(snap),h=nearestHex(e.clientX,e.clientY);if(!h)return;const u=unitAt(f,h.col,h.row);if(state.phase==="attack"&&u&&u.army!=="rome"){attackTarget(f,u);return;}if(state.selectedUnitId&&state.reachable.some((x)=>x.col===h.col&&x.row===h.row)){moveSelected(f,h);return;}if(isRomeUnit(u))selectUnit(f,u);}
-function handleKey(e){const snap=globalThis.GameHost?.getSnapshot?.()??{};if(snap.mode!=="battlefield")return;if(e.key==="0"||e.key.toLowerCase()==="r"){e.preventDefault();rollActionPointsInPlace();return;}if(e.key.toLowerCase()==="p"){e.preventDefault();passTurn();return;}const id=KEY_TO_MANEUVER[e.key];if(id){e.preventDefault();startManeuver(id,getField(snap));}if(e.key==="Escape"){e.preventDefault();cancelSelectionOnly();}}
-function getTacticalSnapshot(){return{style:COMBAT_STYLE,turn:state.turn,side:state.side,actionPoints:state.actionPoints,canRollActionPoints:state.canRollActionPoints,activeManeuver:state.activeManeuver?.id??null,phase:state.phase,remainingMoves:state.remainingMoves,selectedUnitId:state.selectedUnitId,hoveredUnitId:state.hoveredUnitId,hoveredHexId:state.hoveredHexId,reachable:state.reachable.map((h)=>({col:h.col,row:h.row,steps:h.steps})),attackTargets:state.attackTargets,dice:{rolls:state.dice.rolls,reason:state.dice.reason,active:state.dice.active,landAt:state.dice.landAt,holdUntil:state.dice.holdUntil,fadeUntil:state.dice.fadeUntil},canRollInPlace:!state.activeManeuver&&state.side==="player"&&state.canRollActionPoints,gameOver:state.gameOver,lastCombat:state.lastCombat,lastEnemyPlan:state.lastEnemyPlan,enemyPolicy:{requested:enemyPolicy.requested,runtime:enemyPolicy.runtime,status:enemyPolicy.status,recentTurns:enemyPolicy.recentTurns.slice(-3)},maneuvers:Object.values(MANEUVERS).map(({id,label,cost,kind,section})=>({id,label,cost,kind,section}))};}
-function patchGameHost(){const host=globalThis.GameHost;if(!host||host.__cavalryCombatPatched)return false;const original=typeof host.getSnapshot==="function"?host.getSnapshot.bind(host):()=>({});host.getSnapshot=()=>({...original(),tacticalGameplay:getTacticalSnapshot()});host.getTacticalGameplaySnapshot=getTacticalSnapshot;host.startManeuver=(id)=>startManeuver(id,getField(original()??{}));host.rollActionPointsInPlace=rollActionPointsInPlace;host.passTurn=passTurn;host.concedeBattle=concede;host.__cavalryCombatPatched=true;return true;}
-function boot(){globalThis.CavalryCombatController={style:COMBAT_STYLE,startManeuver,rollActionPointsInPlace,passTurn,concede,getState:getTacticalSnapshot};window.addEventListener("keydown",handleKey);const timer=setInterval(()=>{if(patchGameHost())clearInterval(timer);patchAttempts+=1;if(patchAttempts>240)clearInterval(timer);},100);ensureCanvas();requestAnimationFrame(frame);}
+function passTurn() {
+  state.turn += 1;
+  state.canRollActionPoints = true;
+  state.activeManeuver = null;
+  state.phase = "idle";
+  return originalPassTurn?.() ?? true;
+}
+function concede() { state.gameOver = { winner: "enemy", reason: "player-conceded" }; return originalConcedeBattle?.() ?? true; }
+
+function ensureCanvas() {
+  if (canvas) return canvas;
+  canvas = document.createElement("canvas");
+  canvas.id = "cavalry-combat-controller-canvas";
+  Object.assign(canvas.style, { position: "fixed", inset: "0", width: "100%", height: "100%", zIndex: "18", pointerEvents: "none", display: "none" });
+  document.querySelector("#app")?.append(canvas);
+  ctx = canvas.getContext("2d");
+  return canvas;
+}
+function resize() { ensureCanvas(); const ratio = Math.max(1, Math.min(2, devicePixelRatio || 1)); const w = Math.max(1, Math.floor(canvas.clientWidth * ratio)); const h = Math.max(1, Math.floor(canvas.clientHeight * ratio)); if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; } return { w, h }; }
+function hideOlder() { ["#cavalry-dice-visual-fix-canvas", "#cavalry-roll-controller-canvas", "#cavalry-webgl-dice-canvas"].forEach((id) => { const n = document.querySelector(id); if (n) { n.style.opacity = "0"; n.style.pointerEvents = "none"; } }); }
+function drawDice(size) { if (!state.dice.active) return; const age = performance.now() - state.dice.startedAt; if (age > state.dice.fadeUntil) { state.dice.active = false; return; } let alpha = 1; if (age > state.dice.holdUntil) alpha = clamp(1 - (age - state.dice.holdUntil) / (state.dice.fadeUntil - state.dice.holdUntil), 0, 1); ctx.save(); ctx.globalAlpha = alpha; const rolls = state.dice.rolls; rolls.forEach((roll, i) => { const cx = size.w * (rolls.length === 1 ? .5 : i === 0 ? .38 : .62); const cy = size.h * .40; drawTable(cx, cy, size.w * .22, size.h * .15); roll.faces.forEach((face, j) => drawDie(cx + (j - .5) * size.w * .075, cy, Math.min(size.w, size.h) * .052, face, age, i * 3 + j)); ctx.fillStyle = "#fff0bd"; ctx.font = `${Math.max(16, size.w * .014)}px system-ui`; ctx.textAlign = "center"; ctx.fillText(`${roll.label} ${roll.total}${roll.advantage ? ` (${roll.advantage > 0 ? "+" : ""}${roll.advantage})` : ""}`, cx, cy + size.h * .108); }); ctx.restore(); }
+function drawTable(cx, cy, w, h) { const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * .75); g.addColorStop(0, "rgba(8,14,8,.96)"); g.addColorStop(.62, "rgba(8,14,8,.72)"); g.addColorStop(1, "rgba(8,14,8,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(cx, cy + h * .10, w * .66, h * .46, 0, 0, TAU); ctx.fill(); }
+function drawDie(x, y, s, face, age, seed) { const t = clamp(age / state.dice.landAt, 0, 1); const landed = t >= 1; const e = 1 - Math.pow(1 - t, 3); const start = (seed % 2 ? -1 : 1) * s * 3.0; const dx = landed ? 0 : start * (1 - e); const dy = landed ? 0 : Math.abs(Math.sin(t * TAU * 3.2 + seed)) * s * .55 * (1 - e); const rot = landed ? 0 : (1 - e) * (seed % 2 ? -.55 : .55); const shown = landed ? face : ((face + Math.floor(t * 30 + seed * 2)) % 6) + 1; ctx.save(); ctx.translate(x + dx, y - dy); ctx.rotate(rot); drawShadow(s); drawBody(s); drawPips(s, shown); ctx.restore(); }
+function drawShadow(s) { ctx.fillStyle = "rgba(0,0,0,.40)"; ctx.beginPath(); ctx.ellipse(s * .22, s * 1.22, s * 1.08, s * .24, -.10, 0, TAU); ctx.fill(); }
+function drawBody(s) { const d = s * .42, r = s * .20; ctx.fillStyle = "#ee8650"; ctx.beginPath(); ctx.moveTo(-s + r, -s - d); ctx.lineTo(s + d - r, -s - d); ctx.quadraticCurveTo(s + d, -s - d, s + d, -s - d + r); ctx.lineTo(s, -s + r); ctx.lineTo(-s, -s + r); ctx.closePath(); ctx.fill(); ctx.fillStyle = "#6d1b13"; ctx.beginPath(); ctx.moveTo(s, -s + r); ctx.lineTo(s + d, -s - d + r); ctx.lineTo(s + d, s + d - r); ctx.lineTo(s, s - r); ctx.closePath(); ctx.fill(); const g = ctx.createLinearGradient(-s, -s, s, s); g.addColorStop(0, "#f69a60"); g.addColorStop(.5, "#b93222"); g.addColorStop(1, "#4d100b"); ctx.fillStyle = g; ctx.strokeStyle = "rgba(255,226,154,.98)"; ctx.lineWidth = Math.max(2, s * .055); ctx.beginPath(); ctx.roundRect(-s, -s, s * 2, s * 2, r); ctx.fill(); ctx.stroke(); }
+function drawPips(s, face) { const spots = { 1:[[0,0]], 2:[[-.34,-.34],[.34,.34]], 3:[[-.34,-.34],[0,0],[.34,.34]], 4:[[-.34,-.34],[.34,.34],[-.34,.34],[.34,-.34]], 5:[[-.34,-.34],[.34,.34],[-.34,.34],[.34,-.34],[0,0]], 6:[[-.34,-.34],[.34,.34],[-.34,.34],[.34,-.34],[-.34,0],[.34,0]] }[face] || []; ctx.fillStyle = "#170806"; spots.forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(dx * s, dy * s, s * .082, 0, TAU); ctx.fill(); }); }
+function frame() { ensureCanvas(); hideOlder(); const page = originalGetSnapshot?.() ?? globalThis.GameHost?.getSnapshot?.() ?? {}; const active = page.mode === "battlefield"; canvas.style.display = active && state.dice.active ? "block" : "none"; if (active && state.dice.active) { const size = resize(); ctx.clearRect(0, 0, size.w, size.h); drawDice(size); } requestAnimationFrame(frame); }
+function handleKey(e) { const page = originalGetSnapshot?.() ?? {}; if (page.mode !== "battlefield") return; if (e.key === "0" || e.key.toLowerCase() === "r") { e.preventDefault(); rollActionPointsInPlace(); return; } const id = KEY_TO_MANEUVER[e.key]; if (id) { e.preventDefault(); startManeuver(id); } if (e.key.toLowerCase() === "p") { e.preventDefault(); passTurn(); } }
+function getTacticalSnapshot() { return { style: COMBAT_STYLE, turn: state.turn, side: state.side, actionPoints: state.actionPoints, canRollActionPoints: state.canRollActionPoints, activeManeuver: state.activeManeuver, phase: state.phase, dice: { rolls: state.dice.rolls, reason: state.dice.reason, active: state.dice.active, landAt: state.dice.landAt, holdUntil: state.dice.holdUntil, fadeUntil: state.dice.fadeUntil }, canRollInPlace: state.side === "player" && state.canRollActionPoints && !state.activeManeuver && !state.gameOver, gameOver: state.gameOver, maneuvers: MANEUVERS }; }
+function patchGameHost() { const host = globalThis.GameHost; if (!host || host.__directDiceApPatched) return false; originalGetSnapshot = typeof host.getSnapshot === "function" ? host.getSnapshot.bind(host) : () => ({}); originalStartManeuver = typeof host.startManeuver === "function" ? host.startManeuver.bind(host) : null; originalPassTurn = typeof host.passTurn === "function" ? host.passTurn.bind(host) : null; originalConcedeBattle = typeof host.concedeBattle === "function" ? host.concedeBattle.bind(host) : null; host.getSnapshot = () => ({ ...originalGetSnapshot(), tacticalGameplay: getTacticalSnapshot() }); host.getTacticalGameplaySnapshot = getTacticalSnapshot; host.rollActionPointsInPlace = rollActionPointsInPlace; host.startManeuver = startManeuver; host.passTurn = passTurn; host.concedeBattle = concede; host.__directDiceApPatched = true; return true; }
+function boot() { globalThis.CavalryCombatController = { style: COMBAT_STYLE, rollActionPointsInPlace, startManeuver, passTurn, concede, getState: getTacticalSnapshot }; window.addEventListener("keydown", handleKey); const timer = setInterval(() => { if (patchGameHost()) clearInterval(timer); patchAttempts += 1; if (patchAttempts > 240) clearInterval(timer); }, 100); ensureCanvas(); requestAnimationFrame(frame); }
 boot();
