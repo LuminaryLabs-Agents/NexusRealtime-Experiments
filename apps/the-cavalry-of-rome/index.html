@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <meta name="description" content="Live NexusRealtime endpoint for The Cavalry of Rome formation-command experiment." />
+  <meta name="description" content="Live NexusRealtime endpoint for The Cavalry of Rome realistic terrain visual experiment." />
   <title>The Cavalry of Rome — NexusRealtime</title>
   <style>
     :root{color-scheme:dark;--panel:rgba(18,12,6,.82);--edge:rgba(255,223,167,.22);--text:#fff6e3;--muted:#e8c997;--accent:#f6d078}
@@ -21,17 +21,17 @@
 </head>
 <body>
   <main id="app">
-    <canvas id="game" role="application" aria-label="The Cavalry of Rome game canvas"></canvas>
+    <canvas id="game" role="application" aria-label="The Cavalry of Rome realistic terrain canvas"></canvas>
     <aside id="hud" aria-label="Game state">
-      <section class="panel"><h1>The Cavalry of Rome</h1><p id="status" aria-live="polite">Loading campaign…</p><p id="readout"></p></section>
+      <section class="panel"><h1>The Cavalry of Rome</h1><p id="status" aria-live="polite">Loading realistic terrain…</p><p id="readout"></p></section>
       <section id="commandBar" class="panel" aria-label="Formation commands" hidden></section>
     </aside>
-    <footer id="footer" class="panel">Campaign: click linked towns to march. Encounter: click a Roman formation, then issue formation orders. Press R to reload.</footer>
+    <footer id="footer" class="panel">Realistic terrain pass: WASD/drag pan, wheel zoom, hover a region, click to dive, R reset.</footer>
   </main>
   <script type="module">
     import { attachNexusRealtimePageLoader } from "../../experiments/_shared/nexus-realtime-page-loader.js";
     attachNexusRealtimePageLoader({ title: "The Cavalry of Rome", loadingLabel: "Loading The Cavalry of Rome" });
   </script>
-  <script type="module" src="../../experiments/The%20Cavalry%20of%20Rome/src/main.js"></script>
+  <script type="module" src="../../experiments/The%20Cavalry%20of%20Rome/src/main-realistic.js"></script>
 </body>
 </html>
