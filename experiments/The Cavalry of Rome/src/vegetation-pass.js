@@ -1,6 +1,7 @@
 const MAP_EXTENTS = Object.freeze({ width: 42, depth: 29, halfWidth: 21, halfDepth: 14.5 });
 const VEGETATION_DSK_ID = "procedural-vegetation-field-kit-local-candidate";
 const VEGETATION_STYLE = "procedural-grass-plants-trees-biome-density-field";
+const VEGETATION_PRESENTATION = "metadata-only-until-terrain-anchored-instancing";
 const VEGETATION_COUNTS = Object.freeze({ grass: 5200, reeds: 620, shrubs: 860, trees: 320, flowers: 520, rocks: 260 });
 const TAU = Math.PI * 2;
 
@@ -10,23 +11,6 @@ const smoothstep = (edge0, edge1, value) => {
   const t = clamp((value - edge0) / Math.max(0.0001, edge1 - edge0), 0, 1);
   return t * t * (3 - 2 * t);
 };
-
-function mixColor(a, b, t) {
-  return [
-    lerp(a[0], b[0], t),
-    lerp(a[1], b[1], t),
-    lerp(a[2], b[2], t),
-    lerp(a[3] ?? 1, b[3] ?? 1, t)
-  ];
-}
-
-function rgba(color, alphaScale = 1) {
-  const r = Math.round(clamp(color[0], 0, 1) * 255);
-  const g = Math.round(clamp(color[1], 0, 1) * 255);
-  const b = Math.round(clamp(color[2], 0, 1) * 255);
-  const a = clamp((color[3] ?? 1) * alphaScale, 0, 1);
-  return `rgba(${r},${g},${b},${a})`;
-}
 
 function hashNoise(x, z, salt = 0) {
   const value = Math.sin(x * 127.1 + z * 311.7 + salt * 74.7) * 43758.5453123;
@@ -145,20 +129,6 @@ function vegetationDensityForSample(x, z, kind, category) {
   return 0;
 }
 
-function vegetationColorFor(category, x, z, variant = 0) {
-  const b = biomeForSample(x, z);
-  const dry = [0.55, 0.48, 0.25, 0.85];
-  const green = [0.20, 0.39, 0.19, 0.9];
-  const damp = [0.13, 0.31, 0.22, 0.92];
-  const base = mixColor(dry, green, b.moisture);
-  if (category === "reed") return mixColor([0.30, 0.42, 0.20, 0.86], [0.15, 0.32, 0.24, 0.92], b.river);
-  if (category === "tree") return mixColor([0.12, 0.26, 0.15, 0.95], [0.21, 0.37, 0.18, 0.95], b.moisture * 0.7 + variant * 0.3);
-  if (category === "shrub") return mixColor(base, [0.31, 0.29, 0.16, 0.90], variant * 0.45);
-  if (category === "flower") return variant > 0.65 ? [0.76, 0.62, 0.26, 0.82] : [0.55, 0.42, 0.58, 0.78];
-  if (category === "rock") return [0.42, 0.40, 0.34, 0.78];
-  return base;
-}
-
 function candidatePoint(index, category, count, salt = 0) {
   const a = index + salt * 101.17;
   const x = (hashNoise(a, count * 0.17, 31 + salt) - 0.5) * MAP_EXTENTS.width * 0.95;
@@ -176,11 +146,10 @@ function makeVegetationDescriptor(category, index, point) {
     position: { x: point.x, y, z: point.z },
     scale: 0.7 + hashNoise(point.x, point.z, index) * 1.15,
     rotation: hashNoise(point.z, point.x, index + 10) * TAU,
-    color: vegetationColorFor(category, point.x, point.z, variant),
     biome: biomeForSample(point.x, point.z),
     windResponse: category === "grass" || category === "reed" ? 1 : category === "tree" ? 0.32 : 0.55,
     lodBand: category === "grass" || category === "flower" ? 0 : category === "tree" ? 2 : 1,
-    descriptor: { source: VEGETATION_DSK_ID, rendererNeutral: true, vegetationStyle: VEGETATION_STYLE }
+    descriptor: { source: VEGETATION_DSK_ID, rendererNeutral: true, vegetationStyle: VEGETATION_STYLE, presentation: VEGETATION_PRESENTATION }
   };
 }
 
@@ -207,175 +176,20 @@ function createVegetationDescriptorField() {
   const descriptors = [...grass, ...reeds, ...shrubs, ...trees, ...flowers, ...rocks].sort((a, b) => a.position.z - b.position.z || a.lodBand - b.lodBand);
   return {
     id: "cavalry-procedural-vegetation-field",
-    version: "0.1.0",
+    version: "0.2.0",
     sourceDskCandidate: VEGETATION_DSK_ID,
     existingDskBridge: ["zone-field-kit", "visual-fidelity-maker-kit", "scenario-qa-harness", "gamehost-standard-kit"],
     rendererNeutral: true,
     vegetationStyle: VEGETATION_STYLE,
+    presentation: VEGETATION_PRESENTATION,
+    disabledScreenSpaceRendering: true,
+    floatingFix: "Screen-space vegetation rendering is disabled until terrain-anchored WebGPU instancing exists.",
     counts: { grass: grass.length, reeds: reeds.length, shrubs: shrubs.length, trees: trees.length, flowers: flowers.length, rocks: rocks.length, total: descriptors.length },
     descriptors
   };
 }
 
 const proceduralVegetationDsk = createVegetationDescriptorField();
-let overlay = null;
-let overlayCtx = null;
-let lastPatchAttempt = 0;
-
-function ensureOverlay() {
-  if (overlay) return overlay;
-  overlay = document.createElement("canvas");
-  overlay.id = "cavalry-procedural-vegetation-overlay";
-  Object.assign(overlay.style, { position: "fixed", inset: "0", width: "100%", height: "100%", zIndex: "2", pointerEvents: "none", mixBlendMode: "normal" });
-  document.querySelector("#app")?.append(overlay);
-  overlayCtx = overlay.getContext("2d");
-  return overlay;
-}
-
-function resizeOverlay() {
-  ensureOverlay();
-  const ratio = Math.max(1, Math.min(2, devicePixelRatio || 1));
-  const w = Math.max(1, Math.floor(overlay.clientWidth * ratio));
-  const h = Math.max(1, Math.floor(overlay.clientHeight * ratio));
-  if (overlay.width !== w || overlay.height !== h) {
-    overlay.width = w;
-    overlay.height = h;
-  }
-  return { w, h, ratio };
-}
-
-function projectWorld(position, snapshot, size) {
-  const pan = snapshot?.mapPan ?? { x: -1.8, z: 0.9 };
-  const zoom = Number(snapshot?.mapZoom ?? 1);
-  const scale = Math.min(size.w / MAP_EXTENTS.width, size.h / MAP_EXTENTS.depth) * 1.33 * zoom;
-  return { x: size.w * 0.5 + (position.x - pan.x) * scale, y: size.h * 0.5 + (position.z - pan.z) * scale * 0.92, scale };
-}
-
-function drawGrass(ctx, item, point, time) {
-  const size = Math.max(0.7, item.scale * point.scale * 0.032);
-  const bladeCount = 2 + Math.floor(hashNoise(item.position.x, item.position.z, 12) * 3);
-  const sway = Math.sin(time * 1.7 + item.rotation) * item.windResponse * size * 0.34;
-  ctx.strokeStyle = rgba(item.color, 0.72);
-  ctx.lineWidth = Math.max(0.6, size * 0.09);
-  for (let i = 0; i < bladeCount; i += 1) {
-    const angle = item.rotation + (i - bladeCount / 2) * 0.5;
-    const rootX = point.x + Math.cos(angle) * size * 0.14 * i;
-    const rootY = point.y + Math.sin(angle) * size * 0.08 * i;
-    ctx.beginPath();
-    ctx.moveTo(rootX, rootY);
-    ctx.quadraticCurveTo(rootX + sway * 0.42, rootY - size * 0.55, rootX + Math.sin(angle) * size * 0.24 + sway, rootY - size);
-    ctx.stroke();
-  }
-}
-
-function drawReed(ctx, item, point, time) {
-  const height = item.scale * point.scale * 0.065;
-  const sway = Math.sin(time * 1.35 + item.rotation) * height * 0.16;
-  ctx.strokeStyle = rgba(item.color, 0.8);
-  ctx.lineWidth = Math.max(0.7, height * 0.045);
-  for (let i = 0; i < 3; i += 1) {
-    const x = point.x + (i - 1) * height * 0.10;
-    ctx.beginPath();
-    ctx.moveTo(x, point.y);
-    ctx.quadraticCurveTo(x + sway * 0.3, point.y - height * 0.52, x + sway, point.y - height);
-    ctx.stroke();
-  }
-}
-
-function drawShrub(ctx, item, point) {
-  const r = item.scale * point.scale * 0.035;
-  ctx.fillStyle = rgba(item.color, 0.82);
-  for (let i = 0; i < 4; i += 1) {
-    const a = item.rotation + i * TAU / 4;
-    ctx.beginPath();
-    ctx.ellipse(point.x + Math.cos(a) * r * 0.55, point.y + Math.sin(a) * r * 0.25, r * (0.85 + i * 0.08), r * 0.55, a, 0, TAU);
-    ctx.fill();
-  }
-}
-
-function drawTree(ctx, item, point, time) {
-  const s = item.scale * point.scale * 0.052;
-  const sway = Math.sin(time * 0.82 + item.rotation) * s * 0.12;
-  ctx.fillStyle = "rgba(72,48,28,0.82)";
-  ctx.fillRect(point.x - s * 0.09, point.y - s * 0.45, s * 0.18, s * 0.50);
-  ctx.fillStyle = rgba(item.color, 0.88);
-  for (let i = 0; i < 3; i += 1) {
-    const radius = s * (0.54 - i * 0.08);
-    ctx.beginPath();
-    ctx.ellipse(point.x + sway * (1 + i * 0.4), point.y - s * (0.62 + i * 0.22), radius * 1.2, radius * 0.82, item.rotation + i, 0, TAU);
-    ctx.fill();
-  }
-}
-
-function drawFlower(ctx, item, point) {
-  const r = Math.max(0.6, item.scale * point.scale * 0.010);
-  ctx.fillStyle = rgba(item.color, 0.72);
-  ctx.beginPath();
-  ctx.arc(point.x, point.y - r * 0.5, r, 0, TAU);
-  ctx.fill();
-}
-
-function drawRock(ctx, item, point) {
-  const r = item.scale * point.scale * 0.022;
-  ctx.fillStyle = rgba(item.color, 0.55);
-  ctx.beginPath();
-  ctx.moveTo(point.x - r, point.y + r * 0.3);
-  ctx.lineTo(point.x - r * 0.25, point.y - r * 0.6);
-  ctx.lineTo(point.x + r * 0.9, point.y - r * 0.12);
-  ctx.lineTo(point.x + r * 0.5, point.y + r * 0.5);
-  ctx.closePath();
-  ctx.fill();
-}
-
-function drawBattlefieldVegetation(ctx, size, time) {
-  const ground = size.h * 0.78;
-  ctx.save();
-  ctx.globalAlpha = 0.66;
-  for (let i = 0; i < 500; i += 1) {
-    const x = hashNoise(i, 1, 333) * size.w;
-    const y = ground + (hashNoise(i, 2, 334) - 0.5) * size.h * 0.22;
-    const h = 5 + hashNoise(i, 3, 335) * 18;
-    const sway = Math.sin(time * 1.2 + i) * 4;
-    ctx.strokeStyle = i % 5 === 0 ? "rgba(121,134,62,.42)" : "rgba(83,116,55,.36)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.quadraticCurveTo(x + sway * 0.4, y - h * 0.5, x + sway, y - h);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function drawVegetationFrame(time = performance.now() / 1000) {
-  const size = resizeOverlay();
-  const ctx = overlayCtx;
-  const snapshot = globalThis.GameHost?.getSnapshot?.() ?? {};
-  ctx.clearRect(0, 0, size.w, size.h);
-  if (snapshot.mode === "battlefield") {
-    drawBattlefieldVegetation(ctx, size, time);
-    requestAnimationFrame(drawVegetationFrame);
-    return;
-  }
-  if (snapshot.mode && snapshot.mode !== "world" && snapshot.mode !== "dive") {
-    requestAnimationFrame(drawVegetationFrame);
-    return;
-  }
-  ctx.save();
-  ctx.globalCompositeOperation = "source-over";
-  for (const item of proceduralVegetationDsk.descriptors) {
-    const projected = projectWorld(item.position, snapshot, size);
-    if (projected.x < -80 || projected.x > size.w + 80 || projected.y < -80 || projected.y > size.h + 80) continue;
-    if (projected.scale < 8 && item.lodBand === 0) continue;
-    if (item.kind === "grass") drawGrass(ctx, item, projected, time);
-    else if (item.kind === "reed") drawReed(ctx, item, projected, time);
-    else if (item.kind === "shrub") drawShrub(ctx, item, projected);
-    else if (item.kind === "tree") drawTree(ctx, item, projected, time);
-    else if (item.kind === "flower") drawFlower(ctx, item, projected);
-    else if (item.kind === "rock") drawRock(ctx, item, projected);
-  }
-  ctx.restore();
-  requestAnimationFrame(drawVegetationFrame);
-}
 
 function patchGameHost() {
   const host = globalThis.GameHost;
@@ -389,6 +203,8 @@ function patchGameHost() {
         id: proceduralVegetationDsk.id,
         sourceDskCandidate: proceduralVegetationDsk.sourceDskCandidate,
         vegetationStyle: proceduralVegetationDsk.vegetationStyle,
+        presentation: proceduralVegetationDsk.presentation,
+        disabledScreenSpaceRendering: true,
         rendererNeutral: true,
         counts: proceduralVegetationDsk.counts,
         descriptorSample: proceduralVegetationDsk.descriptors.slice(0, 24)
@@ -396,7 +212,14 @@ function patchGameHost() {
     };
   };
   host.getVegetationDescriptors = () => proceduralVegetationDsk.descriptors.slice();
-  host.getVegetationSnapshot = () => ({ id: proceduralVegetationDsk.id, counts: proceduralVegetationDsk.counts, vegetationStyle: proceduralVegetationDsk.vegetationStyle, existingDskBridge: proceduralVegetationDsk.existingDskBridge });
+  host.getVegetationSnapshot = () => ({
+    id: proceduralVegetationDsk.id,
+    counts: proceduralVegetationDsk.counts,
+    vegetationStyle: proceduralVegetationDsk.vegetationStyle,
+    presentation: proceduralVegetationDsk.presentation,
+    disabledScreenSpaceRendering: true,
+    existingDskBridge: proceduralVegetationDsk.existingDskBridge
+  });
   host.__cavalryVegetationPatched = true;
   return true;
 }
@@ -405,22 +228,23 @@ function bootVegetationPass() {
   globalThis.CavalryVegetationProceduralDsk = {
     id: VEGETATION_DSK_ID,
     metadata: {
-      version: "0.1.0",
+      version: "0.2.0",
       purpose: "Renderer-neutral procedural vegetation descriptor field for Cavalry terrain fidelity.",
       existingDskBridge: proceduralVegetationDsk.existingDskBridge,
       futureProtoKitCandidate: true,
-      boundary: "Owns deterministic grass, shrub, reed, flower, rock, and tree placement descriptors. The overlay renderer only presents descriptors."
+      presentation: VEGETATION_PRESENTATION,
+      disabledScreenSpaceRendering: true,
+      boundary: "Owns deterministic grass, shrub, reed, flower, rock, and tree placement descriptors. No screen-space vegetation is rendered because it can float above the terrain."
     },
-    getSnapshot: () => ({ counts: proceduralVegetationDsk.counts, vegetationStyle: VEGETATION_STYLE }),
+    getSnapshot: () => ({ counts: proceduralVegetationDsk.counts, vegetationStyle: VEGETATION_STYLE, presentation: VEGETATION_PRESENTATION, disabledScreenSpaceRendering: true }),
     getDescriptors: () => proceduralVegetationDsk.descriptors.slice()
   };
-  ensureOverlay();
+  let attempts = 0;
   const patchTimer = setInterval(() => {
     if (patchGameHost()) clearInterval(patchTimer);
-    lastPatchAttempt += 1;
-    if (lastPatchAttempt > 240) clearInterval(patchTimer);
+    attempts += 1;
+    if (attempts > 240) clearInterval(patchTimer);
   }, 100);
-  requestAnimationFrame(drawVegetationFrame);
 }
 
 bootVegetationPass();
