@@ -2,24 +2,26 @@
 
 A NexusRealtime visual experiment for a Roman campaign-map cinematic route.
 
-This slice intentionally drops campaign/combat resolution while adding the first tactical gameplay surface. It is a **DSK-composed high-fidelity visual proof**: a WebGPU-first realistic 3D terrain scene with large pannable highlighted regions, a procedural vegetation population pass, a cinematic dive, and a no-UI Rome-perspective hex battlefield.
+This slice intentionally drops campaign/combat resolution while adding the first tactical gameplay surface. It is a **DSK-composed high-fidelity visual proof**: a WebGPU-first realistic 3D terrain scene with large pannable highlighted regions, procedural vegetation descriptors, a cinematic dive, and a no-UI Rome-perspective hex battlefield.
 
 ## Current slice
 
 - WebGPU-first realistic terrain renderer with Canvas fallback.
 - Larger campaign terrain surface with pannable region selection.
 - Realistic terrain layers: domain-warped landforms, FBM/ridged noise, blended biome colors, river/moisture/slope masks, brush-stroke overlays, river ribbons, and contour accents.
-- Procedural vegetation overlay with deterministic grass, reeds, shrubs, flowers, rocks, and tree groves on the world map.
+- Procedural vegetation descriptors are generated deterministically, but the old screen-space vegetation renderer is disabled because it could float in the sky and cause panning/selection jank.
 - Large highlighted land regions instead of point nodes.
 - Pointer hover selects visual affordance regions.
 - Drag/WASD pans the main region-selection map; wheel zooms the map.
 - Clicking a region triggers a cinematic world-map-to-battlefield zoom.
 - The battlefield is now an 11x9 no-UI hex grid viewed from above and behind Rome.
+- Hex alignment now uses fixed pointy-offset math with a single radius and y-scale, so hexes no longer drift in size or spacing by row.
 - Hex terrain includes grass, water, hills, and fences with movement/defense metadata.
 - Tactical units are aggregated troop markers, not individual soldier swarms.
 - Light troops are green, medium troops are blue, and heavy troops are red. Army ownership is shown as a band color.
 - Rome uses a red army band; enemies use region-based bands.
-- The hex pass disables the screen-space vegetation overlay during tactical battle so plants cannot float above the battlefield.
+- Only Rome-side units are selectable. Enemy pieces remain visible but cannot be selected.
+- Tactical vegetation and tile features are drawn directly in the hex field; the old screen-space vegetation overlay is disabled so plants cannot detach from the ground.
 - All in-game UI DOM has been removed from the presentation. The live and experiment pages now contain only the canvas app root plus non-visual scripts.
 - A non-DOM `CavalryUiSinkShim` supplies status/readout/command sinks for current runtime compatibility without adding HUD/footer/command elements back to the DOM.
 - The shared route page loader is intentionally not attached for this route so no loading UI appears over the game.
@@ -59,15 +61,16 @@ Mouse wheel zooms the map
 R resets to the world-map scan
 
 Hex battlefield:
-Move pointer over a hex or unit to highlight it
-Click a unit to select it
+Move pointer over a hex or Rome unit to highlight it
+Click a Rome unit to select it
+Enemy units are not selectable
 ```
 
 These controls are intentionally undocumented on screen during play. The current game presentation is canvas-only with no HUD, footer, command bar, labels, panels, hidden UI DOM, or shared loading overlay.
 
 ## Fidelity rule
 
-Every future gameplay iteration should also improve visual fidelity as a secondary goal. Do not regress terrain density, vegetation, lighting mood, region readability, soldier fidelity, hex readability, or cinematic composition while adding mechanics.
+Every future gameplay iteration should also improve visual fidelity as a secondary goal. Do not regress terrain density, vegetation descriptors, lighting mood, region readability, soldier fidelity, hex readability, or cinematic composition while adding mechanics.
 
 ## Gameplay state
 
@@ -80,8 +83,11 @@ remove shared loading overlay UI
 keep canvas-only presentation
 preserve DSK/GameHost debug surfaces through non-DOM sinks
 add Rome-perspective hex battlefield after region selection
+fix hex alignment using fixed pointy-offset spacing
 compress battlefield soldiers into 22 aggregated units
 add water/hill/fence/grass terrain tiles
+limit selection to Rome-side units
+stop screen-space vegetation rendering that floated in the sky
 prevent floating vegetation during hex battle
 ```
 
@@ -105,7 +111,7 @@ The current fidelity push is visual, not systemic:
 realistic non-repeating terrain
 large readable regions
 pannable terrain inspection
-procedural grass / reeds / shrubs / flowers / rocks / trees on the world map
+procedural vegetation descriptors without floating screen-space rendering
 terrain-anchored visual features on tactical hexes
 aggregated troop markers with soldier clusters
 atmospheric battlefield reveal
@@ -143,4 +149,4 @@ battlefield-atmosphere-descriptor-kit
 
 ## Next ledge
 
-Add scene-native unit movement on the hex board with terrain movement costs and no visible UI, while improving battlefield visual fidelity in the same iteration.
+Add scene-native unit movement on the hex board with terrain movement costs and no visible UI, while improving battlefield visual fidelity in the same iteration. Before that, add a browser-backed Playwright smoke in an environment with Playwright installed and network access.
