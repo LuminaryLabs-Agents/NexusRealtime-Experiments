@@ -4,19 +4,19 @@
   "status": "hex-battlefield-gameplay-seed",
   "canonicalRouteClaim": false,
   "deterministicReplayClaim": false,
-  "designIntent": "DSK-composed WebGPU-first fidelity route with no in-game UI DOM or loading overlay UI: scan over a larger pannable realistic Roman terrain map, hover oversized highlighted regions, click to trigger a cinematic dive, then enter a Rome-perspective hex battlefield with aggregated troop-class units, terrain tiles, and terrain-grounded battlefield features.",
+  "designIntent": "DSK-composed WebGPU-first fidelity route with no in-game UI DOM or loading overlay UI: scan over a larger pannable realistic Roman terrain map, hover oversized highlighted regions, click to trigger a cinematic dive, then enter a fixed-aligned Rome-perspective hex battlefield with aggregated troop-class units, terrain tiles, and terrain-grounded battlefield features.",
   "liveEndpoint": "apps/the-cavalry-of-rome/",
   "activeModules": [
     "experiments/The Cavalry of Rome/src/main-realistic.js",
     "experiments/The Cavalry of Rome/src/vegetation-pass.js",
     "experiments/The Cavalry of Rome/src/hex-battlefield-pass.js"
   ],
-  "standingIterationRule": "Every future gameplay iteration should improve visual fidelity as a secondary goal and should not regress terrain density, vegetation, lighting mood, region readability, soldier fidelity, hex readability, or cinematic composition.",
+  "standingIterationRule": "Every future gameplay iteration should improve visual fidelity as a secondary goal and should not regress terrain density, vegetation descriptors, lighting mood, region readability, soldier fidelity, hex readability, or cinematic composition.",
   "currentGameplayStep": {
     "id": "rome-perspective-hex-battlefield",
     "status": "implemented-as-scene-native-overlay",
-    "intent": "After region selection, cover the old freeform battlefield with a no-UI hex battlefield viewed from above and behind Rome, using terrain hexes and aggregated troop pieces.",
-    "implementation": "hex-battlefield-pass.js creates an 11x9 Rome-perspective hex grid, grass/water/hill/fence tiles, aggregated light/medium/heavy units, class body colors, army band colors, direct unit/hex hover and selection, and a GameHost hex battlefield snapshot. The pass disables the screen-space vegetation overlay during hex battle to prevent floating plants over the tactical field."
+    "intent": "After region selection, cover the old freeform battlefield with a no-UI hex battlefield viewed from above and behind Rome, using aligned terrain hexes and aggregated troop pieces.",
+    "implementation": "hex-battlefield-pass.js creates an 11x9 Rome-perspective hex grid, grass/water/hill/fence tiles, aggregated light/medium/heavy units, class body colors, army band colors, direct hex hover, and Rome-only unit hover/selection. The hex math now uses fixed pointy-offset spacing with a single radius and y-scale so hexes no longer drift in alignment or size by row. The old screen-space vegetation drawing is disabled to stop sky-floating plants and reduce panning/selection jank."
   },
   "existingDskStack": [
     "gamehost-standard-kit",
@@ -34,9 +34,10 @@
     "regions": "oversized highlighted region meshes with glow, wobble borders, and DSK affordance descriptors",
     "hexBattlefield": {
       "camera": "above and behind Rome, looking across the whole tactical field",
-      "grid": "11x9 pseudo-perspective hex board covering the old freeform battlefield",
+      "grid": "11x9 fixed pointy-offset hex board with consistent radius/y-scale covering the old freeform battlefield",
       "terrain": "grass, water, hill, and fence hexes with movement/defense metadata",
       "units": "aggregated troop markers representing groups of soldiers rather than individual bodies",
+      "selection": "only Rome-side units are hover-highlighted and selectable",
       "colors": "light troops green, medium troops blue, heavy troops red; army ownership appears as a colored band",
       "romeBand": "red",
       "enemyBands": "region-based gold, white, purple, or black bands"
@@ -45,16 +46,17 @@
     "uiDom": "none; runtime status hooks are non-DOM sinks only",
     "loaderUi": "none; shared route page loader is intentionally omitted for this game endpoint",
     "proceduralVegetation": {
-      "grass": "dense deterministic grass descriptor field with wind response on the world map",
-      "battlefieldGrounding": "screen-space vegetation overlay is disabled during hex battle; tile features draw directly on the hex playfield so they cannot detach from terrain",
-      "reeds": "river and moisture-driven reed clusters",
-      "shrubs": "slope/moisture-aware shrub and scrub patches",
-      "trees": "biome-aware primitive groves and tree clusters",
-      "flowersAndRocks": "small wildflower and rock breakup details",
-      "boundary": "local procedural vegetation descriptor DSK candidate owns placements; overlay renderer only presents descriptors outside tactical hex mode"
+      "grass": "deterministic grass descriptor field is retained as metadata for future terrain-anchored instancing",
+      "screenSpaceRendering": "disabled because it was visually floating in the sky and caused panning/selection jank",
+      "battlefieldGrounding": "tile features draw directly on the hex playfield so they cannot detach from terrain",
+      "reeds": "river and moisture-driven reed descriptors retained for future grounded rendering",
+      "shrubs": "slope/moisture-aware shrub and scrub descriptors retained for future grounded rendering",
+      "trees": "biome-aware primitive grove descriptors retained for future grounded rendering",
+      "flowersAndRocks": "small wildflower and rock descriptors retained for future grounded rendering",
+      "boundary": "local procedural vegetation descriptor DSK candidate owns placements; no screen-space overlay is rendered until true terrain-anchored WebGPU instancing exists"
     },
     "soldiers": "full-bodied primitive soldiers remain in the underlying cinematic renderer, but tactical hex mode uses aggregated unit markers with small soldier clusters for readability",
-    "battlefield": "hex grid, terrain tiles, aggregated troop pieces, region terrain variation, and no visible UI"
+    "battlefield": "aligned hex grid, terrain tiles, aggregated troop pieces, region terrain variation, and no visible UI"
   },
   "protectedExpressionGuardrails": [
     "Do not copy tabletop scenario layouts, card systems, dice faces, command sections, rule text, or unit-stat tables.",
@@ -65,8 +67,8 @@
     "Roman terrain art direction",
     "realistic terrain mesh color and brush-stroke overlay generation",
     "large pannable region ellipse placement and labels",
-    "procedural vegetation descriptor generation and overlay presentation",
-    "Rome-perspective hex battlefield overlay",
+    "procedural vegetation descriptor generation without screen-space presentation",
+    "Rome-perspective aligned hex battlefield overlay",
     "hex terrain descriptor generation",
     "aggregated troop unit formation and rendering",
     "WebGPU terrain/overlay/full-bodied primitive soldier renderer",
@@ -78,7 +80,7 @@
     "webgpu": "presentation-only",
     "hexBattlefieldOverlay": "scene-native tactical presentation and first gameplay interaction layer",
     "canvasFallback": "presentation-only",
-    "vegetationOverlay": "presentation-only outside hex battle",
+    "vegetationOverlay": "disabled until terrain-anchored instancing exists",
     "visibleUi": "none",
     "uiDom": "none",
     "loaderUi": "none",
@@ -97,7 +99,7 @@
   "futureProtoKitCandidatesFromCustomLogic": [
     {
       "id": "hex-battlefield-grid-kit",
-      "source": "createHexBattlefield, terrainForHex, projectHex, and hex terrain metadata",
+      "source": "createHexBattlefield, terrainForHex, projectHex, fixed pointy-offset layout, and hex terrain metadata",
       "reason": "Reusable no-UI tactical grid layer for region-to-battlefield strategy routes."
     },
     {
@@ -117,7 +119,7 @@
     },
     {
       "id": "terrain-anchored-vegetation-kit",
-      "source": "hex battlefield tile features and vegetation overlay suppression during tactical play",
+      "source": "hex battlefield tile features and screen-space vegetation suppression during tactical play",
       "reason": "Reusable guarantee that tactical vegetation is drawn in terrain space rather than detached screen space."
     },
     {
@@ -191,6 +193,7 @@
     "vegetation harvesting",
     "tree collision",
     "fire spread",
+    "screen-space vegetation rendering",
     "visible HUD",
     "visible footer instructions",
     "visible command buttons",
@@ -199,5 +202,5 @@
     "hidden commandBar DOM",
     "shared page-loader UI"
   ],
-  "nextLedge": "Add scene-native unit movement on the hex board with terrain movement costs, preserving no UI DOM and improving battlefield visual fidelity."
+  "nextLedge": "Add scene-native unit movement on the aligned hex board with terrain movement costs, preserving no UI DOM and improving battlefield visual fidelity."
 }
