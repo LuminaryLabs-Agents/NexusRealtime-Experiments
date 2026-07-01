@@ -15,13 +15,14 @@ This slice intentionally drops campaign/combat resolution while adding the first
 - Drag/WASD pans the main region-selection map; wheel zooms the map.
 - Clicking a region triggers a cinematic world-map-to-battlefield zoom.
 - The battlefield is now an 11x9 no-UI hex grid viewed from above and behind Rome.
-- Hex interiors now use a WebGL2 material shader with procedural FBM, rim/bevel shading, water shimmer, hill contouring, grass striations, and fence rail/post detail.
+- Hex interiors use a WebGL2 material shader with procedural FBM, rim/bevel shading, water shimmer, hill contouring, grass striations, and fence rail/post detail.
 - If WebGL2 is unavailable, the hex board falls back to a simpler Canvas2D tile renderer.
 - Hex alignment uses fixed pointy-offset math with a single radius and y-scale, so hexes do not drift in size or spacing by row.
 - Hex terrain includes grass, water, hills, and fences with movement/defense metadata.
-- Tactical units are aggregated troop markers, not individual soldier swarms.
-- Light troops are green, medium troops are blue, and heavy troops are red. Army ownership is shown as a band color.
+- Tactical units are now mini squads of low-poly soldiers instead of circular tokens.
+- Light troops are green, medium troops are blue, and heavy troops are red. Army ownership is shown only through military bands and small pennants.
 - Rome uses a red army band; enemies use region-based bands.
+- Circular unit bases and selection rings have been removed. Selection uses squad lift, brightness, grounded non-ring shadows, leader pennants, and hex highlighting.
 - Only Rome-side units are selectable. Enemy pieces remain visible but cannot be selected.
 - Tactical vegetation and tile features are drawn directly in the hex field; the old screen-space vegetation overlay is disabled so plants cannot detach from the ground.
 - All in-game UI DOM has been removed from the presentation. The live and experiment pages now contain only the canvas app root plus non-visual scripts.
@@ -34,6 +35,7 @@ This slice intentionally drops campaign/combat resolution while adding the first
 src/main-realistic.js
 src/vegetation-pass.js
 src/hex-battlefield-pass.js
+src/hex-squad-visual-pass.js
 ```
 
 ## Existing DSKs used
@@ -87,6 +89,8 @@ preserve DSK/GameHost debug surfaces through non-DOM sinks
 add Rome-perspective hex battlefield after region selection
 fix hex alignment using fixed pointy-offset spacing
 add WebGL2 procedural terrain materials inside hexes
+replace circular unit tokens with mini low-poly soldier squads
+remove circular unit bases and selection rings
 compress battlefield soldiers into 22 aggregated units
 add water/hill/fence/grass terrain tiles
 limit selection to Rome-side units
@@ -117,7 +121,7 @@ pannable terrain inspection
 procedural vegetation descriptors without floating screen-space rendering
 WebGL2-shaded hex interiors
 terrain-anchored visual features on tactical hexes
-aggregated troop markers with soldier clusters
+mini low-poly soldier squads without token rings
 atmospheric battlefield reveal
 ```
 
@@ -135,6 +139,7 @@ The near-term target is cinematic visual quality and scene-native gameplay found
 hex-battlefield-grid-kit
 hex-terrain-descriptor-kit
 hex-webgl-material-shader-kit
+hex-squad-visual-kit
 tactical-army-formation-kit
 troop-class-visual-kit
 terrain-anchored-vegetation-kit
