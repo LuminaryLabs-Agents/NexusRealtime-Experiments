@@ -4,7 +4,7 @@
   "status": "gameplay-readiness-visual-experiment-seed",
   "canonicalRouteClaim": false,
   "deterministicReplayClaim": false,
-  "designIntent": "DSK-composed WebGPU-first fidelity route with no in-game UI DOM: scan over a larger pannable realistic Roman terrain map, hover oversized highlighted regions, click to trigger a cinematic dive, and reveal a primitive-built full-bodied battlefield tableau with a procedural vegetation population pass.",
+  "designIntent": "DSK-composed WebGPU-first fidelity route with no in-game UI DOM or loading overlay UI: scan over a larger pannable realistic Roman terrain map, hover oversized highlighted regions, click to trigger a cinematic dive, and reveal a primitive-built full-bodied battlefield tableau with a procedural vegetation population pass.",
   "liveEndpoint": "apps/the-cavalry-of-rome/",
   "activeModules": [
     "experiments/The Cavalry of Rome/src/main-realistic.js",
@@ -14,8 +14,8 @@
   "currentGameplayStep": {
     "id": "remove-all-ui-elements",
     "status": "complete",
-    "intent": "Move toward scene-native gameplay by removing HUD, footer, command UI, and hidden UI DOM surfaces from the in-game presentation.",
-    "implementation": "Live and experiment HTML now contain only the app root, canvas, loader, modules, and a non-DOM CavalryUiSinkShim for runtime status/readout compatibility. No hud/footer/commandBar DOM elements remain."
+    "intent": "Move toward scene-native gameplay by removing HUD, footer, command UI, hidden UI DOM, and shared loading overlay UI from the in-game presentation.",
+    "implementation": "Live and experiment HTML now contain only the app root, canvas, direct route modules, and a non-DOM CavalryUiSinkShim for runtime status/readout compatibility. No hud/footer/commandBar DOM elements remain, and the shared page loader is not attached."
   },
   "existingDskStack": [
     "gamehost-standard-kit",
@@ -33,6 +33,7 @@
     "regions": "oversized highlighted region meshes with glow, wobble borders, and DSK affordance descriptors",
     "visibleUi": "none; canvas-only in-game presentation",
     "uiDom": "none; runtime status hooks are non-DOM sinks only",
+    "loaderUi": "none; shared route page loader is intentionally omitted for this game endpoint",
     "proceduralVegetation": {
       "grass": "dense deterministic grass descriptor field with wind response",
       "reeds": "river and moisture-driven reed clusters",
@@ -65,6 +66,7 @@
     "vegetationOverlay": "presentation-only",
     "visibleUi": "none",
     "uiDom": "none",
+    "loaderUi": "none",
     "dskOwned": [
       "route progress descriptors",
       "region affordance descriptors",
@@ -154,7 +156,8 @@
     "visible command buttons",
     "hidden HUD DOM",
     "hidden footer DOM",
-    "hidden commandBar DOM"
+    "hidden commandBar DOM",
+    "shared page-loader UI"
   ],
-  "nextLedge": "Add scene-native gameplay interaction with no UI DOM: use terrain/region/army affordances directly, while preserving the standing visual-fidelity improvement rule."
+  "nextLedge": "Add scene-native gameplay interaction with no UI DOM or loader overlay: use terrain/region/army affordances directly, while preserving the standing visual-fidelity improvement rule."
 }
