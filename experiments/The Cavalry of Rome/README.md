@@ -2,19 +2,28 @@
 
 A NexusRealtime visual experiment for a Roman campaign-map cinematic route.
 
-This slice intentionally drops campaign/combat business logic. It is a **DSK-composed high-fidelity visual proof**: a WebGPU-first painterly 3D terrain scene with large pannable highlighted regions, a cinematic dive, and a primitive-built battlefield tableau where two armies prepare for war.
+This slice intentionally drops campaign/combat business logic. It is a **DSK-composed high-fidelity visual proof**: a WebGPU-first realistic 3D terrain scene with large pannable highlighted regions, a procedural vegetation population pass, a cinematic dive, and a primitive-built battlefield tableau where two armies prepare for war.
 
 ## Current slice
 
-- WebGPU-first terrain renderer with Canvas fallback.
+- WebGPU-first realistic terrain renderer with Canvas fallback.
 - Larger campaign terrain surface with pannable region selection.
-- Painterly terrain layers: warm glaze colors, brush-stroke overlays, river ribbons, and contour accents.
+- Realistic terrain layers: domain-warped landforms, FBM/ridged noise, blended biome colors, river/moisture/slope masks, brush-stroke overlays, river ribbons, and contour accents.
+- Procedural vegetation overlay with deterministic grass, reeds, shrubs, flowers, rocks, and tree groves.
+- Local procedural vegetation DSK candidate exposes renderer-neutral placement descriptors and patches `GameHost` snapshots with vegetation metadata.
 - Large highlighted land regions instead of point nodes.
 - Pointer hover selects visual affordance regions.
 - Drag/WASD pans the main region-selection map; wheel zooms the map.
 - Clicking a region triggers a cinematic world-map-to-battlefield zoom.
 - Battlefield reveal shows fuller primitive-built soldiers: legs, boots, torso, cuirass, arms, head, helmet, crest, shield, spear, capes, banners, and shadows.
 - Existing DSKs provide route progress, input, affordance descriptors, zone fields, camera descriptors, visual fidelity proof, scenario QA, and GameHost contract state.
+
+## Active modules
+
+```txt
+src/main-realistic.js
+src/vegetation-pass.js
+```
 
 ## Existing DSKs used
 
@@ -29,7 +38,7 @@ visual-fidelity-maker-kit
 scenario-qa-harness
 ```
 
-The renderer remains presentation-only. DSKs own descriptors, proof state, route phase, region affordances, and validation surfaces; the local route owns Roman art direction and WebGPU scene composition.
+There is no dedicated procedural vegetation ProtoKit in the currently searched ProtoKits repo, so this route keeps vegetation generation local as a renderer-neutral DSK candidate. The overlay renderer only presents descriptors; the custom descriptor field is documented for future extraction.
 
 ## Controls
 
@@ -47,14 +56,15 @@ R resets to the world-map scan
 The current fidelity push is visual, not systemic:
 
 ```txt
-painted campaign terrain
+realistic non-repeating terrain
 large readable regions
 pannable terrain inspection
+procedural grass / reeds / shrubs / flowers / rocks / trees
 primitive full-bodied soldiers
 atmospheric battlefield reveal
 ```
 
-No combat, troop stats, campaign economy, AI, or encounter resolution should be added until the visual proof is stable.
+No combat, troop stats, campaign economy, AI, harvesting, collision, or encounter resolution should be added until the visual proof is stable.
 
 ## Design boundary
 
@@ -69,6 +79,9 @@ campaign-terrain-visual-kit
 painterly-terrain-material-kit
 terrain-region-highlight-kit
 pannable-campaign-camera-kit
+procedural-vegetation-field-kit
+biome-vegetation-descriptor-kit
+wind-sway-visual-descriptor-kit
 map-to-scene-camera-transition-kit
 low-poly-formation-tableau-kit
 primitive-soldier-construction-kit
@@ -78,4 +91,4 @@ battlefield-atmosphere-descriptor-kit
 
 ## Next ledge
 
-Add a browser-backed route smoke that opens the live endpoint, pans the map, selects a large region, waits for the battlefield tableau, and verifies `GameHost.getSnapshot()` exposes painterly terrain, panning, DSK state, and full-body primitive soldier fidelity metadata.
+Add a browser-backed route smoke that opens the live endpoint, pans the map, validates `proceduralVegetation` counts from `GameHost.getSnapshot()`, selects a large region, waits for the battlefield tableau, and verifies the vegetation overlay remains presentation-only.
