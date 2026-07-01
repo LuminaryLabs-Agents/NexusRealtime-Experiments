@@ -17,13 +17,15 @@ This slice now has the first tactical gameplay loop. It remains a **DSK-composed
 - The battlefield is an 11x9 hex grid viewed from above and behind Rome.
 - Hex interiors use a WebGL2 material shader with procedural FBM, rim/bevel shading, water shimmer, hill contouring, grass striations, and fence rail/post detail.
 - Tactical gameplay includes seven maneuvers: Advance Left, Advance Center, Advance Right, Line Brigade, Heavy Brigade, Berserk, and Scout.
-- A bottom native card UI appears during hex battle with all available maneuver cards and an action point counter.
-- Action points are rolled with 2d6 every three turns. Advance maneuvers cost 1 AP, Line Brigade costs 2 AP, Heavy Brigade costs 3 AP, and Berserk/Scout cost 4 AP.
+- A bottom native card UI appears during hex battle with all available maneuver cards, a Roll AP card, and an action point counter.
+- Roll AP is a dedicated in-place 2d6 roll that updates action points and shows board dice without starting a maneuver or moving a unit.
+- Action points are rolled with 2d6 every three turns, and can also be rolled manually with Roll AP while no maneuver is active.
+- Advance maneuvers cost 1 AP, Line Brigade costs 2 AP, Heavy Brigade costs 3 AP, and Berserk/Scout cost 4 AP.
 - Advance maneuvers roll 1d6 and allow that many eligible units to move.
 - Movement is scene-native: select a Rome unit, then click a highlighted reachable hex.
 - Water is impassable. Hills and fences are legal landing spaces but end the maneuver when entered.
 - Light troops can move up to two spaces during normal movement; Scout moves one unit up to three spaces; Berserk moves one unit up to two spaces and can attack an adjacent enemy.
-- The board rolls use a WebGL2 shaded dice pass with crypto-backed d6 randomization when available.
+- The board rolls use a shaded dice pass with crypto-backed d6 randomization when available.
 - Tactical units are mini squads of low-poly soldiers instead of circular tokens.
 - Light troops are green, medium troops are blue, and heavy troops are red. Army ownership is shown only through military bands and small pennants.
 - Circular unit bases and selection rings have been removed. Selection uses squad lift, brightness, individual angled shadows, leader pennants, and hex highlighting.
@@ -39,6 +41,7 @@ src/hex-battlefield-pass.js
 src/hex-squad-visual-pass.js
 src/hex-gameplay-pass.js
 src/hex-action-ui-pass.js
+src/hex-roll-controller-pass.js
 ```
 
 ## Existing DSKs used
@@ -54,7 +57,7 @@ visual-fidelity-maker-kit
 scenario-qa-harness
 ```
 
-There is no dedicated procedural vegetation, hex battlefield, maneuver gameplay, or action-card UI ProtoKit in the currently searched ProtoKits repo, so these systems remain local as renderer-neutral DSK candidates. The visual and gameplay surfaces expose snapshots through `GameHost` and remain documented for future extraction.
+There is no dedicated procedural vegetation, hex battlefield, maneuver gameplay, action-card UI, or roll controller ProtoKit in the currently searched ProtoKits repo, so these systems remain local as renderer-neutral DSK candidates. The visual and gameplay surfaces expose snapshots through `GameHost` and remain documented for future extraction.
 
 ## Controls
 
@@ -68,6 +71,8 @@ Mouse wheel zooms the map
 R resets to the world-map scan
 
 Hex battlefield:
+Click Roll AP to roll 2d6 in place
+0 = Roll AP
 Click a maneuver card at the bottom of the screen
 1 = Advance Left
 2 = Advance Center
@@ -85,12 +90,13 @@ Escape clears current selection
 ## Maneuver costs
 
 ```txt
+Roll AP: 0 AP, roll 2d6 in place
 Advance Left / Center / Right: 1 AP, roll 1d6 units
 Line Brigade: 2 AP, move a connected adjacent group
 Heavy Brigade: 3 AP, move all Rome heavy units
 Berserk: 4 AP, move one unit up to two spaces and attack
 Scout: 4 AP, move one unit up to three spaces
-Action points: roll 2d6 every three turns
+Action points: roll 2d6 every three turns or with Roll AP while idle
 ```
 
 ## Fidelity rule
@@ -113,7 +119,8 @@ remove circular unit bases and selection rings
 add individual angled soldier shadows
 add seven tactical maneuvers
 add 2d6 action point cadence
-add 1d6 advance rolls with shaded WebGL dice
+add explicit Roll AP card for in-place action point rolls
+add 1d6 advance rolls with shaded board dice
 add movement highlights and Rome-only selection
 add water/hill/fence movement restrictions
 add basic Berserk attack target handling
@@ -141,7 +148,7 @@ pannable terrain inspection
 procedural vegetation descriptors without floating screen-space rendering
 WebGL2-shaded hex interiors
 scene-native movement highlights
-WebGL2 shaded board dice
+shaded board dice
 mini low-poly soldier squads without token rings
 individual angled soldier shadows
 native bottom card action UI
@@ -165,6 +172,7 @@ hex-webgl-material-shader-kit
 hex-squad-visual-kit
 hex-maneuver-gameplay-kit
 hex-action-card-ui-kit
+hex-roll-controller-kit
 webgl-board-dice-kit
 tactical-army-formation-kit
 troop-class-visual-kit
@@ -185,4 +193,4 @@ battlefield-atmosphere-descriptor-kit
 
 ## Next ledge
 
-Validate the maneuver loop and bottom action cards in a browser, then add enemy turn behavior and fuller combat resolution while preserving the card UI polish and improving battlefield visuals in the same iteration.
+Validate Roll AP, maneuver start, movement, and bottom action cards in a browser, then add enemy turn behavior and fuller combat resolution while preserving the card UI polish and improving battlefield visuals in the same iteration.
