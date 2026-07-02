@@ -5,22 +5,32 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>The Cavalry of Rome — NexusRealtime Experiment</title>
   <style>
+    :root{color-scheme:dark;background:#070503}
+    *{box-sizing:border-box}
     html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070503;color:#fff6e3;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
     #app,#game{position:fixed;inset:0;width:100%;height:100%}
     #game{display:block;cursor:crosshair;touch-action:none}
   </style>
 </head>
 <body>
-  <main id="app"><canvas id="game" role="application" aria-label="The Cavalry of Rome realistic terrain canvas"></canvas></main>
-  <script>var selectedUnitId=null;</script>
+  <main id="app"><canvas id="game" role="application" aria-label="The Cavalry of Rome battlefield canvas"></canvas></main>
+  <script>
+    var selectedUnitId = null;
+    (() => {
+      const sinks = new Map([["#status",{textContent:""}],["#readout",{textContent:""}],["#commandBar",{hidden:true,textContent:""}]]);
+      const originalQuery = Document.prototype.querySelector;
+      Document.prototype.querySelector = function(selector){ return sinks.get(selector) || originalQuery.call(this, selector); };
+      window.CavalryUiSinkShim = { version:"0.2.0", visibleUi:false, selectors:[...sinks.keys()] };
+    })();
+  </script>
   <script type="module" src="./src/main-realistic.js"></script>
   <script type="module" src="./src/vegetation-pass.js"></script>
   <script type="module" src="./src/hex-battlefield-pass.js"></script>
   <script type="module" src="./src/hex-squad-visual-pass.js"></script>
   <script type="module" src="./src/hex-gameplay-pass.js"></script>
-  <script type="module" src="./src/hex-action-ui-pass.js?v=enemy-turn-007"></script>
+  <script type="module" src="./src/hex-action-ui-pass.js?v=enemy-ap-009"></script>
   <script type="module" src="./src/hex-roll-controller-pass.js"></script>
   <script type="module" src="./src/hex-opponent-ai-pass.js"></script>
-  <script type="module" src="./src/hex-combat-controller-pass.js?v=enemy-turn-007"></script>
+  <script type="module" src="./src/hex-combat-controller-pass.js?v=enemy-ap-009"></script>
 </body>
 </html>
