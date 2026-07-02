@@ -13,6 +13,9 @@ NexusRealtime-Experiments hosts playable browser experiments that compose NexusR
 ## Conventions
 - Do not put The Open Above presets or app-specific tuning into ProtoKits.
 - Use `docs/VISUAL-EXPERIMENT-LOOP.md` for target-image upgrade passes: visual differences become ProtoKit gaps only when reusable, otherwise they stay in the experiment route, renderer, input, UI, or content.
+- Use `goal.md` for the active repo goal when a task introduces a multi-step architecture direction.
+- Use `docs/repeatable-experiment-structure.md` and route-local `feedback/<route-slug>/` folders before migrating game-local kit seams.
+- `tools/NexusRealtime-KitInjector/kit-injector.mjs` is the additive proposal CLI. It writes a context packet by default, calls NVIDIA NIM GLM 5.1 only with explicit `--call-nim` plus `NVIDIA_API_KEY` or `NVIDIA_NIM_API_KEY`, and must not mutate existing game files.
 - The Open Above is a high-fidelity bird flight and terrain-streaming simulator.
 - The Open Above should not use wind/updraft gameplay forces, checkpoint rings, ring challenges, or terrain ring objectives.
 - Ambient clouds, lighting, and atmosphere are allowed only as presentation descriptors.

@@ -168,6 +168,7 @@ function injectStyles(documentRef) {
     .nexus-cover-placeholder { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.76); font-size: 1.2rem; font-weight: 900; letter-spacing: .12em; }
     .nexus-route-main { min-width: 0; display: grid; gap: 7px; }
     .nexus-route-title { color: var(--text); font-weight: 850; letter-spacing: -.018em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(1rem, 1.2vw, 1.18rem); }
+    .nexus-route-accent { display: inline-block; width: 34px; height: 4px; border-radius: 999px; background: linear-gradient(90deg, hsl(var(--cover-hue) 82% 62%), var(--accent)); box-shadow: 0 0 18px hsla(var(--cover-hue), 82%, 62%, .35); }
     .nexus-route-kind { width: max-content; max-width: 100%; color: var(--accent); font-size: .74rem; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .nexus-route-desc { color: var(--muted); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.32; font-size: .9rem; }
     .nexus-route-open { justify-self: end; color: var(--dim); font-size: .74rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
@@ -193,7 +194,8 @@ function renderCover(app, manifest) {
 }
 
 function renderRow(app, index, selected, manifest) {
-  return `<div class="nexus-route-row${selected ? " is-selected" : ""}" role="link" tabindex="${selected ? "0" : "-1"}" data-index="${index}" data-route="${escapeHtml(app.route)}" data-app-id="${escapeHtml(app.id)}" aria-selected="${selected}">${renderCover(app, manifest)}<span class="nexus-route-main"><span class="nexus-route-title">${escapeHtml(displayTitle(app))}</span><span class="nexus-route-kind">${escapeHtml(routeKind(app))}</span><span class="nexus-route-desc">${escapeHtml(description(app))}</span></span><span class="nexus-route-open">Open →</span></div>`;
+  const hue = hashHue(app.id ?? app.route);
+  return `<div class="nexus-route-row${selected ? " is-selected" : ""}" role="link" tabindex="${selected ? "0" : "-1"}" data-index="${index}" data-route="${escapeHtml(app.route)}" data-app-id="${escapeHtml(app.id)}" aria-selected="${selected}" style="--cover-hue:${hue};">${renderCover(app, manifest)}<span class="nexus-route-main"><span class="nexus-route-title">${escapeHtml(displayTitle(app))}</span><span class="nexus-route-accent" aria-hidden="true"></span><span class="nexus-route-kind">${escapeHtml(routeKind(app))}</span><span class="nexus-route-desc">${escapeHtml(description(app))}</span></span><span class="nexus-route-open">Open →</span></div>`;
 }
 
 function renderShell(root, state) {
